@@ -3054,7 +3054,7 @@
   function setupLive2D() {
     var el = document.getElementById('waifu') || document.getElementById('live2dcanvas');
     if (!el) { setTimeout(setupLive2D, 500); return; }
-    var isDragging = false, ox, oy, sx, sy;
+    var isDragging = false, skipObs = false, ox, oy, sx, sy;
 
     function getLeft() {
       return (window.innerWidth >= 768 ? 250 : 10) + 'px';
@@ -3062,25 +3062,33 @@
 
     function forcePos() {
       if (isDragging) return;
-      el.style.cssText = 'position:fixed!important;left:' + getLeft() + '!important;bottom:0!important;top:auto!important;right:auto!important;opacity:1!important;display:block!important;visibility:visible!important;z-index:99999!important;cursor:grab;';
+      skipObs = true;
+      el.style.setProperty('position', 'fixed', 'important');
+      el.style.setProperty('left', getLeft(), 'important');
+      el.style.setProperty('bottom', '0', 'important');
+      el.style.setProperty('top', 'auto', 'important');
+      el.style.setProperty('right', 'auto', 'important');
+      el.style.setProperty('inset', 'auto auto 0 ' + getLeft(), 'important');
+      el.style.setProperty('opacity', '1', 'important');
+      el.style.setProperty('display', 'block', 'important');
+      el.style.setProperty('visibility', 'visible', 'important');
+      el.style.setProperty('z-index', '99999', 'important');
+      el.style.setProperty('transition', 'none', 'important');
+      el.style.setProperty('transform', 'none', 'important');
+      el.style.cursor = 'grab';
+      skipObs = false;
     }
 
-    // Force position repeatedly to override widget init
+    // Force position a few times to override widget init
     forcePos();
-    var t1 = setTimeout(forcePos, 300);
-    var t2 = setTimeout(forcePos, 800);
-    var t3 = setTimeout(forcePos, 1500);
-    var t4 = setTimeout(forcePos, 3000);
+    setTimeout(forcePos, 500);
+    setTimeout(forcePos, 1500);
+    setTimeout(forcePos, 3000);
     window.addEventListener('resize', forcePos);
 
-    // MutationObserver: re-apply position if widget changes styles
-    var observer = new MutationObserver(function(muts) {
-      for (var i = 0; i < muts.length; i++) {
-        if (muts[i].type === 'attributes' && muts[i].attributeName === 'style') {
-          forcePos();
-          break;
-        }
-      }
+    // MutationObserver: re-apply only if widget changed styles (not us)
+    var observer = new MutationObserver(function() {
+      if (!skipObs && !isDragging) forcePos();
     });
     observer.observe(el, { attributes: true, attributeFilter: ['style'] });
 
@@ -3092,7 +3100,15 @@
     });
     document.addEventListener('mousemove', function(e) {
       if (!isDragging) return;
-      el.style.cssText = 'position:fixed!important;left:' + (sx + e.clientX - ox) + 'px!important;top:' + (sy + e.clientY - oy) + 'px!important;bottom:auto!important;right:auto!important;z-index:99999!important;display:block!important;visibility:visible!important;opacity:1!important;cursor:grabbing!important;';
+      skipObs = true;
+      el.style.setProperty('position', 'fixed', 'important');
+      el.style.setProperty('left', (sx + e.clientX - ox) + 'px', 'important');
+      el.style.setProperty('top', (sy + e.clientY - oy) + 'px', 'important');
+      el.style.setProperty('bottom', 'auto', 'important');
+      el.style.setProperty('right', 'auto', 'important');
+      el.style.setProperty('inset', 'auto', 'important');
+      el.style.cursor = 'grabbing';
+      skipObs = false;
     });
     document.addEventListener('mouseup', function() { if (isDragging) { isDragging = false; forcePos(); } });
     el.addEventListener('touchstart', function(e) {
@@ -3101,7 +3117,14 @@
     }, { passive: false });
     document.addEventListener('touchmove', function(e) {
       if (!isDragging) return; var t = e.touches[0];
-      el.style.cssText = 'position:fixed!important;left:' + (sx + t.clientX - ox) + 'px!important;top:' + (sy + t.clientY - oy) + 'px!important;bottom:auto!important;right:auto!important;z-index:99999!important;display:block!important;visibility:visible!important;opacity:1!important;';
+      skipObs = true;
+      el.style.setProperty('position', 'fixed', 'important');
+      el.style.setProperty('left', (sx + t.clientX - ox) + 'px', 'important');
+      el.style.setProperty('top', (sy + t.clientY - oy) + 'px', 'important');
+      el.style.setProperty('bottom', 'auto', 'important');
+      el.style.setProperty('right', 'auto', 'important');
+      el.style.setProperty('inset', 'auto', 'important');
+      skipObs = false;
     }, { passive: false });
     document.addEventListener('touchend', function() { isDragging = false; forcePos(); });
   }
