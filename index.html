@@ -3071,8 +3071,9 @@
     // Force show
     el.style.setProperty('display', 'block', 'important');
     el.style.setProperty('visibility', 'visible', 'important');
-    // Position: bottom-left area, above toggle button
+    // Position: bottom-left area
     var leftPos = window.innerWidth >= 768 ? '250px' : '10px';
+    el.style.setProperty('inset', 'auto auto 45px ' + leftPos, 'important');
     el.style.setProperty('left', leftPos, 'important');
     el.style.setProperty('bottom', '45px', 'important');
     el.style.setProperty('right', 'auto', 'important');
