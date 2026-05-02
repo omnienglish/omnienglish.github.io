@@ -3033,9 +3033,11 @@
 <script>
   // Clear Live2D hide state — widget stores visibility as 'waifu-display'
   try { localStorage.removeItem('waifu-display'); } catch(e) {}
+  // Enable drag before widget loads
+  window.live2d_settings = window.live2d_settings || {};
+  window.live2d_settings.drag = true;
 </script>
 <script src="https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget@master/dist/autoload.js"></script>
-</script>
 
 </body>
 </html>
