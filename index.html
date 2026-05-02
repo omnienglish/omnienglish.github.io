@@ -3031,11 +3031,15 @@
 <!-- Live2D 看板娘 -->
 <script src="https://cdn.jsdelivr.net/npm/live2d-widgets@1.0.0/dist/autoload.js"></script>
 <script>
-  // Drag support — retry until canvas exists
-  var _dragRetry = 0;
-  function initDrag() {
+  function setupLive2D() {
     var el = document.getElementById('live2dcanvas');
-    if (!el) { if (_dragRetry++ < 40) setTimeout(initDrag, 250); return; }
+    if (!el) { setTimeout(setupLive2D, 300); return; }
+    // Reposition: move right of sidebar on desktop
+    if (window.innerWidth >= 768) {
+      el.style.setProperty('left', '250px', 'important');
+    }
+    el.style.setProperty('z-index', '99999', 'important');
+    // Drag
     var dragging = false, ox, oy, sx, sy;
     el.style.cursor = 'grab';
     el.addEventListener('mousedown', function(e) {
@@ -3045,9 +3049,10 @@
     });
     document.addEventListener('mousemove', function(e) {
       if (!dragging) return;
-      el.style.left = (sx + e.clientX - ox) + 'px';
-      el.style.top = (sy + e.clientY - oy) + 'px';
-      el.style.right = 'auto'; el.style.bottom = 'auto';
+      el.style.setProperty('left', (sx + e.clientX - ox) + 'px', 'important');
+      el.style.setProperty('top', (sy + e.clientY - oy) + 'px', 'important');
+      el.style.setProperty('right', 'auto', 'important');
+      el.style.setProperty('bottom', 'auto', 'important');
     });
     document.addEventListener('mouseup', function() { if (dragging) { dragging = false; el.style.cursor = 'grab'; } });
     el.addEventListener('touchstart', function(e) {
@@ -3056,13 +3061,14 @@
     }, { passive: false });
     document.addEventListener('touchmove', function(e) {
       if (!dragging) return; var t = e.touches[0];
-      el.style.left = (sx + t.clientX - ox) + 'px';
-      el.style.top = (sy + t.clientY - oy) + 'px';
-      el.style.right = 'auto'; el.style.bottom = 'auto';
+      el.style.setProperty('left', (sx + t.clientX - ox) + 'px', 'important');
+      el.style.setProperty('top', (sy + t.clientY - oy) + 'px', 'important');
+      el.style.setProperty('right', 'auto', 'important');
+      el.style.setProperty('bottom', 'auto', 'important');
     }, { passive: false });
     document.addEventListener('touchend', function() { dragging = false; });
   }
-  setTimeout(initDrag, 1000);
+  setTimeout(setupLive2D, 800);
 </script>
 
 </body>
