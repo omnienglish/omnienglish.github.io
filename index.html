@@ -952,6 +952,25 @@
     color: var(--success);
   }
 
+  .review-start-btn {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text-primary);
+  }
+  .review-start-btn:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
   .vocab-done-msg {
     text-align: center;
     padding: 40px 20px;
@@ -1693,18 +1712,31 @@
     <div class="page-section" id="page-review">
       <div class="page-header">
         <h1 class="page-title">复习模式</h1>
-        <p class="page-sub">测试已学单词，巩固记忆</p>
+        <p class="page-sub">间隔重复，每天只复习到期的词</p>
       </div>
-      <div id="review-start" style="text-align:center;padding:30px 0;">
-        <div style="font-size:0.875rem;color:var(--text-muted);margin-bottom:16px;">
-          已掌握 <strong id="review-known-count">0</strong> 词 · 待加强 <strong id="review-review-count">0</strong> 词
+      <div id="review-start" style="padding:20px 0;">
+        <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;margin-bottom:16px;">
+          <div style="font-size:2rem;font-weight:700;color:var(--accent);margin-bottom:4px;" id="review-due-count">0</div>
+          <div style="font-size:0.8rem;color:var(--text-muted);">今日待复习</div>
         </div>
-        <button onclick="startReview('all')" class="vocab-action-btn btn-know" style="margin:4px;">全部已学</button>
-        <button onclick="startReview('known')" class="vocab-action-btn btn-know" style="margin:4px;background:var(--success);">已掌握</button>
-        <button onclick="startReview('review')" class="vocab-action-btn btn-review" style="margin:4px;">待加强</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+          <button onclick="startReview('due')" class="review-start-btn" id="btn-review-due">
+            <span style="font-size:1.125rem;font-weight:600;">今日复习</span>
+            <span style="font-size:0.75rem;color:var(--text-muted);">到期单词</span>
+          </button>
+          <button onclick="startReview('all')" class="review-start-btn">
+            <span style="font-size:1.125rem;font-weight:600;">全部已学</span>
+            <span style="font-size:0.75rem;color:var(--text-muted);" id="review-all-count">0 词</span>
+          </button>
+        </div>
+        <div style="font-size:0.75rem;color:var(--text-muted);text-align:center;line-height:1.6;">
+          答对的词会隔更久再出现，答错的词会尽快再复习<br>
+          每天 20 题，积少成多
+        </div>
       </div>
       <div id="review-quiz" style="display:none;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <button onclick="exitReview()" style="background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px 10px;font-size:0.75rem;color:var(--text-muted);cursor:pointer;">退出</button>
           <span id="review-progress" style="font-size:0.75rem;color:var(--text-muted);font-family:JetBrains Mono,monospace;">1 / 10</span>
           <span id="review-score" style="font-size:0.75rem;color:var(--text-muted);font-family:JetBrains Mono,monospace;">正确率 0%</span>
         </div>
@@ -1722,7 +1754,7 @@
       <div id="review-result" style="display:none;text-align:center;padding:30px 0;">
         <div style="font-size:2rem;font-weight:700;color:var(--accent);margin-bottom:8px;" id="review-final-score"></div>
         <div style="font-size:0.875rem;color:var(--text-muted);margin-bottom:20px;" id="review-final-detail"></div>
-        <button onclick="resetReview()" class="vocab-action-btn btn-know">再来一轮</button>
+        <button onclick="resetReview()" class="vocab-action-btn btn-know">返回</button>
       </div>
     </div>
 
@@ -2152,38 +2184,70 @@
     renderVocabCard();
   }
 
-  // ═══ REVIEW MODE ═══
+  // ═══ REVIEW MODE (spaced repetition) ═══
   let reviewQuestions = [];
   let reviewIndex = 0;
   let reviewCorrect = 0;
   let reviewTotal = 10;
 
+  function getReviewSchedule() {
+    try { return JSON.parse(localStorage.getItem('omni-review-schedule') || '{}'); } catch { return {}; }
+  }
+  function saveReviewSchedule(s) {
+    localStorage.setItem('omni-review-schedule', JSON.stringify(s));
+  }
+
+  function getDueWords() {
+    const schedule = getReviewSchedule();
+    const now = Date.now();
+    const today = new Date().toDateString();
+    return VOCAB.filter(w => {
+      if (!vocabState[w.word]) return false;
+      const s = schedule[w.word];
+      if (!s) return true; // never reviewed = due now
+      return new Date(s.next).toDateString() <= today;
+    });
+  }
+
+  function updateReviewSchedule(word, correct) {
+    const schedule = getReviewSchedule();
+    const now = Date.now();
+    const s = schedule[word] || { interval: 1, last: 0, next: 0 };
+    if (correct) {
+      s.interval = Math.min(s.interval * 2, 30); // max 30 days
+    } else {
+      s.interval = 1; // reset to 1 day
+    }
+    s.last = now;
+    s.next = now + s.interval * 86400000;
+    schedule[word] = s;
+    saveReviewSchedule(schedule);
+  }
+
   function updateReviewCounts() {
-    const knownCount = VOCAB.filter(w => vocabState[w.word] === 'known').length;
-    const reviewCount = VOCAB.filter(w => vocabState[w.word] === 'review').length;
-    const el1 = document.getElementById('review-known-count');
-    const el2 = document.getElementById('review-review-count');
-    if (el1) el1.textContent = knownCount;
-    if (el2) el2.textContent = reviewCount;
+    const dueCount = getDueWords().length;
+    const learnedCount = VOCAB.filter(w => vocabState[w.word]).length;
+    const el1 = document.getElementById('review-due-count');
+    const el2 = document.getElementById('review-all-count');
+    if (el1) el1.textContent = dueCount;
+    if (el2) el2.textContent = learnedCount + ' 词';
   }
 
   function startReview(mode) {
     let pool = [];
-    if (mode === 'known') pool = VOCAB.filter(w => vocabState[w.word] === 'known');
-    else if (mode === 'review') pool = VOCAB.filter(w => vocabState[w.word] === 'review');
+    if (mode === 'due') pool = getDueWords();
     else pool = VOCAB.filter(w => vocabState[w.word]);
 
     if (pool.length < 4) {
-      showToast('已学单词太少，至少需要 4 个');
+      showToast('单词太少，至少需要 4 个已学单词');
       return;
     }
 
-    // Shuffle and pick up to 10 questions
     const shuffled = pool.sort(() => Math.random() - 0.5);
-    reviewTotal = Math.min(10, shuffled.length);
+    reviewTotal = Math.min(20, shuffled.length);
+    const allLearned = VOCAB.filter(w => vocabState[w.word]);
     reviewQuestions = shuffled.slice(0, reviewTotal).map(w => {
-      // Get 3 wrong options from pool (excluding correct answer)
-      const others = pool.filter(o => o.word !== w.word).sort(() => Math.random() - 0.5).slice(0, 3);
+      const others = allLearned.filter(o => o.word !== w.word).sort(() => Math.random() - 0.5).slice(0, 3);
       const options = [w, ...others].sort(() => Math.random() - 0.5);
       return { word: w, options };
     });
@@ -2206,7 +2270,7 @@
     document.getElementById('review-next-btn').style.display = 'none';
 
     const optionsEl = document.getElementById('review-options');
-    optionsEl.innerHTML = q.options.map((o, i) => `
+    optionsEl.innerHTML = q.options.map(o => `
       <button class="review-option-btn" onclick="checkReviewAnswer('${o.word.replace(/'/g, "\\'")}', '${q.word.word.replace(/'/g, "\\'")}')" style="
         background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-sm);
         padding:12px;font-size:0.9375rem;cursor:pointer;transition:all 0.2s;
@@ -2218,6 +2282,7 @@
   function checkReviewAnswer(selected, correct) {
     const isCorrect = selected === correct;
     if (isCorrect) reviewCorrect++;
+    updateReviewSchedule(correct, isCorrect);
 
     const buttons = document.querySelectorAll('#review-options .review-option-btn');
     buttons.forEach(btn => {
@@ -2266,6 +2331,13 @@
     const pct = Math.round((reviewCorrect / reviewTotal) * 100);
     document.getElementById('review-final-score').textContent = pct + '%';
     document.getElementById('review-final-detail').textContent = reviewTotal + ' 题答对 ' + reviewCorrect + ' 题';
+  }
+
+  function exitReview() {
+    document.getElementById('review-start').style.display = 'block';
+    document.getElementById('review-quiz').style.display = 'none';
+    document.getElementById('review-result').style.display = 'none';
+    updateReviewCounts();
   }
 
   function resetReview() {
