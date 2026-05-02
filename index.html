@@ -1388,9 +1388,9 @@
   .page-section.active { display: block; }
   /* ═══ LIVE2D WIDGET ═══ */
   body #waifu {
-    left: 10px !important;
-    bottom: 0 !important;
-    z-index: 99999 !important;
+    left: 10px;
+    bottom: 0;
+    z-index: 99999;
   }
 </style>
 
@@ -1515,10 +1515,6 @@
         </div>
         <div class="evo-bar-segments">
           <span class="evo-segment"><span class="evo-segment-dot" style="background:var(--accent)"></span>词汇 <span id="evo-vocab">0%</span></span>
-          <span class="evo-segment"><span class="evo-segment-dot" style="background:oklch(0.65 0.18 280)"></span>写作 <span id="evo-write">0%</span></span>
-          <span class="evo-segment"><span class="evo-segment-dot" style="background:var(--success)"></span>长难句 <span id="evo-sentence">0%</span></span>
-          <span class="evo-segment"><span class="evo-segment-dot" style="background:var(--warning)"></span>CS <span id="evo-cs">0%</span></span>
-          <span class="evo-segment"><span class="evo-segment-dot" style="background:oklch(0.55 0.18 25)"></span>生词本 <span id="evo-notebook">0%</span></span>
         </div>
       </div>
 
@@ -2764,31 +2760,17 @@
   }
 
   function calcEvoPercent() {
-    const p = getProgress();
     const knownCount = VOCAB.filter(w => vocabState[w.word] === 'known').length;
     const totalVocab = VOCAB.length || 1;
-
-    // Each segment maxes at 100, then averaged
     const vocabScore = totalVocab > 0 ? Math.min(100, (knownCount / totalVocab) * 100) : 0;
-    const writeScore = Math.min(100, (p.writing.submissions || 0) * 10); // 10 submissions = 100%
-    const sentenceScore = Math.min(100, (p.sentence.views || 0) * 5); // 20 views = 100%
-    const csScore = Math.min(100, (p.cs.views || 0) * 5);
-    const notebookScore = Math.min(100, (p.notebook.adds || 0) * 2); // 50 words = 100%
-
-    const segments = { vocab: vocabScore, write: writeScore, sentence: sentenceScore, cs: csScore, notebook: notebookScore };
-    const total = Object.values(segments).reduce((a, b) => a + b, 0) / 5;
-    return { total: Math.round(total), segments };
+    return { total: Math.round(vocabScore), vocab: vocabScore };
   }
 
   function updateEvoBar() {
-    const { total, segments } = calcEvoPercent();
+    const { total } = calcEvoPercent();
     document.getElementById('evo-percent').textContent = total + '%';
     document.getElementById('evo-fill').style.width = total + '%';
-    document.getElementById('evo-vocab').textContent = Math.round(segments.vocab) + '%';
-    document.getElementById('evo-write').textContent = Math.round(segments.write) + '%';
-    document.getElementById('evo-sentence').textContent = Math.round(segments.sentence) + '%';
-    document.getElementById('evo-cs').textContent = Math.round(segments.cs) + '%';
-    document.getElementById('evo-notebook').textContent = Math.round(segments.notebook) + '%';
+    document.getElementById('evo-vocab').textContent = total + '%';
   }
 
   // ═══ NOTEBOOK ═══
