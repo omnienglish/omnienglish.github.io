@@ -2166,7 +2166,10 @@
     renderVocabFilters();
     renderVocabProgress();
 
-    // Pronounce only on user click (no auto-play)
+    // Auto-pronounce only when on vocab page
+    if (document.getElementById('page-vocab').classList.contains('active')) {
+      setTimeout(() => speakWord(w.word), 30);
+    }
   }
 
   function renderVocabProgress() {
@@ -3028,11 +3031,19 @@
 <div class="toast" id="toast"></div>
 
 <!-- Live2D 看板娘 -->
+<script>
+  // Clear Live2D hide state so mascot always shows
+  try { localStorage.removeItem('live2d-widget-show'); } catch(e) {}
+</script>
 <script src="https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget@latest/dist/autoload.js"></script>
 <script>
   function setupLive2D() {
     var el = document.getElementById('live2dcanvas');
     if (!el) { setTimeout(setupLive2D, 300); return; }
+    // Force show
+    el.style.setProperty('display', 'block', 'important');
+    el.style.setProperty('visibility', 'visible', 'important');
+    el.style.setProperty('opacity', '1', 'important');
     // Reposition: move right of sidebar on desktop
     if (window.innerWidth >= 768) {
       el.style.setProperty('left', '250px', 'important');
