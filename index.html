@@ -2053,7 +2053,7 @@
         四级词汇<span class="filter-count">${cet4Count}</span>
       </button>
       <button class="vocab-filter-btn ${vocabPriority === 'xindongfang' ? 'active' : ''}" onclick="setVocabPriority('xindongfang')">
-        新东方<span class="filter-count">${xdfCount}</span>
+        补充词<span class="filter-count">${xdfCount}</span>
       </button>
       <button class="vocab-filter-btn ${vocabPriority === 'all' ? 'active' : ''}" onclick="setVocabPriority('all')">
         全部<span class="filter-count">${VOCAB.length}</span>
@@ -2244,7 +2244,7 @@
     }
 
     const shuffled = pool.sort(() => Math.random() - 0.5);
-    reviewTotal = Math.min(20, shuffled.length);
+    reviewTotal = Math.min(70, shuffled.length);
     const allLearned = VOCAB.filter(w => vocabState[w.word]);
     reviewQuestions = shuffled.slice(0, reviewTotal).map(w => {
       const others = allLearned.filter(o => o.word !== w.word).sort(() => Math.random() - 0.5).slice(0, 3);
