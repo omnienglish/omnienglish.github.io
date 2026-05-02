@@ -1913,233 +1913,17 @@
   }
 
   // ═══ VOCABULARY WALL ═══
-  const VOCAB = [
-    {
-      word: "implement",
-      phonetic: "/ˈɪmplɪment/",
-      def: "v. 实施，执行；实现",
-      cet4: "The government decided to implement a new policy to reduce pollution.",
-      cet4zh: "政府决定实施一项新政策来减少污染。",
-      cs: "We need to implement this interface before the next sprint review.",
-      cszh: "我们需要在下次冲刺评审之前实现这个接口。"
-    },
-    {
-      word: "maintain",
-      phonetic: "/meɪnˈteɪn/",
-      def: "v. 维持，保持；维修，保养",
-      cet4: "It is important to maintain a healthy lifestyle.",
-      cet4zh: "保持健康的生活方式很重要。",
-      cs: "The legacy system is expensive to maintain, so we're planning a migration.",
-      cszh: "这个旧系统维护成本很高，所以我们正在计划迁移。"
-    },
-    {
-      word: "candidate",
-      phonetic: "/ˈkændɪdət/",
-      def: "n. 候选人；应试者",
-      cet4: "She was the strongest candidate for the position.",
-      cet4zh: "她是这个职位最强的候选人。",
-      cs: "The algorithm picks the best candidate from the search results.",
-      cszh: "算法从搜索结果中选出最佳候选。"
-    },
-    {
-      word: "access",
-      phonetic: "/ˈækses/",
-      def: "n. 进入；使用权 v. 访问，存取",
-      cet4: "Students have access to the library 24 hours a day.",
-      cet4zh: "学生可以全天 24 小时使用图书馆。",
-      cs: "You need admin access to modify the database configuration.",
-      cszh: "你需要管理员权限才能修改数据库配置。"
-    },
-    {
-      word: "promote",
-      phonetic: "/prəˈmoʊt/",
-      def: "v. 促进，提升；推广",
-      cet4: "The campaign was designed to promote environmental awareness.",
-      cet4zh: "这场活动旨在推广环保意识。",
-      cs: "The function promotes the local variable to the heap when escaping.",
-      cszh: "当变量逃逸时，函数会将其从局部变量提升到堆上。"
-    },
-    {
-      word: "consume",
-      phonetic: "/kənˈsjuːm/",
-      def: "v. 消耗，消费；吃，喝",
-      cet4: "This project will consume a large amount of resources.",
-      cet4zh: "这个项目将消耗大量资源。",
-      cs: "The consumer thread will consume messages from the queue asynchronously.",
-      cszh: "消费者线程会异步地从队列中消费消息。"
-    },
-    {
-      word: "issue",
-      phonetic: "/ˈɪʃuː/",
-      def: "n. 问题；期刊 v. 发行，发布",
-      cet4: "The government is dealing with the issue of unemployment.",
-      cet4zh: "政府正在处理失业问题。",
-      cs: "Please open an issue on GitHub if you find a bug in the parser.",
-      cszh: "如果你在解析器中发现了 bug，请在 GitHub 上提交 issue。"
-    },
-    {
-      word: "process",
-      phonetic: "/ˈprɒses/",
-      def: "n. 过程，流程 v. 处理，加工",
-      cet4: "Learning a language is a long process.",
-      cet4zh: "学习语言是一个漫长的过程。",
-      cs: "The server spawns a child process for each incoming request.",
-      cszh: "服务器为每个传入请求创建一个子进程。"
-    },
-    {
-      word: "resource",
-      phonetic: "/rɪˈsɔːrs/",
-      def: "n. 资源，财力",
-      cet4: "We must make better use of our natural resources.",
-      cet4zh: "我们必须更好地利用自然资源。",
-      cs: "Remember to release the resource in the finally block to avoid leaks.",
-      cszh: "记得在 finally 块中释放资源以避免泄漏。"
-    },
-    {
-      word: "indicate",
-      phonetic: "/ˈɪndɪkeɪt/",
-      def: "v. 表明，指示",
-      cet4: "Research indicates that eating habits are changing fast.",
-      cet4zh: "研究表明饮食习惯正在快速变化。",
-      cs: "The status code 200 indicates that the request was successful.",
-      cszh: "状态码 200 表示请求成功。"
-    },
-    {
-      word: "approach",
-      phonetic: "/əˈproʊtʃ/",
-      def: "n. 方法，途径 v. 接近，靠近",
-      cet4: "We need a new approach to solve this problem.",
-      cet4zh: "我们需要一种新方法来解决这个问题。",
-      cs: "A recursive approach works well for tree traversal algorithms.",
-      cszh: "递归方法非常适合树遍历算法。"
-    },
-    {
-      word: "transfer",
-      phonetic: "/trænsˈfɜːr/",
-      def: "v. 转移，转让 n. 转移，转换",
-      cet4: "He decided to transfer to another university.",
-      cet4zh: "他决定转学到另一所大学。",
-      cs: "The file transfer protocol supports both binary and ASCII modes.",
-      cszh: "文件传输协议支持二进制和 ASCII 两种模式。"
-    },
-    {
-      word: "principle",
-      phonetic: "/ˈprɪnsəpl/",
-      def: "n. 原则，原理",
-      cet4: "The course teaches the basic principles of economics.",
-      cet4zh: "这门课程教授经济学的基本原理。",
-      cs: "The single responsibility principle states that a class should have one reason to change.",
-      cszh: "单一职责原则指出，一个类应该只有一个引起变化的原因。"
-    },
-    {
-      word: "conduct",
-      phonetic: "/kənˈdʌkt/",
-      def: "v. 进行，实施；导电 n. 行为，举止",
-      cet4: "The scientist conducted an experiment in the lab.",
-      cet4zh: "科学家在实验室里进行了一项实验。",
-      cs: "The metal casing helps conduct heat away from the CPU.",
-      cszh: "金属外壳有助于将 CPU 的热量传导出去。"
-    },
-    {
-      word: "consequence",
-      phonetic: "/ˈkɒnsɪkwəns/",
-      def: "n. 结果，后果；重要性",
-      cet4: "Climate change is a consequence of pollution.",
-      cet4zh: "气候变化是污染的后果。",
-      cs: "Unhandled exceptions have serious consequences in production systems.",
-      cszh: "未处理的异常在生产系统中会产生严重后果。"
-    },
-    {
-      word: "survey",
-      phonetic: "/ˈsɜːrveɪ/",
-      def: "n. 调查，测量 v. 调查；审视",
-      cet4: "According to the survey, most students prefer online learning.",
-      cet4zh: "根据调查，大多数学生更喜欢在线学习。",
-      cs: "We ran a user survey to understand how people interact with the API.",
-      cszh: "我们做了一次用户调查，了解人们如何使用这个 API。"
-    },
-    {
-      word: "capacity",
-      phonetic: "/kəˈpæsəti/",
-      def: "n. 容量，能力；职位",
-      cet4: "The stadium has a capacity of 50,000 people.",
-      cet4zh: "这个体育场可容纳 5 万人。",
-      cs: "The connection pool has a max capacity of 100 concurrent connections.",
-      cszh: "连接池的最大容量是 100 个并发连接。"
-    },
-    {
-      word: "benefit",
-      phonetic: "/ˈbenɪfɪt/",
-      def: "n. 利益，好处 v. 受益",
-      cet4: "Regular exercise has many health benefits.",
-      cet4zh: "经常锻炼有很多健康益处。",
-      cs: "The main benefit of caching is reduced database load.",
-      cszh: "缓存的主要好处是减少数据库负载。"
-    },
-    {
-      word: "distribute",
-      phonetic: "/dɪˈstrɪbjuːt/",
-      def: "v. 分配，分发；分布",
-      cet4: "The organization distributed food to the victims.",
-      cet4zh: "该组织向灾民分发了食物。",
-      cs: "The distributed system uses consensus to agree on the global state.",
-      cszh: "分布式系统使用共识机制来达成全局状态一致。"
-    },
-    {
-      word: "regulate",
-      phonetic: "/ˈreɡjuleɪt/",
-      def: "v. 管理，调节；控制",
-      cet4: "Laws are made to regulate the behavior of citizens.",
-      cet4zh: "法律是用来规范公民行为的。",
-      cs: "The rate limiter is used to regulate the number of API calls per second.",
-      cszh: "限流器用于调节每秒的 API 调用次数。"
-    },
-    {
-      word: "acquire",
-      phonetic: "/əˈkwaɪər/",
-      def: "v. 获得，取得；收购",
-      cet4: "She acquired a new skill through years of practice.",
-      cet4zh: "她通过多年的练习获得了一项新技能。",
-      cs: "The thread must acquire the lock before accessing the shared data.",
-      cszh: "线程在访问共享数据之前必须先获取锁。"
-    },
-    {
-      word: "adapt",
-      phonetic: "/əˈdæpt/",
-      def: "v. 适应，改编",
-      cet4: "It takes time to adapt to a new environment.",
-      cet4zh: "适应新环境需要时间。",
-      cs: "The adapter pattern lets incompatible interfaces work together.",
-      cszh: "适配器模式让不兼容的接口能够协同工作。"
-    },
-    {
-      word: "contribute",
-      phonetic: "/kənˈtrɪbjuːt/",
-      def: "v. 贡献，捐献；投稿",
-      cet4: "Everyone should contribute to protecting the environment.",
-      cet4zh: "每个人都应该为保护环境做出贡献。",
-      cs: "Feel free to contribute to the open-source project via pull requests.",
-      cszh: "欢迎通过 pull request 为这个开源项目贡献代码。"
-    },
-    {
-      word: "resolve",
-      phonetic: "/rɪˈzɒlv/",
-      def: "v. 解决；决心；分解",
-      cet4: "They resolved the conflict through negotiation.",
-      cet4zh: "他们通过谈判解决了冲突。",
-      cs: "The DNS resolver will resolve the domain name to an IP address.",
-      cszh: "DNS 解析器会将域名解析为 IP 地址。"
-    },
-    {
-      word: "substitute",
-      phonetic: "/ˈsʌbstɪtjuːt/",
-      def: "n. 替代品 v. 替代，替换",
-      cet4: "You can substitute olive oil for butter in this recipe.",
-      cet4zh: "在这个食谱中你可以用橄榄油代替黄油。",
-      cs: "We can substitute the mock object for the real dependency in tests.",
-      cszh: "在测试中我们可以用 mock 对象替代真实依赖。"
+  let VOCAB = [];
+
+  async function loadVocab() {
+    try {
+      const resp = await fetch('vocab.json');
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      VOCAB = await resp.json();
+    } catch (err) {
+      console.warn('[Vocab] Failed to load vocab.json:', err);
     }
-  ];
+  }
 
   // State
   let vocabState = {};
@@ -2201,7 +1985,9 @@
     card.classList.remove('flipped');
 
     if (filtered.length === 0) {
-      front.innerHTML = `<div class="vocab-done-msg"><strong>没有单词</strong>该分类下暂无单词</div>`;
+      front.innerHTML = VOCAB.length === 0
+        ? `<div class="vocab-done-msg"><strong>词库加载中…</strong>正在获取词汇数据</div>`
+        : `<div class="vocab-done-msg"><strong>没有单词</strong>该分类下暂无单词</div>`;
       back.innerHTML = '';
       navInfo.textContent = '0 / 0';
       prevBtn.disabled = true;
@@ -2931,7 +2717,7 @@
   };
 
   // ═══ INIT ═══
-  function initApp() {
+  async function initApp() {
     try {
       // 1. Countdown
       updateCountdown();
@@ -2944,7 +2730,8 @@
       if (apiInput) apiInput.value = savedKey;
       updateSettingsApiStatus();
 
-      // 3. Vocab
+      // 3. Load vocab data from external JSON, then init vocab UI
+      await loadVocab();
       loadVocabState();
       renderVocabCard();
       updateDashboardStats();
