@@ -2166,8 +2166,7 @@
     renderVocabFilters();
     renderVocabProgress();
 
-    // Auto-pronounce on card appear
-    setTimeout(() => speakWord(w.word), 30);
+    // Pronounce only on user click (no auto-play)
   }
 
   function renderVocabProgress() {
@@ -3029,7 +3028,7 @@
 <div class="toast" id="toast"></div>
 
 <!-- Live2D 看板娘 -->
-<script src="https://cdn.jsdelivr.net/npm/live2d-widgets@1.0.0/dist/autoload.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget@latest/dist/autoload.js"></script>
 <script>
   function setupLive2D() {
     var el = document.getElementById('live2dcanvas');
