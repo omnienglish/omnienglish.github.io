@@ -1387,20 +1387,16 @@
   .page-section { display: none; }
   .page-section.active { display: block; }
   /* ═══ LIVE2D WIDGET ═══ */
-  #live2dcanvas {
-    position: fixed !important;
-    z-index: 99999 !important;
-    pointer-events: auto !important;
-  }
-  #live2d-widget {
-    z-index: 99999 !important;
-  }
+  #live2dcanvas,
+  #live2d-widget,
   .live2d-widget-container {
     z-index: 99999 !important;
   }
-  /* Hide the default toggle button — mascot is always visible */
-  #live2d-toggle {
-    display: none !important;
+  /* Desktop: push widget right of sidebar */
+  @media (min-width: 768px) {
+    #live2dcanvas {
+      left: calc(var(--sidebar-w) + 10px) !important;
+    }
   }
 </style>
 
@@ -3033,7 +3029,50 @@
 <div class="toast" id="toast"></div>
 
 <!-- Live2D 看板娘 -->
-<script src="https://cdn.jsdelivr.net/npm/live2d-widgets@1.0.0/dist/autoload.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/live2d-widgets@1.0.0/dist/L2Dwidget.min.js"></script>
+<script>
+  L2Dwidget.init({
+    model: { jsonPath: 'https://cdn.jsdelivr.net/npm/live2d-widgets@1.0.0/assets/hijiki.model.json', scale: 1 },
+    display: { position: 'left', width: 160, height: 200, hOffset: 20, vOffset: -10 },
+    mobile: { show: true, scale: 0.5 },
+    react: { opacityDefault: 0.9, opacityOnHover: 0.3 },
+    dialog: { enable: false },
+    tagMode: false,
+    dev: { border: false }
+  });
+  // Drag support — retry until canvas exists
+  var _dragRetry = 0;
+  function initDrag() {
+    var el = document.getElementById('live2dcanvas');
+    if (!el) { if (_dragRetry++ < 40) setTimeout(initDrag, 250); return; }
+    var dragging = false, ox, oy, sx, sy;
+    el.style.cursor = 'grab';
+    el.addEventListener('mousedown', function(e) {
+      dragging = true; ox = e.clientX; oy = e.clientY;
+      var r = el.getBoundingClientRect(); sx = r.left; sy = r.top;
+      el.style.cursor = 'grabbing'; e.preventDefault();
+    });
+    document.addEventListener('mousemove', function(e) {
+      if (!dragging) return;
+      el.style.left = (sx + e.clientX - ox) + 'px';
+      el.style.top = (sy + e.clientY - oy) + 'px';
+      el.style.right = 'auto'; el.style.bottom = 'auto';
+    });
+    document.addEventListener('mouseup', function() { if (dragging) { dragging = false; el.style.cursor = 'grab'; } });
+    el.addEventListener('touchstart', function(e) {
+      var t = e.touches[0]; dragging = true; ox = t.clientX; oy = t.clientY;
+      var r = el.getBoundingClientRect(); sx = r.left; sy = r.top; e.preventDefault();
+    }, { passive: false });
+    document.addEventListener('touchmove', function(e) {
+      if (!dragging) return; var t = e.touches[0];
+      el.style.left = (sx + t.clientX - ox) + 'px';
+      el.style.top = (sy + t.clientY - oy) + 'px';
+      el.style.right = 'auto'; el.style.bottom = 'auto';
+    }, { passive: false });
+    document.addEventListener('touchend', function() { dragging = false; });
+  }
+  initDrag();
+</script>
 
 </body>
 </html>
