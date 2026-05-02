@@ -3029,17 +3029,8 @@
 <div class="toast" id="toast"></div>
 
 <!-- Live2D 看板娘 -->
-<script src="https://cdn.jsdelivr.net/npm/live2d-widgets@1.0.0/dist/L2Dwidget.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/live2d-widgets@1.0.0/dist/autoload.js"></script>
 <script>
-  L2Dwidget.init({
-    model: { jsonPath: 'https://cdn.jsdelivr.net/npm/live2d-widgets@1.0.0/assets/hijiki.model.json', scale: 1 },
-    display: { position: 'left', width: 160, height: 200, hOffset: 20, vOffset: -10 },
-    mobile: { show: true, scale: 0.5 },
-    react: { opacityDefault: 0.9, opacityOnHover: 0.3 },
-    dialog: { enable: false },
-    tagMode: false,
-    dev: { border: false }
-  });
   // Drag support — retry until canvas exists
   var _dragRetry = 0;
   function initDrag() {
@@ -3071,7 +3062,7 @@
     }, { passive: false });
     document.addEventListener('touchend', function() { dragging = false; });
   }
-  initDrag();
+  setTimeout(initDrag, 1000);
 </script>
 
 </body>
