@@ -1394,9 +1394,24 @@
     z-index: 99999 !important;
   }
   #waifu {
-    opacity: 1;
-    transform: scale(0.75);
-    transform-origin: bottom left;
+    position: fixed !important;
+    left: 10px !important;
+    bottom: 45px !important;
+    right: auto !important;
+    top: auto !important;
+    width: auto !important;
+    opacity: 1 !important;
+    transform: scale(0.75) !important;
+    transform-origin: bottom left !important;
+    transition: none !important;
+  }
+  #waifu canvas,
+  #waifu #live2d {
+    width: 150px !important;
+    height: 200px !important;
+  }
+  @media (min-width: 768px) {
+    #waifu { left: 250px !important; }
   }
   /* Toggle button */
   #live2d-toggle-btn {
@@ -3068,41 +3083,55 @@
   function setupLive2D() {
     var el = document.getElementById('waifu') || document.getElementById('live2dcanvas');
     if (!el) { setTimeout(setupLive2D, 500); return; }
-    var isDragging = false;
+    var isDragging = false, ox, oy, sx, sy;
 
-    function applyPos() {
+    // Force position via JS (inline !important beats CSS !important)
+    function forcePos() {
       if (isDragging) return;
       var sidebarW = window.innerWidth >= 768 ? 240 : 0;
-      var leftPx = sidebarW + 10;
-      el.style.cssText = 'display:block!important;visibility:visible!important;position:fixed!important;z-index:99999!important;left:' + leftPx + 'px!important;bottom:45px!important;right:auto!important;top:auto!important;cursor:grab;';
+      el.style.setProperty('position', 'fixed', 'important');
+      el.style.setProperty('left', (sidebarW + 10) + 'px', 'important');
+      el.style.setProperty('bottom', '45px', 'important');
+      el.style.setProperty('top', 'auto', 'important');
+      el.style.setProperty('right', 'auto', 'important');
+      el.style.setProperty('inset', 'auto auto 45px ' + (sidebarW + 10) + 'px', 'important');
+      el.style.setProperty('opacity', '1', 'important');
+      el.style.setProperty('display', 'block', 'important');
+      el.style.setProperty('visibility', 'visible', 'important');
     }
+    forcePos();
+    setTimeout(forcePos, 500);
+    setTimeout(forcePos, 1500);
+    setTimeout(forcePos, 3000);
+    window.addEventListener('resize', forcePos);
 
-    // Apply position a few times to override widget init
-    applyPos();
-    setTimeout(applyPos, 500);
-    setTimeout(applyPos, 1500);
-    setTimeout(applyPos, 3000);
-    window.addEventListener('resize', applyPos);
-
-    // Drag
-    var ox, oy, sx, sy;
+    el.style.cursor = 'grab';
     el.addEventListener('mousedown', function(e) {
       isDragging = true; ox = e.clientX; oy = e.clientY;
       var r = el.getBoundingClientRect(); sx = r.left; sy = r.top;
+      el.style.setProperty('inset', 'auto', 'important');
       el.style.cursor = 'grabbing'; e.preventDefault();
     });
     document.addEventListener('mousemove', function(e) {
       if (!isDragging) return;
-      el.style.cssText = 'display:block!important;visibility:visible!important;position:fixed!important;z-index:99999!important;left:' + (sx + e.clientX - ox) + 'px!important;top:' + (sy + e.clientY - oy) + 'px!important;right:auto!important;bottom:auto!important;cursor:grabbing;';
+      el.style.setProperty('left', (sx + e.clientX - ox) + 'px', 'important');
+      el.style.setProperty('top', (sy + e.clientY - oy) + 'px', 'important');
+      el.style.setProperty('bottom', 'auto', 'important');
+      el.style.setProperty('right', 'auto', 'important');
     });
     document.addEventListener('mouseup', function() { if (isDragging) { isDragging = false; el.style.cursor = 'grab'; } });
     el.addEventListener('touchstart', function(e) {
       var t = e.touches[0]; isDragging = true; ox = t.clientX; oy = t.clientY;
-      var r = el.getBoundingClientRect(); sx = r.left; sy = r.top; e.preventDefault();
+      var r = el.getBoundingClientRect(); sx = r.left; sy = r.top;
+      el.style.setProperty('inset', 'auto', 'important');
+      e.preventDefault();
     }, { passive: false });
     document.addEventListener('touchmove', function(e) {
       if (!isDragging) return; var t = e.touches[0];
-      el.style.cssText = 'display:block!important;visibility:visible!important;position:fixed!important;z-index:99999!important;left:' + (sx + t.clientX - ox) + 'px!important;top:' + (sy + t.clientY - oy) + 'px!important;right:auto!important;bottom:auto!important;';
+      el.style.setProperty('left', (sx + t.clientX - ox) + 'px', 'important');
+      el.style.setProperty('top', (sy + t.clientY - oy) + 'px', 'important');
+      el.style.setProperty('bottom', 'auto', 'important');
+      el.style.setProperty('right', 'auto', 'important');
     }, { passive: false });
     document.addEventListener('touchend', function() { isDragging = false; });
   }
@@ -3112,6 +3141,7 @@
     if (!el) return;
     if (el.style.display === 'none') {
       el.style.setProperty('display', 'block', 'important');
+      el.style.setProperty('visibility', 'visible', 'important');
       btn.textContent = '🐱';
     } else {
       el.style.setProperty('display', 'none', 'important');
