@@ -1387,15 +1387,10 @@
   .page-section { display: none; }
   .page-section.active { display: block; }
   /* ═══ LIVE2D WIDGET ═══ */
-  /* Let widget handle its own positioning — only override left */
   body #waifu {
-    left: 10px;
-  }
-  @media (min-width: 768px) {
-    body #waifu { left: 250px; }
-  }
-  @media (min-width: 768px) {
-    #live2d-toggle-btn { left: 254px; }
+    left: 10px !important;
+    bottom: 0 !important;
+    z-index: 99999 !important;
   }
 </style>
 
