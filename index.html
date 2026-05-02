@@ -1406,25 +1406,6 @@
   @media (min-width: 768px) {
     #waifu { left: 250px !important; }
   }
-  /* Toggle button */
-  #live2d-toggle-btn {
-    position: fixed;
-    bottom: 200px;
-    left: 12px;
-    z-index: 100000;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 1px solid var(--border);
-    background: var(--bg-surface);
-    color: var(--text-secondary);
-    cursor: pointer;
-    display: grid;
-    place-items: center;
-    font-size: 14px;
-    box-shadow: var(--shadow-sm);
-    transition: background 0.15s;
-  }
   #live2d-toggle-btn:hover {
     background: var(--bg-muted);
   }
@@ -3063,9 +3044,6 @@
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<!-- Live2D toggle button -->
-<button id="live2d-toggle-btn" onclick="toggleLive2D()" title="隐藏/显示看板娘">🐱</button>
-
 <!-- Live2D 看板娘 -->
 <script>
   // Clear Live2D hide state — widget stores visibility as 'waifu-display'
@@ -3078,68 +3056,54 @@
     if (!el) { setTimeout(setupLive2D, 500); return; }
     var isDragging = false, ox, oy, sx, sy;
 
-    // Force position via JS (inline !important beats CSS !important)
+    function getLeft() {
+      return (window.innerWidth >= 768 ? 250 : 10) + 'px';
+    }
+
     function forcePos() {
       if (isDragging) return;
-      var sidebarW = window.innerWidth >= 768 ? 240 : 0;
-      el.style.setProperty('position', 'fixed', 'important');
-      el.style.setProperty('left', (sidebarW + 10) + 'px', 'important');
-      el.style.setProperty('bottom', '0', 'important');
-      el.style.setProperty('top', 'auto', 'important');
-      el.style.setProperty('right', 'auto', 'important');
-      el.style.setProperty('inset', 'auto auto 0 ' + (sidebarW + 10) + 'px', 'important');
-      el.style.setProperty('opacity', '1', 'important');
-      el.style.setProperty('display', 'block', 'important');
-      el.style.setProperty('visibility', 'visible', 'important');
+      el.style.cssText = 'position:fixed!important;left:' + getLeft() + '!important;bottom:0!important;top:auto!important;right:auto!important;opacity:1!important;display:block!important;visibility:visible!important;z-index:99999!important;cursor:grab;';
     }
+
+    // Force position repeatedly to override widget init
     forcePos();
-    setTimeout(forcePos, 500);
-    setTimeout(forcePos, 1500);
-    setTimeout(forcePos, 3000);
+    var t1 = setTimeout(forcePos, 300);
+    var t2 = setTimeout(forcePos, 800);
+    var t3 = setTimeout(forcePos, 1500);
+    var t4 = setTimeout(forcePos, 3000);
     window.addEventListener('resize', forcePos);
 
-    el.style.cursor = 'grab';
+    // MutationObserver: re-apply position if widget changes styles
+    var observer = new MutationObserver(function(muts) {
+      for (var i = 0; i < muts.length; i++) {
+        if (muts[i].type === 'attributes' && muts[i].attributeName === 'style') {
+          forcePos();
+          break;
+        }
+      }
+    });
+    observer.observe(el, { attributes: true, attributeFilter: ['style'] });
+
+    // Drag
     el.addEventListener('mousedown', function(e) {
       isDragging = true; ox = e.clientX; oy = e.clientY;
       var r = el.getBoundingClientRect(); sx = r.left; sy = r.top;
-      el.style.setProperty('inset', 'auto', 'important');
       el.style.cursor = 'grabbing'; e.preventDefault();
     });
     document.addEventListener('mousemove', function(e) {
       if (!isDragging) return;
-      el.style.setProperty('left', (sx + e.clientX - ox) + 'px', 'important');
-      el.style.setProperty('top', (sy + e.clientY - oy) + 'px', 'important');
-      el.style.setProperty('bottom', 'auto', 'important');
-      el.style.setProperty('right', 'auto', 'important');
+      el.style.cssText = 'position:fixed!important;left:' + (sx + e.clientX - ox) + 'px!important;top:' + (sy + e.clientY - oy) + 'px!important;bottom:auto!important;right:auto!important;z-index:99999!important;display:block!important;visibility:visible!important;opacity:1!important;cursor:grabbing!important;';
     });
-    document.addEventListener('mouseup', function() { if (isDragging) { isDragging = false; el.style.cursor = 'grab'; } });
+    document.addEventListener('mouseup', function() { if (isDragging) { isDragging = false; forcePos(); } });
     el.addEventListener('touchstart', function(e) {
       var t = e.touches[0]; isDragging = true; ox = t.clientX; oy = t.clientY;
-      var r = el.getBoundingClientRect(); sx = r.left; sy = r.top;
-      el.style.setProperty('inset', 'auto', 'important');
-      e.preventDefault();
+      var r = el.getBoundingClientRect(); sx = r.left; sy = r.top; e.preventDefault();
     }, { passive: false });
     document.addEventListener('touchmove', function(e) {
       if (!isDragging) return; var t = e.touches[0];
-      el.style.setProperty('left', (sx + t.clientX - ox) + 'px', 'important');
-      el.style.setProperty('top', (sy + t.clientY - oy) + 'px', 'important');
-      el.style.setProperty('bottom', 'auto', 'important');
-      el.style.setProperty('right', 'auto', 'important');
+      el.style.cssText = 'position:fixed!important;left:' + (sx + t.clientX - ox) + 'px!important;top:' + (sy + t.clientY - oy) + 'px!important;bottom:auto!important;right:auto!important;z-index:99999!important;display:block!important;visibility:visible!important;opacity:1!important;';
     }, { passive: false });
-    document.addEventListener('touchend', function() { isDragging = false; });
-  }
-  function toggleLive2D() {
-    var el = document.getElementById('waifu') || document.getElementById('live2dcanvas');
-    var btn = document.getElementById('live2d-toggle-btn');
-    if (!el) return;
-    if (el.style.display === 'none') {
-      el.style.setProperty('display', 'block', 'important');
-      el.style.setProperty('visibility', 'visible', 'important');
-      btn.textContent = '🐱';
-    } else {
-      el.style.setProperty('display', 'none', 'important');
-      btn.textContent = '🐺';
-    }
+    document.addEventListener('touchend', function() { isDragging = false; forcePos(); });
   }
   setTimeout(setupLive2D, 800);
 </script>
