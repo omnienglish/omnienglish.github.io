@@ -2939,9 +2939,6 @@
 
       // 2. API key
       updateApiStatus();
-      if (!localStorage.getItem('omni-deepseek-key')) {
-        localStorage.setItem('omni-deepseek-key', 'sk-156ec450dd094a1aa86ce5ff26562ca3');
-      }
       const savedKey = localStorage.getItem('omni-deepseek-key') || '';
       const apiInput = document.getElementById('api-key-settings');
       if (apiInput) apiInput.value = savedKey;
