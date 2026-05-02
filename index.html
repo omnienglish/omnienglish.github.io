@@ -3076,10 +3076,12 @@
     // Force show
     el.style.setProperty('display', 'block', 'important');
     el.style.setProperty('visibility', 'visible', 'important');
-    // Reposition: move right of sidebar on desktop
-    if (window.innerWidth >= 768) {
-      el.style.setProperty('left', '250px', 'important');
-    }
+    // Position: bottom-left corner
+    var leftPos = window.innerWidth >= 768 ? '250px' : '10px';
+    el.style.setProperty('left', leftPos, 'important');
+    el.style.setProperty('bottom', '10px', 'important');
+    el.style.setProperty('right', 'auto', 'important');
+    el.style.setProperty('top', 'auto', 'important');
     el.style.setProperty('z-index', '99999', 'important');
     // Drag
     var dragging = false, ox, oy, sx, sy;
