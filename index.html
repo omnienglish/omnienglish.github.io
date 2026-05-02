@@ -1393,15 +1393,10 @@
   .live2d-widget-container {
     z-index: 99999 !important;
   }
-  /* Slightly transparent when idle, full on hover */
   #waifu {
-    opacity: 0.7;
-    transition: opacity 0.3s ease;
+    opacity: 1;
     transform: scale(0.75);
     transform-origin: bottom left;
-  }
-  #waifu:hover {
-    opacity: 1;
   }
   /* Toggle button */
   #live2d-toggle-btn {
@@ -3076,10 +3071,10 @@
     // Force show
     el.style.setProperty('display', 'block', 'important');
     el.style.setProperty('visibility', 'visible', 'important');
-    // Position: bottom-left corner
+    // Position: bottom-left area, above toggle button
     var leftPos = window.innerWidth >= 768 ? '250px' : '10px';
     el.style.setProperty('left', leftPos, 'important');
-    el.style.setProperty('bottom', '10px', 'important');
+    el.style.setProperty('bottom', '45px', 'important');
     el.style.setProperty('right', 'auto', 'important');
     el.style.setProperty('top', 'auto', 'important');
     el.style.setProperty('z-index', '99999', 'important');
