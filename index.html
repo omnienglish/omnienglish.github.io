@@ -3068,9 +3068,10 @@
   function setupLive2D() {
     var el = document.getElementById('waifu') || document.getElementById('live2dcanvas');
     if (!el) { setTimeout(setupLive2D, 300); return; }
-    // Force show
+    // Force show + fixed position
     el.style.setProperty('display', 'block', 'important');
     el.style.setProperty('visibility', 'visible', 'important');
+    el.style.setProperty('position', 'fixed', 'important');
     el.style.setProperty('z-index', '99999', 'important');
     // Position: always bottom-left, responsive to viewport
     function setPosition() {
