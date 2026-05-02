@@ -1396,19 +1396,12 @@
   #waifu {
     position: fixed !important;
     left: 10px !important;
-    bottom: 45px !important;
+    bottom: 0 !important;
     right: auto !important;
     top: auto !important;
     width: auto !important;
     opacity: 1 !important;
-    transform: scale(0.75) !important;
-    transform-origin: bottom left !important;
     transition: none !important;
-  }
-  #waifu canvas,
-  #waifu #live2d {
-    width: 150px !important;
-    height: 200px !important;
   }
   @media (min-width: 768px) {
     #waifu { left: 250px !important; }
@@ -1416,7 +1409,7 @@
   /* Toggle button */
   #live2d-toggle-btn {
     position: fixed;
-    bottom: 160px;
+    bottom: 200px;
     left: 12px;
     z-index: 100000;
     width: 32px;
@@ -3091,10 +3084,10 @@
       var sidebarW = window.innerWidth >= 768 ? 240 : 0;
       el.style.setProperty('position', 'fixed', 'important');
       el.style.setProperty('left', (sidebarW + 10) + 'px', 'important');
-      el.style.setProperty('bottom', '45px', 'important');
+      el.style.setProperty('bottom', '0', 'important');
       el.style.setProperty('top', 'auto', 'important');
       el.style.setProperty('right', 'auto', 'important');
-      el.style.setProperty('inset', 'auto auto 45px ' + (sidebarW + 10) + 'px', 'important');
+      el.style.setProperty('inset', 'auto auto 0 ' + (sidebarW + 10) + 'px', 'important');
       el.style.setProperty('opacity', '1', 'important');
       el.style.setProperty('display', 'block', 'important');
       el.style.setProperty('visibility', 'visible', 'important');
