@@ -3065,56 +3065,74 @@
 </script>
 <script src="https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget@master/dist/autoload.js"></script>
 <script>
-  function setupLive2D() {
-    var el = document.getElementById('waifu') || document.getElementById('live2dcanvas');
-    if (!el) { setTimeout(setupLive2D, 300); return; }
-    // Force show + fixed position
+  function forceLive2DPos(el) {
+    if (!el) return;
+    var sidebarW = window.innerWidth >= 768 ? 240 : 0;
+    var leftPx = sidebarW + 10;
     el.style.setProperty('display', 'block', 'important');
     el.style.setProperty('visibility', 'visible', 'important');
     el.style.setProperty('position', 'fixed', 'important');
     el.style.setProperty('z-index', '99999', 'important');
-    // Position: always bottom-left, responsive to viewport
-    function setPosition() {
-      var sidebarW = window.innerWidth >= 768 ? 240 : 0;
-      var leftPx = sidebarW + 10;
-      el.style.setProperty('inset', 'auto auto 45px ' + leftPx + 'px', 'important');
-      el.style.setProperty('left', leftPx + 'px', 'important');
-      el.style.setProperty('bottom', '45px', 'important');
-      el.style.setProperty('right', 'auto', 'important');
-      el.style.setProperty('top', 'auto', 'important');
+    el.style.setProperty('inset', 'auto auto 45px ' + leftPx + 'px', 'important');
+    el.style.setProperty('left', leftPx + 'px', 'important');
+    el.style.setProperty('bottom', '45px', 'important');
+    el.style.setProperty('right', 'auto', 'important');
+    el.style.setProperty('top', 'auto', 'important');
+    el.style.setProperty('width', 'auto', 'important');
+    el.style.setProperty('height', 'auto', 'important');
+  }
+
+  function setupLive2D() {
+    // Use MutationObserver to catch element whenever it appears or changes
+    var observer = new MutationObserver(function() {
+      var el = document.getElementById('waifu') || document.getElementById('live2dcanvas');
+      if (el) forceLive2DPos(el);
+    });
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
+
+    // Also set position on resize
+    window.addEventListener('resize', function() {
+      var el = document.getElementById('waifu') || document.getElementById('live2dcanvas');
+      if (el) forceLive2DPos(el);
+    });
+
+    // Initial attempt
+    var el = document.getElementById('waifu') || document.getElementById('live2dcanvas');
+    if (el) {
+      forceLive2DPos(el);
+      // Drag
+      var dragging = false, ox, oy, sx, sy;
+      el.style.cursor = 'grab';
+      el.addEventListener('mousedown', function(e) {
+        dragging = true; ox = e.clientX; oy = e.clientY;
+        var r = el.getBoundingClientRect(); sx = r.left; sy = r.top;
+        el.style.cursor = 'grabbing'; e.preventDefault();
+      });
+      document.addEventListener('mousemove', function(e) {
+        if (!dragging) return;
+        el.style.setProperty('inset', 'auto', 'important');
+        el.style.setProperty('left', (sx + e.clientX - ox) + 'px', 'important');
+        el.style.setProperty('top', (sy + e.clientY - oy) + 'px', 'important');
+        el.style.setProperty('right', 'auto', 'important');
+        el.style.setProperty('bottom', 'auto', 'important');
+      });
+      document.addEventListener('mouseup', function() { if (dragging) { dragging = false; el.style.cursor = 'grab'; } });
+      el.addEventListener('touchstart', function(e) {
+        var t = e.touches[0]; dragging = true; ox = t.clientX; oy = t.clientY;
+        var r = el.getBoundingClientRect(); sx = r.left; sy = r.top; e.preventDefault();
+      }, { passive: false });
+      document.addEventListener('touchmove', function(e) {
+        if (!dragging) return; var t = e.touches[0];
+        el.style.setProperty('inset', 'auto', 'important');
+        el.style.setProperty('left', (sx + t.clientX - ox) + 'px', 'important');
+        el.style.setProperty('top', (sy + t.clientY - oy) + 'px', 'important');
+        el.style.setProperty('right', 'auto', 'important');
+        el.style.setProperty('bottom', 'auto', 'important');
+      }, { passive: false });
+      document.addEventListener('touchend', function() { dragging = false; });
+    } else {
+      setTimeout(setupLive2D, 500);
     }
-    setPosition();
-    window.addEventListener('resize', setPosition);
-    // Drag
-    var dragging = false, ox, oy, sx, sy;
-    el.style.cursor = 'grab';
-    el.addEventListener('mousedown', function(e) {
-      dragging = true; ox = e.clientX; oy = e.clientY;
-      var r = el.getBoundingClientRect(); sx = r.left; sy = r.top;
-      el.style.cursor = 'grabbing'; e.preventDefault();
-    });
-    document.addEventListener('mousemove', function(e) {
-      if (!dragging) return;
-      el.style.setProperty('inset', 'auto', 'important');
-      el.style.setProperty('left', (sx + e.clientX - ox) + 'px', 'important');
-      el.style.setProperty('top', (sy + e.clientY - oy) + 'px', 'important');
-      el.style.setProperty('right', 'auto', 'important');
-      el.style.setProperty('bottom', 'auto', 'important');
-    });
-    document.addEventListener('mouseup', function() { if (dragging) { dragging = false; el.style.cursor = 'grab'; } });
-    el.addEventListener('touchstart', function(e) {
-      var t = e.touches[0]; dragging = true; ox = t.clientX; oy = t.clientY;
-      var r = el.getBoundingClientRect(); sx = r.left; sy = r.top; e.preventDefault();
-    }, { passive: false });
-    document.addEventListener('touchmove', function(e) {
-      if (!dragging) return; var t = e.touches[0];
-      el.style.setProperty('inset', 'auto', 'important');
-      el.style.setProperty('left', (sx + t.clientX - ox) + 'px', 'important');
-      el.style.setProperty('top', (sy + t.clientY - oy) + 'px', 'important');
-      el.style.setProperty('right', 'auto', 'important');
-      el.style.setProperty('bottom', 'auto', 'important');
-    }, { passive: false });
-    document.addEventListener('touchend', function() { dragging = false; });
   }
   function toggleLive2D() {
     var el = document.getElementById('waifu') || document.getElementById('live2dcanvas');
