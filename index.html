@@ -173,7 +173,8 @@
     .main {
       margin-left: var(--sidebar-w);
       padding: 32px 40px;
-      max-width: calc(var(--sidebar-w) + 720px);
+      width: calc(100vw - var(--sidebar-w));
+      max-width: calc(100vw - var(--sidebar-w));
     }
   }
 
@@ -286,6 +287,12 @@
   }
   @media (min-width: 480px) {
     .features { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (min-width: 1100px) {
+    .features { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (min-width: 1400px) {
+    .features { grid-template-columns: repeat(4, 1fr); }
   }
 
   .feature-card {
@@ -3026,70 +3033,7 @@
 <div class="toast" id="toast"></div>
 
 <!-- Live2D 看板娘 -->
-<script src="https://fastly.jsdelivr.net/gh/stevenjoezhang/live2d-widget@latest/dist/L2Dwidget.min.js"></script>
-<script>
-  L2Dwidget.init({
-    model: {
-      jsonPath: 'https://fastly.jsdelivr.net/gh/stevenjoezhang/live2d-widget@latest/assets/hijiki.model.json',
-      scale: 1
-    },
-    display: { position: 'left', width: 150, height: 200, hOffset: 20, vOffset: -20 },
-    mobile: { show: true, scale: 0.6 },
-    react: { opacityDefault: 0.85, opacityOnHover: 0.2, hover: false },
-    name: { border: false },
-    dialog: { enable: false },
-    dev: { border: false },
-    tagMode: false
-  });
-  // Enable drag on the Live2D canvas
-  (function() {
-    function enableDrag() {
-      var el = document.getElementById('live2dcanvas');
-      if (!el) { setTimeout(enableDrag, 500); return; }
-      var dragging = false, ox, oy, sx, sy;
-      el.style.cursor = 'grab';
-      el.addEventListener('mousedown', function(e) {
-        dragging = true;
-        ox = e.clientX; oy = e.clientY;
-        var r = el.getBoundingClientRect();
-        sx = r.left; sy = r.top;
-        el.style.cursor = 'grabbing';
-        e.preventDefault();
-      });
-      document.addEventListener('mousemove', function(e) {
-        if (!dragging) return;
-        el.style.position = 'fixed';
-        el.style.left = (sx + e.clientX - ox) + 'px';
-        el.style.top = (sy + e.clientY - oy) + 'px';
-        el.style.right = 'auto';
-        el.style.bottom = 'auto';
-      });
-      document.addEventListener('mouseup', function() {
-        if (dragging) { dragging = false; el.style.cursor = 'grab'; }
-      });
-      // Touch support
-      el.addEventListener('touchstart', function(e) {
-        var t = e.touches[0];
-        dragging = true;
-        ox = t.clientX; oy = t.clientY;
-        var r = el.getBoundingClientRect();
-        sx = r.left; sy = r.top;
-        e.preventDefault();
-      }, { passive: false });
-      document.addEventListener('touchmove', function(e) {
-        if (!dragging) return;
-        var t = e.touches[0];
-        el.style.position = 'fixed';
-        el.style.left = (sx + t.clientX - ox) + 'px';
-        el.style.top = (sy + t.clientY - oy) + 'px';
-        el.style.right = 'auto';
-        el.style.bottom = 'auto';
-      }, { passive: false });
-      document.addEventListener('touchend', function() { dragging = false; });
-    }
-    enableDrag();
-  })();
-</script>
+<script src="https://cdn.jsdelivr.net/npm/live2d-widgets@1.0.0/dist/autoload.js"></script>
 
 </body>
 </html>
