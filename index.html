@@ -1387,6 +1387,7 @@
   .page-section { display: none; }
   .page-section.active { display: block; }
   /* ═══ LIVE2D WIDGET ═══ */
+  #waifu,
   #live2dcanvas,
   #live2d-widget,
   .live2d-widget-container {
@@ -1394,9 +1395,8 @@
   }
   /* Desktop: push widget right of sidebar */
   @media (min-width: 768px) {
-    #live2dcanvas {
-      left: calc(var(--sidebar-w) + 10px) !important;
-    }
+    #waifu { left: 250px !important; }
+    #live2dcanvas { left: 250px !important; }
   }
 </style>
 
@@ -2004,8 +2004,9 @@
     window.scrollTo(0, 0);
 
     // Update dashboard stats from vocab state
-    if (page === 'dashboard') updateDashboardStats();
+    if (page === 'dashboard') { updateDashboardStats(); updateEvoBar(); }
     if (page === 'review') updateReviewCounts();
+    if (page === 'vocab') { renderVocabCard(); }
   }
 
   function updateDashboardStats() {
@@ -2775,7 +2776,7 @@
     const totalVocab = VOCAB.length || 1;
 
     // Each segment maxes at 100, then averaged
-    const vocabScore = Math.min(100, (knownCount / Math.max(totalVocab * 0.3, 1)) * 100);
+    const vocabScore = totalVocab > 0 ? Math.min(100, (knownCount / totalVocab) * 100) : 0;
     const writeScore = Math.min(100, (p.writing.submissions || 0) * 10); // 10 submissions = 100%
     const sentenceScore = Math.min(100, (p.sentence.views || 0) * 5); // 20 views = 100%
     const csScore = Math.min(100, (p.cs.views || 0) * 5);
@@ -3032,13 +3033,13 @@
 
 <!-- Live2D 看板娘 -->
 <script>
-  // Clear Live2D hide state so mascot always shows
-  try { localStorage.removeItem('live2d-widget-show'); } catch(e) {}
+  // Clear Live2D hide state — widget stores visibility as 'waifu-display'
+  try { localStorage.removeItem('waifu-display'); } catch(e) {}
 </script>
-<script src="https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget@latest/dist/autoload.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget@master/dist/autoload.js"></script>
 <script>
   function setupLive2D() {
-    var el = document.getElementById('live2dcanvas');
+    var el = document.getElementById('waifu') || document.getElementById('live2dcanvas');
     if (!el) { setTimeout(setupLive2D, 300); return; }
     // Force show
     el.style.setProperty('display', 'block', 'important');
