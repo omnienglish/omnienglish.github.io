@@ -1409,6 +1409,12 @@
         </a>
       </li>
       <li>
+        <a class="sidebar-link" data-page="review" onclick="switchPage('review')">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+          复习模式
+        </a>
+      </li>
+      <li>
         <a class="sidebar-link" data-page="notebook" onclick="switchPage('notebook')">
           <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
           生词本
@@ -1538,6 +1544,15 @@
           <h3>CS 术语潜伏区</h3>
           <p>在专业语境中自然习得计算机科学术语</p>
           <span class="feature-tag">CS 专属</span>
+        </div>
+
+        <div class="feature-card fc-vocab anim" style="--i: 9" onclick="switchPage('review')">
+          <div class="feature-icon">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+          </div>
+          <h3>复习模式</h3>
+          <p>选择题测试已学单词，巩固记忆</p>
+          <span class="feature-tag">巩固记忆</span>
         </div>
       </div>
 
@@ -1674,6 +1689,43 @@
       <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius);padding:40px;text-align:center;color:var(--text-muted);font-size:0.875rem;">即将上线</div>
     </div>
 
+    <!-- Review Mode -->
+    <div class="page-section" id="page-review">
+      <div class="page-header">
+        <h1 class="page-title">复习模式</h1>
+        <p class="page-sub">测试已学单词，巩固记忆</p>
+      </div>
+      <div id="review-start" style="text-align:center;padding:30px 0;">
+        <div style="font-size:0.875rem;color:var(--text-muted);margin-bottom:16px;">
+          已掌握 <strong id="review-known-count">0</strong> 词 · 待加强 <strong id="review-review-count">0</strong> 词
+        </div>
+        <button onclick="startReview('all')" class="vocab-action-btn btn-know" style="margin:4px;">全部已学</button>
+        <button onclick="startReview('known')" class="vocab-action-btn btn-know" style="margin:4px;background:var(--success);">已掌握</button>
+        <button onclick="startReview('review')" class="vocab-action-btn btn-review" style="margin:4px;">待加强</button>
+      </div>
+      <div id="review-quiz" style="display:none;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <span id="review-progress" style="font-size:0.75rem;color:var(--text-muted);font-family:JetBrains Mono,monospace;">1 / 10</span>
+          <span id="review-score" style="font-size:0.75rem;color:var(--text-muted);font-family:JetBrains Mono,monospace;">正确率 0%</span>
+        </div>
+        <div id="review-question" style="background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px 24px;text-align:center;margin-bottom:16px;">
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:8px;font-family:JetBrains Mono,monospace;">选择正确的单词</div>
+          <div id="review-def" style="font-size:1.125rem;font-weight:600;color:var(--text-primary);margin-bottom:8px;"></div>
+          <div id="review-hint" style="font-size:0.8rem;color:var(--text-muted);min-height:20px;"></div>
+        </div>
+        <div id="review-options" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;"></div>
+        <div id="review-feedback" style="text-align:center;min-height:40px;margin-bottom:12px;"></div>
+        <div style="text-align:center;">
+          <button id="review-next-btn" onclick="nextReviewQuestion()" class="vocab-action-btn btn-know" style="display:none;">下一题</button>
+        </div>
+      </div>
+      <div id="review-result" style="display:none;text-align:center;padding:30px 0;">
+        <div style="font-size:2rem;font-weight:700;color:var(--accent);margin-bottom:8px;" id="review-final-score"></div>
+        <div style="font-size:0.875rem;color:var(--text-muted);margin-bottom:20px;" id="review-final-detail"></div>
+        <button onclick="resetReview()" class="vocab-action-btn btn-know">再来一轮</button>
+      </div>
+    </div>
+
     <!-- Notebook -->
     <div class="page-section" id="page-notebook">
       <div class="page-header">
@@ -1737,6 +1789,10 @@
   <a class="bottom-nav-item" data-page="sentence" onclick="switchPage('sentence')">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
     长难句
+  </a>
+  <a class="bottom-nav-item" data-page="review" onclick="switchPage('review')">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+    复习
   </a>
   <a class="bottom-nav-item" data-page="notebook" onclick="switchPage('notebook')" style="position:relative;">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
@@ -1898,6 +1954,7 @@
 
     // Update dashboard stats from vocab state
     if (page === 'dashboard') updateDashboardStats();
+    if (page === 'review') updateReviewCounts();
   }
 
   function updateDashboardStats() {
@@ -2093,6 +2150,129 @@
     vocabState[w.word] = status;
     saveVocabState();
     renderVocabCard();
+  }
+
+  // ═══ REVIEW MODE ═══
+  let reviewQuestions = [];
+  let reviewIndex = 0;
+  let reviewCorrect = 0;
+  let reviewTotal = 10;
+
+  function updateReviewCounts() {
+    const knownCount = VOCAB.filter(w => vocabState[w.word] === 'known').length;
+    const reviewCount = VOCAB.filter(w => vocabState[w.word] === 'review').length;
+    const el1 = document.getElementById('review-known-count');
+    const el2 = document.getElementById('review-review-count');
+    if (el1) el1.textContent = knownCount;
+    if (el2) el2.textContent = reviewCount;
+  }
+
+  function startReview(mode) {
+    let pool = [];
+    if (mode === 'known') pool = VOCAB.filter(w => vocabState[w.word] === 'known');
+    else if (mode === 'review') pool = VOCAB.filter(w => vocabState[w.word] === 'review');
+    else pool = VOCAB.filter(w => vocabState[w.word]);
+
+    if (pool.length < 4) {
+      showToast('已学单词太少，至少需要 4 个');
+      return;
+    }
+
+    // Shuffle and pick up to 10 questions
+    const shuffled = pool.sort(() => Math.random() - 0.5);
+    reviewTotal = Math.min(10, shuffled.length);
+    reviewQuestions = shuffled.slice(0, reviewTotal).map(w => {
+      // Get 3 wrong options from pool (excluding correct answer)
+      const others = pool.filter(o => o.word !== w.word).sort(() => Math.random() - 0.5).slice(0, 3);
+      const options = [w, ...others].sort(() => Math.random() - 0.5);
+      return { word: w, options };
+    });
+    reviewIndex = 0;
+    reviewCorrect = 0;
+
+    document.getElementById('review-start').style.display = 'none';
+    document.getElementById('review-quiz').style.display = 'block';
+    document.getElementById('review-result').style.display = 'none';
+    showReviewQuestion();
+  }
+
+  function showReviewQuestion() {
+    const q = reviewQuestions[reviewIndex];
+    document.getElementById('review-progress').textContent = (reviewIndex + 1) + ' / ' + reviewTotal;
+    document.getElementById('review-score').textContent = '正确率 ' + (reviewIndex > 0 ? Math.round((reviewCorrect / reviewIndex) * 100) : 0) + '%';
+    document.getElementById('review-def').textContent = q.word.def;
+    document.getElementById('review-hint').textContent = q.word.phonetic || '';
+    document.getElementById('review-feedback').innerHTML = '';
+    document.getElementById('review-next-btn').style.display = 'none';
+
+    const optionsEl = document.getElementById('review-options');
+    optionsEl.innerHTML = q.options.map((o, i) => `
+      <button class="review-option-btn" onclick="checkReviewAnswer('${o.word.replace(/'/g, "\\'")}', '${q.word.word.replace(/'/g, "\\'")}')" style="
+        background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-sm);
+        padding:12px;font-size:0.9375rem;cursor:pointer;transition:all 0.2s;
+        font-family:DM Sans,sans-serif;color:var(--text-primary);
+      ">${o.word}</button>
+    `).join('');
+  }
+
+  function checkReviewAnswer(selected, correct) {
+    const isCorrect = selected === correct;
+    if (isCorrect) reviewCorrect++;
+
+    const buttons = document.querySelectorAll('#review-options .review-option-btn');
+    buttons.forEach(btn => {
+      btn.disabled = true;
+      btn.style.cursor = 'default';
+      if (btn.textContent === correct) {
+        btn.style.background = 'var(--success-soft)';
+        btn.style.borderColor = 'var(--success)';
+        btn.style.color = 'var(--success)';
+      } else if (btn.textContent === selected && !isCorrect) {
+        btn.style.background = 'var(--error-soft)';
+        btn.style.borderColor = 'oklch(0.55 0.18 25)';
+        btn.style.color = 'oklch(0.55 0.18 25)';
+      }
+    });
+
+    const feedbackEl = document.getElementById('review-feedback');
+    if (isCorrect) {
+      feedbackEl.innerHTML = '<div style="color:var(--success);font-weight:600;">正确!</div>';
+      speakWord(correct);
+    } else {
+      const w = VOCAB.find(v => v.word === correct);
+      feedbackEl.innerHTML = `
+        <div style="color:oklch(0.55 0.18 25);font-weight:600;margin-bottom:4px;">正确答案: ${correct}</div>
+        ${w && w.cet4 ? '<div style="font-size:0.8rem;color:var(--text-muted);">' + w.cet4 + '</div>' : ''}
+      `;
+      speakWord(correct);
+    }
+
+    document.getElementById('review-score').textContent = '正确率 ' + Math.round((reviewCorrect / (reviewIndex + 1)) * 100) + '%';
+    document.getElementById('review-next-btn').style.display = 'inline-block';
+  }
+
+  function nextReviewQuestion() {
+    reviewIndex++;
+    if (reviewIndex >= reviewTotal) {
+      showReviewResult();
+    } else {
+      showReviewQuestion();
+    }
+  }
+
+  function showReviewResult() {
+    document.getElementById('review-quiz').style.display = 'none';
+    document.getElementById('review-result').style.display = 'block';
+    const pct = Math.round((reviewCorrect / reviewTotal) * 100);
+    document.getElementById('review-final-score').textContent = pct + '%';
+    document.getElementById('review-final-detail').textContent = reviewTotal + ' 题答对 ' + reviewCorrect + ' 题';
+  }
+
+  function resetReview() {
+    document.getElementById('review-start').style.display = 'block';
+    document.getElementById('review-quiz').style.display = 'none';
+    document.getElementById('review-result').style.display = 'none';
+    updateReviewCounts();
   }
 
   // ═══ WRITING / TRANSLATION MOCK EXAM ═══
@@ -2735,6 +2915,7 @@
       loadVocabState();
       renderVocabCard();
       updateDashboardStats();
+      updateReviewCounts();
 
       // 4. Writing - load first question
       randomQuestion();
