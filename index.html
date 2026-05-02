@@ -1927,7 +1927,6 @@
 
   // State
   let vocabState = {};
-  let vocabFilter = 'all';
   let vocabPriority = 'core';
   let vocabIndex = 0;
 
@@ -1946,55 +1945,30 @@
   }
 
   function getFilteredVocab() {
-    let list = VOCAB;
-    // Priority filter
-    if (vocabPriority === 'core') list = list.filter(w => w.priority === 1);
-    else if (vocabPriority === 'cet4') list = list.filter(w => w.priority === 2);
-    else if (vocabPriority === 'xindongfang') list = list.filter(w => w.priority === 3);
-    // Status filter
-    if (vocabFilter === 'known') list = list.filter(w => vocabState[w.word] === 'known');
-    else if (vocabFilter === 'review') list = list.filter(w => vocabState[w.word] === 'review');
-    else if (vocabFilter === 'unmarked') list = list.filter(w => !vocabState[w.word]);
-    return list;
+    if (vocabPriority === 'core') return VOCAB.filter(w => w.priority === 1);
+    if (vocabPriority === 'cet4') return VOCAB.filter(w => w.priority === 2);
+    if (vocabPriority === 'xindongfang') return VOCAB.filter(w => w.priority === 3);
+    return VOCAB;
   }
 
   function renderVocabFilters() {
     const coreCount = VOCAB.filter(w => w.priority === 1).length;
     const cet4Count = VOCAB.filter(w => w.priority === 2).length;
     const xdfCount = VOCAB.filter(w => w.priority === 3).length;
-    const knownCount = VOCAB.filter(w => vocabState[w.word] === 'known').length;
-    const reviewCount = VOCAB.filter(w => vocabState[w.word] === 'review').length;
-    const unmarked = VOCAB.length - knownCount - reviewCount;
 
     document.getElementById('vocab-filters').innerHTML = `
-      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;">
-        <button class="vocab-filter-btn ${vocabPriority === 'core' ? 'active' : ''}" onclick="setVocabPriority('core')" style="font-size:0.7rem;padding:3px 8px;">
-          核心词<span class="filter-count">${coreCount}</span>
-        </button>
-        <button class="vocab-filter-btn ${vocabPriority === 'cet4' ? 'active' : ''}" onclick="setVocabPriority('cet4')" style="font-size:0.7rem;padding:3px 8px;">
-          四级词汇<span class="filter-count">${cet4Count}</span>
-        </button>
-        <button class="vocab-filter-btn ${vocabPriority === 'xindongfang' ? 'active' : ''}" onclick="setVocabPriority('xindongfang')" style="font-size:0.7rem;padding:3px 8px;">
-          新东方<span class="filter-count">${xdfCount}</span>
-        </button>
-        <button class="vocab-filter-btn ${vocabPriority === 'all' ? 'active' : ''}" onclick="setVocabPriority('all')" style="font-size:0.7rem;padding:3px 8px;">
-          全部来源<span class="filter-count">${VOCAB.length}</span>
-        </button>
-      </div>
-      <div style="display:flex;gap:4px;flex-wrap:wrap;">
-        <button class="vocab-filter-btn ${vocabFilter === 'all' ? 'active' : ''}" onclick="setVocabFilter('all')">
-          全部<span class="filter-count">${getFilteredVocab().length}</span>
-        </button>
-        <button class="vocab-filter-btn ${vocabFilter === 'unmarked' ? 'active' : ''}" onclick="setVocabFilter('unmarked')">
-          未标记<span class="filter-count">${getFilteredVocab().filter(w=>!vocabState[w.word]).length}</span>
-        </button>
-        <button class="vocab-filter-btn ${vocabFilter === 'known' ? 'active' : ''}" onclick="setVocabFilter('known')">
-          已掌握<span class="filter-count">${getFilteredVocab().filter(w=>vocabState[w.word]==='known').length}</span>
-        </button>
-        <button class="vocab-filter-btn ${vocabFilter === 'review' ? 'active' : ''}" onclick="setVocabFilter('review')">
-          待加强<span class="filter-count">${getFilteredVocab().filter(w=>vocabState[w.word]==='review').length}</span>
-        </button>
-      </div>
+      <button class="vocab-filter-btn ${vocabPriority === 'core' ? 'active' : ''}" onclick="setVocabPriority('core')">
+        核心词<span class="filter-count">${coreCount}</span>
+      </button>
+      <button class="vocab-filter-btn ${vocabPriority === 'cet4' ? 'active' : ''}" onclick="setVocabPriority('cet4')">
+        四级词汇<span class="filter-count">${cet4Count}</span>
+      </button>
+      <button class="vocab-filter-btn ${vocabPriority === 'xindongfang' ? 'active' : ''}" onclick="setVocabPriority('xindongfang')">
+        新东方<span class="filter-count">${xdfCount}</span>
+      </button>
+      <button class="vocab-filter-btn ${vocabPriority === 'all' ? 'active' : ''}" onclick="setVocabPriority('all')">
+        全部<span class="filter-count">${VOCAB.length}</span>
+      </button>
     `;
   }
 
@@ -2094,12 +2068,6 @@
     const pct = filtered.length > 0 ? Math.round((knownCount / filtered.length) * 100) : 0;
     document.getElementById('vocab-progress-fill').style.width = pct + '%';
     document.getElementById('vocab-progress-text').textContent = knownCount + ' / ' + filtered.length + ' mastered';
-  }
-
-  function setVocabFilter(f) {
-    vocabFilter = f;
-    vocabIndex = 0;
-    renderVocabCard();
   }
 
   function setVocabPriority(p) {
