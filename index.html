@@ -1393,10 +1393,40 @@
   .live2d-widget-container {
     z-index: 99999 !important;
   }
-  /* Desktop: push widget right of sidebar */
+  /* Semi-transparent when idle, full on hover */
+  #waifu {
+    opacity: 0.35;
+    transition: opacity 0.3s ease;
+    transform: scale(0.75);
+    transform-origin: bottom left;
+  }
+  #waifu:hover {
+    opacity: 1;
+  }
+  /* Toggle button */
+  #live2d-toggle-btn {
+    position: fixed;
+    bottom: 12px;
+    left: 12px;
+    z-index: 100000;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    font-size: 14px;
+    box-shadow: var(--shadow-sm);
+    transition: background 0.15s;
+  }
+  #live2d-toggle-btn:hover {
+    background: var(--bg-muted);
+  }
   @media (min-width: 768px) {
-    #waifu { left: 250px !important; }
-    #live2dcanvas { left: 250px !important; }
+    #live2d-toggle-btn { left: 254px; }
   }
 </style>
 
@@ -1411,9 +1441,9 @@
 
   <!-- ═══ SIDEBAR ═══ -->
   <aside class="sidebar">
-    <a href="#" class="sidebar-logo">
+    <a href="#" class="sidebar-logo" onclick="switchPage('dashboard');return false;">
       <span class="sidebar-logo-mark">O</span>
-      <span class="sidebar-logo-text">OmniEnglish</span>
+      <span class="sidebar-logo-text">OmniEnglish <span style="font-size:0.625rem;font-weight:400;color:var(--text-muted);margin-left:4px;">v1.0</span></span>
     </a>
     <ul class="sidebar-nav">
       <li>
@@ -1468,7 +1498,6 @@
         </a>
       </li>
     </ul>
-    <div class="sidebar-footer">v1.0 · CET-4 冲刺</div>
   </aside>
 
   <!-- ═══ MAIN ═══ -->
@@ -3031,6 +3060,9 @@
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
+<!-- Live2D toggle button -->
+<button id="live2d-toggle-btn" onclick="toggleLive2D()" title="隐藏/显示看板娘">🐱</button>
+
 <!-- Live2D 看板娘 -->
 <script>
   // Clear Live2D hide state — widget stores visibility as 'waifu-display'
@@ -3044,7 +3076,6 @@
     // Force show
     el.style.setProperty('display', 'block', 'important');
     el.style.setProperty('visibility', 'visible', 'important');
-    el.style.setProperty('opacity', '1', 'important');
     // Reposition: move right of sidebar on desktop
     if (window.innerWidth >= 768) {
       el.style.setProperty('left', '250px', 'important');
@@ -3078,6 +3109,18 @@
       el.style.setProperty('bottom', 'auto', 'important');
     }, { passive: false });
     document.addEventListener('touchend', function() { dragging = false; });
+  }
+  function toggleLive2D() {
+    var el = document.getElementById('waifu') || document.getElementById('live2dcanvas');
+    var btn = document.getElementById('live2d-toggle-btn');
+    if (!el) return;
+    if (el.style.display === 'none') {
+      el.style.setProperty('display', 'block', 'important');
+      btn.textContent = '🐱';
+    } else {
+      el.style.setProperty('display', 'none', 'important');
+      btn.textContent = '🐺';
+    }
   }
   setTimeout(setupLive2D, 800);
 </script>
