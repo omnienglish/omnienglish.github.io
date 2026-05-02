@@ -3065,74 +3065,46 @@
 </script>
 <script src="https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget@master/dist/autoload.js"></script>
 <script>
-  function forceLive2DPos(el) {
-    if (!el) return;
-    var sidebarW = window.innerWidth >= 768 ? 240 : 0;
-    var leftPx = sidebarW + 10;
-    el.style.setProperty('display', 'block', 'important');
-    el.style.setProperty('visibility', 'visible', 'important');
-    el.style.setProperty('position', 'fixed', 'important');
-    el.style.setProperty('z-index', '99999', 'important');
-    el.style.setProperty('inset', 'auto auto 45px ' + leftPx + 'px', 'important');
-    el.style.setProperty('left', leftPx + 'px', 'important');
-    el.style.setProperty('bottom', '45px', 'important');
-    el.style.setProperty('right', 'auto', 'important');
-    el.style.setProperty('top', 'auto', 'important');
-    el.style.setProperty('width', 'auto', 'important');
-    el.style.setProperty('height', 'auto', 'important');
-  }
-
   function setupLive2D() {
-    // Use MutationObserver to catch element whenever it appears or changes
-    var observer = new MutationObserver(function() {
-      var el = document.getElementById('waifu') || document.getElementById('live2dcanvas');
-      if (el) forceLive2DPos(el);
-    });
-    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
-
-    // Also set position on resize
-    window.addEventListener('resize', function() {
-      var el = document.getElementById('waifu') || document.getElementById('live2dcanvas');
-      if (el) forceLive2DPos(el);
-    });
-
-    // Initial attempt
     var el = document.getElementById('waifu') || document.getElementById('live2dcanvas');
-    if (el) {
-      forceLive2DPos(el);
-      // Drag
-      var dragging = false, ox, oy, sx, sy;
-      el.style.cursor = 'grab';
-      el.addEventListener('mousedown', function(e) {
-        dragging = true; ox = e.clientX; oy = e.clientY;
-        var r = el.getBoundingClientRect(); sx = r.left; sy = r.top;
-        el.style.cursor = 'grabbing'; e.preventDefault();
-      });
-      document.addEventListener('mousemove', function(e) {
-        if (!dragging) return;
-        el.style.setProperty('inset', 'auto', 'important');
-        el.style.setProperty('left', (sx + e.clientX - ox) + 'px', 'important');
-        el.style.setProperty('top', (sy + e.clientY - oy) + 'px', 'important');
-        el.style.setProperty('right', 'auto', 'important');
-        el.style.setProperty('bottom', 'auto', 'important');
-      });
-      document.addEventListener('mouseup', function() { if (dragging) { dragging = false; el.style.cursor = 'grab'; } });
-      el.addEventListener('touchstart', function(e) {
-        var t = e.touches[0]; dragging = true; ox = t.clientX; oy = t.clientY;
-        var r = el.getBoundingClientRect(); sx = r.left; sy = r.top; e.preventDefault();
-      }, { passive: false });
-      document.addEventListener('touchmove', function(e) {
-        if (!dragging) return; var t = e.touches[0];
-        el.style.setProperty('inset', 'auto', 'important');
-        el.style.setProperty('left', (sx + t.clientX - ox) + 'px', 'important');
-        el.style.setProperty('top', (sy + t.clientY - oy) + 'px', 'important');
-        el.style.setProperty('right', 'auto', 'important');
-        el.style.setProperty('bottom', 'auto', 'important');
-      }, { passive: false });
-      document.addEventListener('touchend', function() { dragging = false; });
-    } else {
-      setTimeout(setupLive2D, 500);
+    if (!el) { setTimeout(setupLive2D, 500); return; }
+    var isDragging = false;
+
+    function applyPos() {
+      if (isDragging) return;
+      var sidebarW = window.innerWidth >= 768 ? 240 : 0;
+      var leftPx = sidebarW + 10;
+      el.style.cssText = 'display:block!important;visibility:visible!important;position:fixed!important;z-index:99999!important;left:' + leftPx + 'px!important;bottom:45px!important;right:auto!important;top:auto!important;cursor:grab;';
     }
+
+    // Apply position a few times to override widget init
+    applyPos();
+    setTimeout(applyPos, 500);
+    setTimeout(applyPos, 1500);
+    setTimeout(applyPos, 3000);
+    window.addEventListener('resize', applyPos);
+
+    // Drag
+    var ox, oy, sx, sy;
+    el.addEventListener('mousedown', function(e) {
+      isDragging = true; ox = e.clientX; oy = e.clientY;
+      var r = el.getBoundingClientRect(); sx = r.left; sy = r.top;
+      el.style.cursor = 'grabbing'; e.preventDefault();
+    });
+    document.addEventListener('mousemove', function(e) {
+      if (!isDragging) return;
+      el.style.cssText = 'display:block!important;visibility:visible!important;position:fixed!important;z-index:99999!important;left:' + (sx + e.clientX - ox) + 'px!important;top:' + (sy + e.clientY - oy) + 'px!important;right:auto!important;bottom:auto!important;cursor:grabbing;';
+    });
+    document.addEventListener('mouseup', function() { if (isDragging) { isDragging = false; el.style.cursor = 'grab'; } });
+    el.addEventListener('touchstart', function(e) {
+      var t = e.touches[0]; isDragging = true; ox = t.clientX; oy = t.clientY;
+      var r = el.getBoundingClientRect(); sx = r.left; sy = r.top; e.preventDefault();
+    }, { passive: false });
+    document.addEventListener('touchmove', function(e) {
+      if (!isDragging) return; var t = e.touches[0];
+      el.style.cssText = 'display:block!important;visibility:visible!important;position:fixed!important;z-index:99999!important;left:' + (sx + t.clientX - ox) + 'px!important;top:' + (sy + t.clientY - oy) + 'px!important;right:auto!important;bottom:auto!important;';
+    }, { passive: false });
+    document.addEventListener('touchend', function() { isDragging = false; });
   }
   function toggleLive2D() {
     var el = document.getElementById('waifu') || document.getElementById('live2dcanvas');
