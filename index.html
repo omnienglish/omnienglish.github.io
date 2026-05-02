@@ -3031,13 +3031,49 @@
 
 <!-- Live2D 看板娘 -->
 <script>
-  // Clear Live2D hide state — widget stores visibility as 'waifu-display'
   try { localStorage.removeItem('waifu-display'); } catch(e) {}
-  // Enable drag before widget loads
-  window.live2d_settings = window.live2d_settings || {};
-  window.live2d_settings.drag = true;
 </script>
 <script src="https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget@master/dist/autoload.js"></script>
+<script>
+  // Simple drag for #waifu (widget has drag:false hardcoded)
+  (function initDrag() {
+    var el = document.getElementById('waifu');
+    if (!el) { setTimeout(initDrag, 500); return; }
+    var dragging = false, startX, startY, origLeft, origTop;
+    el.addEventListener('mousedown', function(e) {
+      dragging = true;
+      startX = e.clientX; startY = e.clientY;
+      var rect = el.getBoundingClientRect();
+      origLeft = rect.left; origTop = rect.top;
+      e.preventDefault();
+    });
+    document.addEventListener('mousemove', function(e) {
+      if (!dragging) return;
+      el.style.left = (origLeft + e.clientX - startX) + 'px';
+      el.style.top = (origTop + e.clientY - startY) + 'px';
+      el.style.right = 'auto';
+      el.style.bottom = 'auto';
+    });
+    document.addEventListener('mouseup', function() { dragging = false; });
+    // Touch
+    el.addEventListener('touchstart', function(e) {
+      var t = e.touches[0]; dragging = true;
+      startX = t.clientX; startY = t.clientY;
+      var rect = el.getBoundingClientRect();
+      origLeft = rect.left; origTop = rect.top;
+      e.preventDefault();
+    }, {passive: false});
+    document.addEventListener('touchmove', function(e) {
+      if (!dragging) return;
+      var t = e.touches[0];
+      el.style.left = (origLeft + t.clientX - startX) + 'px';
+      el.style.top = (origTop + t.clientY - startY) + 'px';
+      el.style.right = 'auto';
+      el.style.bottom = 'auto';
+    }, {passive: false});
+    document.addEventListener('touchend', function() { dragging = false; });
+  })();
+</script>
 
 </body>
 </html>
