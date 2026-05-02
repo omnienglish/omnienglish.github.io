@@ -1387,27 +1387,12 @@
   .page-section { display: none; }
   .page-section.active { display: block; }
   /* ═══ LIVE2D WIDGET ═══ */
-  #waifu,
-  #live2dcanvas,
-  #live2d-widget,
-  .live2d-widget-container {
-    z-index: 99999 !important;
-  }
-  #waifu {
-    position: fixed !important;
-    left: 10px !important;
-    bottom: 0 !important;
-    right: auto !important;
-    top: auto !important;
-    width: auto !important;
-    opacity: 1 !important;
-    transition: none !important;
+  /* Let widget handle its own positioning — only override left */
+  body #waifu {
+    left: 10px;
   }
   @media (min-width: 768px) {
-    #waifu { left: 250px !important; }
-  }
-  #live2d-toggle-btn:hover {
-    background: var(--bg-muted);
+    body #waifu { left: 250px; }
   }
   @media (min-width: 768px) {
     #live2d-toggle-btn { left: 254px; }
@@ -3050,85 +3035,6 @@
   try { localStorage.removeItem('waifu-display'); } catch(e) {}
 </script>
 <script src="https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget@master/dist/autoload.js"></script>
-<script>
-  function setupLive2D() {
-    var el = document.getElementById('waifu') || document.getElementById('live2dcanvas');
-    if (!el) { setTimeout(setupLive2D, 500); return; }
-    var isDragging = false, skipObs = false, ox, oy, sx, sy;
-
-    function getLeft() {
-      return (window.innerWidth >= 768 ? 250 : 10) + 'px';
-    }
-
-    function forcePos() {
-      if (isDragging) return;
-      skipObs = true;
-      el.style.setProperty('position', 'fixed', 'important');
-      el.style.setProperty('left', getLeft(), 'important');
-      el.style.setProperty('bottom', '0', 'important');
-      el.style.setProperty('top', 'auto', 'important');
-      el.style.setProperty('right', 'auto', 'important');
-      el.style.setProperty('inset', 'auto auto 0 ' + getLeft(), 'important');
-      el.style.setProperty('opacity', '1', 'important');
-      el.style.setProperty('display', 'block', 'important');
-      el.style.setProperty('visibility', 'visible', 'important');
-      el.style.setProperty('z-index', '99999', 'important');
-      el.style.setProperty('transition', 'none', 'important');
-      el.style.setProperty('transform', 'none', 'important');
-      el.style.cursor = 'grab';
-      skipObs = false;
-    }
-
-    // Force position a few times to override widget init
-    forcePos();
-    setTimeout(forcePos, 500);
-    setTimeout(forcePos, 1500);
-    setTimeout(forcePos, 3000);
-    window.addEventListener('resize', forcePos);
-
-    // MutationObserver: re-apply only if widget changed styles (not us)
-    var observer = new MutationObserver(function() {
-      if (!skipObs && !isDragging) forcePos();
-    });
-    observer.observe(el, { attributes: true, attributeFilter: ['style'] });
-
-    // Drag
-    el.addEventListener('mousedown', function(e) {
-      isDragging = true; ox = e.clientX; oy = e.clientY;
-      var r = el.getBoundingClientRect(); sx = r.left; sy = r.top;
-      el.style.cursor = 'grabbing'; e.preventDefault();
-    });
-    document.addEventListener('mousemove', function(e) {
-      if (!isDragging) return;
-      skipObs = true;
-      el.style.setProperty('position', 'fixed', 'important');
-      el.style.setProperty('left', (sx + e.clientX - ox) + 'px', 'important');
-      el.style.setProperty('top', (sy + e.clientY - oy) + 'px', 'important');
-      el.style.setProperty('bottom', 'auto', 'important');
-      el.style.setProperty('right', 'auto', 'important');
-      el.style.setProperty('inset', 'auto', 'important');
-      el.style.cursor = 'grabbing';
-      skipObs = false;
-    });
-    document.addEventListener('mouseup', function() { if (isDragging) { isDragging = false; forcePos(); } });
-    el.addEventListener('touchstart', function(e) {
-      var t = e.touches[0]; isDragging = true; ox = t.clientX; oy = t.clientY;
-      var r = el.getBoundingClientRect(); sx = r.left; sy = r.top; e.preventDefault();
-    }, { passive: false });
-    document.addEventListener('touchmove', function(e) {
-      if (!isDragging) return; var t = e.touches[0];
-      skipObs = true;
-      el.style.setProperty('position', 'fixed', 'important');
-      el.style.setProperty('left', (sx + t.clientX - ox) + 'px', 'important');
-      el.style.setProperty('top', (sy + t.clientY - oy) + 'px', 'important');
-      el.style.setProperty('bottom', 'auto', 'important');
-      el.style.setProperty('right', 'auto', 'important');
-      el.style.setProperty('inset', 'auto', 'important');
-      skipObs = false;
-    }, { passive: false });
-    document.addEventListener('touchend', function() { isDragging = false; forcePos(); });
-  }
-  setTimeout(setupLive2D, 800);
 </script>
 
 </body>
