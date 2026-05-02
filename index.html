@@ -3071,14 +3071,19 @@
     // Force show
     el.style.setProperty('display', 'block', 'important');
     el.style.setProperty('visibility', 'visible', 'important');
-    // Position: bottom-left area
-    var leftPos = window.innerWidth >= 768 ? '250px' : '10px';
-    el.style.setProperty('inset', 'auto auto 45px ' + leftPos, 'important');
-    el.style.setProperty('left', leftPos, 'important');
-    el.style.setProperty('bottom', '45px', 'important');
-    el.style.setProperty('right', 'auto', 'important');
-    el.style.setProperty('top', 'auto', 'important');
     el.style.setProperty('z-index', '99999', 'important');
+    // Position: always bottom-left, responsive to viewport
+    function setPosition() {
+      var sidebarW = window.innerWidth >= 768 ? 240 : 0;
+      var leftPx = sidebarW + 10;
+      el.style.setProperty('inset', 'auto auto 45px ' + leftPx + 'px', 'important');
+      el.style.setProperty('left', leftPx + 'px', 'important');
+      el.style.setProperty('bottom', '45px', 'important');
+      el.style.setProperty('right', 'auto', 'important');
+      el.style.setProperty('top', 'auto', 'important');
+    }
+    setPosition();
+    window.addEventListener('resize', setPosition);
     // Drag
     var dragging = false, ox, oy, sx, sy;
     el.style.cursor = 'grab';
@@ -3089,6 +3094,7 @@
     });
     document.addEventListener('mousemove', function(e) {
       if (!dragging) return;
+      el.style.setProperty('inset', 'auto', 'important');
       el.style.setProperty('left', (sx + e.clientX - ox) + 'px', 'important');
       el.style.setProperty('top', (sy + e.clientY - oy) + 'px', 'important');
       el.style.setProperty('right', 'auto', 'important');
@@ -3101,6 +3107,7 @@
     }, { passive: false });
     document.addEventListener('touchmove', function(e) {
       if (!dragging) return; var t = e.touches[0];
+      el.style.setProperty('inset', 'auto', 'important');
       el.style.setProperty('left', (sx + t.clientX - ox) + 'px', 'important');
       el.style.setProperty('top', (sy + t.clientY - oy) + 'px', 'important');
       el.style.setProperty('right', 'auto', 'important');
