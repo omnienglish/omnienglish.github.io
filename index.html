@@ -2939,15 +2939,19 @@
       alert('图片不能超过 2MB');
       return;
     }
+    // Get actual card face dimensions before opening crop
+    const face = document.querySelector('.flip-front');
+    const cardW = face ? face.offsetWidth : 700;
+    const cardH = face ? face.offsetHeight : 320;
     const reader = new FileReader();
     reader.onload = function(ev) {
-      showCropModal(ev.target.result);
+      showCropModal(ev.target.result, cardW, cardH);
     };
     reader.readAsDataURL(file);
     e.target.value = '';
   }
 
-  function showCropModal(dataUrl) {
+  function showCropModal(dataUrl, cardW, cardH) {
     // Remove existing
     const old = document.getElementById('crop-overlay');
     if (old) old.remove();
@@ -2995,8 +2999,8 @@
       const imgW = img.offsetWidth;
       const imgH = img.offsetHeight;
 
-      // Default crop: 80% of image, centered, 2:1 landscape (matches card shape)
-      const aspect = 2 / 1;
+      // Default crop: matches card aspect ratio
+      const aspect = cardW / cardH;
       let cropW = imgW * 0.85;
       let cropH = cropW / aspect;
       if (cropH > imgH * 0.85) {
@@ -3081,15 +3085,14 @@
         const scaleY = img.naturalHeight / imgH;
 
         const canvas = document.createElement('canvas');
-        // Output at card size (2:1 landscape)
-        canvas.width = 700;
-        canvas.height = 350;
+        canvas.width = cardW;
+        canvas.height = cardH;
         const ctx = canvas.getContext('2d');
 
         ctx.drawImage(img,
           box.x * scaleX, box.y * scaleY,
           box.w * scaleX, box.h * scaleY,
-          0, 0, 450, 600
+          0, 0, cardW, cardH
         );
 
         const cropped = canvas.toDataURL('image/jpeg', 0.85);
