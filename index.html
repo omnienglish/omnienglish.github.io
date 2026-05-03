@@ -2387,6 +2387,7 @@
   function setVocabPriority(p) {
     vocabPriority = p;
     vocabIndex = 0;
+    Store.set('daily-priority', p);
     // Sync the select dropdown in setup panel
     const sel = document.getElementById('vocab-priority-select');
     if (sel) sel.value = p;
@@ -3287,6 +3288,13 @@
       // 3. Load vocab data from external JSON, then init vocab UI
       await loadVocab();
       loadVocabState();
+      // Auto-migrate old queue format (pre-refactor data was just an array of strings)
+      try {
+        const raw = JSON.parse(localStorage.getItem('omni-daily-queue') || 'null');
+        if (raw && (!raw.date || !raw.words)) {
+          localStorage.removeItem('omni-daily-queue');
+        }
+      } catch { localStorage.removeItem('omni-daily-queue'); }
       WordScheduler.restore('omni-daily-queue', VOCAB);
       renderVocabCard();
       updateDashboardStats();
