@@ -2935,10 +2935,6 @@
   function handleBgUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      alert('图片不能超过 2MB');
-      return;
-    }
     // Get actual card face dimensions before opening crop
     const face = document.querySelector('.flip-front');
     const cardW = face ? face.offsetWidth : 700;
