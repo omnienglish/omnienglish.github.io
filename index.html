@@ -1427,9 +1427,7 @@
   }
 </style>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js" onerror="console.warn('[Firebase] SDK load failed: firebase-app')"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js" onerror="console.warn('[Firebase] SDK load failed: firebase-auth')"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js" onerror="console.warn('[Firebase] SDK load failed: firebase-firestore')"></script>
+<script src="https://cdn.jsdelivr.net/npm/leancloud-storage/dist/av-min.js" onerror="console.warn('[LeanCloud] SDK load failed')"></script>
 
 </head>
 <body>
@@ -1892,7 +1890,7 @@
           <div id="firebase-status-dot" style="width:8px;height:8px;border-radius:50%;background:var(--text-muted);"></div>
           <span id="firebase-status-text" style="font-size:0.8125rem;color:var(--text-secondary);">正在连接...</span>
         </div>
-        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:8px;">数据自动同步到 Firebase Firestore。匿名登录，无需注册。</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:8px;">数据自动同步到 LeanCloud 云存储。无需注册，打开即用。</div>
       </div>
 
       <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;">
@@ -1937,11 +1935,14 @@
 </nav>
 
 <script>
-  // ═══ FIREBASE ═══
-  const APP_ID = 'omnienglish-aab81';
-  let db = null, auth = null, currentUser = null, firebaseReady = false;
+  // ═══ LEANCLOUD ═══
+  // TODO: 去 leancloud.cn 注册应用，填入你的 App ID / App Key / Server URL
+  const LC_APP_ID = 'YOUR_APP_ID';
+  const LC_APP_KEY = 'YOUR_APP_KEY';
+  const LC_SERVER_URL = 'https://your-app.leancloud.cn'; // 控制台 → 设置 → 应用凭证 → 服务器地址
+  let cloudUser = null, cloudReady = false;
 
-  function updateFirebaseStatus(connected) {
+  function updateCloudStatus(connected) {
     const dot = document.getElementById('firebase-status-dot');
     const text = document.getElementById('firebase-status-text');
     if (!dot || !text) return;
@@ -1950,82 +1951,105 @@
     text.style.color = connected ? 'var(--success)' : 'var(--text-muted)';
   }
 
-  function initFirebase() {
-    if (typeof firebase === 'undefined') {
-      console.warn('[Firebase] SDK not loaded');
-      updateFirebaseStatus(false);
+  function getDeviceId() {
+    let id = localStorage.getItem('oe-device-id');
+    if (!id) {
+      id = 'dev_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+      localStorage.setItem('oe-device-id', id);
+    }
+    return id;
+  }
+
+  function initLeanCloud() {
+    if (typeof AV === 'undefined') {
+      console.warn('[LeanCloud] SDK not loaded');
+      updateCloudStatus(false);
+      return;
+    }
+    if (LC_APP_ID === 'YOUR_APP_ID') {
+      console.warn('[LeanCloud] 请填写 App ID / App Key');
+      updateCloudStatus(false);
       return;
     }
     try {
-      const firebaseConfig = {
-        apiKey: "AIzaSyB8vZ_cRgE3Eo2Nr3LzvJpkrJroY98JA1M",
-        authDomain: "omnienglish-aab81.firebaseapp.com",
-        projectId: "omnienglish-aab81",
-        storageBucket: "omnienglish-aab81.firebasestorage.app",
-        messagingSenderId: "102935493831",
-        appId: "1:102935493831:web:041762e204848edec1d2e2",
-        measurementId: "G-WVFV555HKC"
-      };
-      firebase.initializeApp(firebaseConfig);
-      db = firebase.firestore();
-      auth = firebase.auth();
-
-      auth.signInAnonymously()
-        .then(cred => {
-          currentUser = cred.user;
-          firebaseReady = true;
-          updateFirebaseStatus(true);
-          console.log('[Firebase] Anonymous auth OK, uid:', cred.user.uid);
-          loadFromFirestore();
-        })
-        .catch(err => {
-          console.warn('[Firebase] Auth failed:', err.code, err.message);
-          updateFirebaseStatus(false);
-          if (err.code === 'auth/admin-restricted-operation') {
-            console.warn('[Firebase] → Enable Anonymous Auth in Firebase Console → Authentication → Sign-in method');
-          }
-        });
+      AV.init({ appId: LC_APP_ID, appKey: LC_APP_KEY, serverURL: LC_SERVER_URL });
     } catch (err) {
-      console.warn('[Firebase] Init failed:', err.message);
-      updateFirebaseStatus(false);
+      console.warn('[LeanCloud] Init failed:', err.message);
+      updateCloudStatus(false);
+      return;
     }
+    const deviceId = getDeviceId();
+    const user = new AV.User();
+    user.setUsername(deviceId);
+    user.setPassword(deviceId);
+    user.signUp().then(u => {
+      cloudUser = u;
+      cloudReady = true;
+      updateCloudStatus(true);
+      console.log('[LeanCloud] Auth OK, uid:', u.id);
+      loadFromCloud();
+    }).catch(err => {
+      if (err.code === 202) {
+        // Username taken — login instead
+        AV.User.logIn(deviceId, deviceId).then(u => {
+          cloudUser = u;
+          cloudReady = true;
+          updateCloudStatus(true);
+          console.log('[LeanCloud] Login OK, uid:', u.id);
+          loadFromCloud();
+        }).catch(e2 => {
+          console.warn('[LeanCloud] Login failed:', e2.message);
+          updateCloudStatus(false);
+        });
+      } else {
+        console.warn('[LeanCloud] Auth failed:', err.code, err.message);
+        updateCloudStatus(false);
+      }
+    });
   }
 
-  function getUserDoc() {
-    if (!db || !currentUser) return null;
-    return db.collection('artifacts').doc(APP_ID).collection('users').doc(currentUser.uid);
-  }
-
-  async function loadFromFirestore() {
-    const doc = getUserDoc();
-    if (!doc) return;
+  async function loadFromCloud() {
+    if (!cloudReady || !cloudUser) return;
     try {
-      const snap = await doc.get();
-      if (snap.exists) {
-        const data = snap.data();
-        if (data.notebook) Store.set('notebook', data.notebook);
-        if (data.progress) Store.set('progress', data.progress);
-        if (data.vocabState) {
-          localStorage.setItem('omni-vocab-state', JSON.stringify(data.vocabState));
-          Object.assign(vocabState, data.vocabState);
+      const query = new AV.Query('UserConfig');
+      query.equalTo('uid', cloudUser.id);
+      const obj = await query.first();
+      if (obj) {
+        const nb = obj.get('notebook');
+        const prog = obj.get('progress');
+        const vs = obj.get('vocabState');
+        if (nb) Store.set('notebook', nb);
+        if (prog) Store.set('progress', prog);
+        if (vs) {
+          localStorage.setItem('omni-vocab-state', JSON.stringify(vs));
+          Object.assign(vocabState, vs);
           renderVocabCard();
         }
         updateEvoBar();
         updateNotebookBadge();
-        console.log('[Firebase] Data loaded from cloud');
+        console.log('[LeanCloud] Data loaded from cloud');
       }
     } catch (err) {
-      console.warn('[Firebase] Load failed:', err.message);
+      console.warn('[LeanCloud] Load failed:', err.message);
     }
   }
 
-  async function saveToFirestore(key, data) {
-    const doc = getUserDoc();
-    if (!doc) return;
+  async function saveToCloud(key, data) {
+    if (!cloudReady || !cloudUser) return;
     try {
-      await doc.set({ [key]: data, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+      const query = new AV.Query('UserConfig');
+      query.equalTo('uid', cloudUser.id);
+      let obj = await query.first();
+      if (!obj) {
+        const ConfigObj = AV.Object.extend('UserConfig');
+        obj = new ConfigObj();
+        obj.set('uid', cloudUser.id);
+      }
+      obj.set(key, data);
+      obj.set('updatedAt', new Date());
+      await obj.save();
     } catch (err) {
-      console.warn('[Firebase] Save failed:', err.message);
+      console.warn('[LeanCloud] Save failed:', err.message);
     }
   }
 
@@ -2036,8 +2060,8 @@
     },
     set(key, val) {
       localStorage.setItem('oe-' + key, JSON.stringify(val));
-      if (firebaseReady && currentUser) {
-        saveToFirestore(key, val);
+      if (cloudReady && cloudUser) {
+        saveToCloud(key, val);
       }
     }
   };
@@ -2213,8 +2237,8 @@
 
   function saveVocabState() {
     localStorage.setItem('omni-vocab-state', JSON.stringify(vocabState));
-    if (firebaseReady && currentUser) {
-      saveToFirestore('vocabState', vocabState);
+    if (cloudReady && cloudUser) {
+      saveToCloud('vocabState', vocabState);
     }
   }
 
@@ -3093,7 +3117,7 @@
     document.getElementById('api-status-settings').classList.toggle('connected', key.startsWith('sk-'));
   }
 
-  // ═══ DATA STORE (localStorage + Firestore sync) ═══
+  // ═══ DATA STORE (localStorage + LeanCloud sync) ═══
 
 
   // ═══ PROGRESS TRACKING ═══
@@ -3455,8 +3479,8 @@
       updateEvoBar();
       updateNotebookBadge();
 
-      // 6. Firebase (async, non-blocking)
-      initFirebase();
+      // 6. LeanCloud (async, non-blocking)
+      initLeanCloud();
     } catch (err) {
       console.error('Init error:', err);
     }
