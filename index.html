@@ -1628,6 +1628,12 @@
 
       <div class="vocab-filters" id="vocab-filters"></div>
 
+      <div id="vocab-queue-bar" style="display:none;margin-bottom:12px;text-align:center;">
+        <button onclick="startDailyQueue()" style="padding:8px 20px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;">
+          开始今日复习 (40词)
+        </button>
+      </div>
+
       <div class="flip-scene">
         <div class="flip-card" id="flip-card" onclick="if(!event.target.closest('.clickable-word,.flip-front-word,.flip-front-phonetic'))this.classList.toggle('flipped')">
           <div class="flip-face flip-front" id="flip-front"></div>
@@ -1646,11 +1652,15 @@
       </div>
 
       <div class="vocab-actions">
-        <button class="vocab-action-btn btn-review" onclick="vocabMark('review')">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
-          待加强
+        <button class="vocab-action-btn btn-review" onclick="vocabMark('forgot')" style="flex:1">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          忘记了
         </button>
-        <button class="vocab-action-btn btn-know" onclick="vocabMark('known')">
+        <button class="vocab-action-btn btn-review" onclick="vocabMark('vague')" style="flex:1">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+          模糊
+        </button>
+        <button class="vocab-action-btn btn-know" onclick="vocabMark('known')" style="flex:1">
           <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           已掌握
         </button>
@@ -2028,6 +2038,58 @@
   let vocabPriority = 'core';
   let vocabIndex = 0;
 
+  // ═══ DAILY QUEUE (spaced repetition with dynamic re-insertion) ═══
+  const DAILY_QUEUE_SIZE = 40;
+  let dailyQueue = [];      // array of word strings
+  let dailyQueuePos = 0;    // current position in queue
+  let dailyQueueDate = '';  // date string for the queue
+
+  function getTodayStr() { return new Date().toISOString().slice(0, 10); }
+
+  function loadDailyQueue() {
+    try {
+      const data = JSON.parse(localStorage.getItem('omni-daily-queue') || '{}');
+      if (data.date === getTodayStr()) {
+        dailyQueue = data.queue || [];
+        dailyQueuePos = data.pos || 0;
+        dailyQueueDate = data.date;
+      } else {
+        dailyQueue = [];
+        dailyQueuePos = 0;
+        dailyQueueDate = '';
+      }
+    } catch { dailyQueue = []; dailyQueuePos = 0; dailyQueueDate = ''; }
+  }
+
+  function saveDailyQueue() {
+    localStorage.setItem('omni-daily-queue', JSON.stringify({
+      date: dailyQueueDate, queue: dailyQueue, pos: dailyQueuePos
+    }));
+  }
+
+  function initDailyQueue() {
+    const today = getTodayStr();
+    const filtered = getFilteredVocab();
+    // Pick words not yet mastered
+    const candidates = filtered.filter(w => vocabState[w.word] !== 'known');
+    // Shuffle and take up to DAILY_QUEUE_SIZE
+    const shuffled = candidates.slice().sort(() => Math.random() - 0.5);
+    dailyQueue = shuffled.slice(0, DAILY_QUEUE_SIZE).map(w => w.word);
+    dailyQueuePos = 0;
+    dailyQueueDate = today;
+    saveDailyQueue();
+  }
+
+  function getQueueWord() {
+    if (dailyQueuePos >= dailyQueue.length) return null;
+    return dailyQueue[dailyQueuePos];
+  }
+
+  function startDailyQueue() {
+    initDailyQueue();
+    renderVocabCard();
+  }
+
   function loadVocabState() {
     try {
       const saved = localStorage.getItem('omni-vocab-state');
@@ -2078,24 +2140,54 @@
     const navInfo = document.getElementById('vocab-nav-info');
     const prevBtn = document.getElementById('btn-prev');
     const nextBtn = document.getElementById('btn-next');
+    const queueBar = document.getElementById('vocab-queue-bar');
 
     card.classList.remove('flipped');
 
-    if (filtered.length === 0) {
-      front.innerHTML = VOCAB.length === 0
-        ? `<div class="vocab-done-msg"><strong>词库加载中…</strong>正在获取词汇数据</div>`
-        : `<div class="vocab-done-msg"><strong>没有单词</strong>该分类下暂无单词</div>`;
-      back.innerHTML = '';
-      navInfo.textContent = '0 / 0';
-      prevBtn.disabled = true;
-      nextBtn.disabled = true;
-      return;
+    // Show/hide queue bar
+    const hasQueue = dailyQueue.length > 0 && dailyQueueDate === getTodayStr();
+    queueBar.style.display = hasQueue ? 'none' : 'block';
+
+    // Queue mode: show queue word if available
+    let w = null;
+    let inQueue = false;
+    if (dailyQueue.length > 0 && dailyQueuePos < dailyQueue.length) {
+      const queueWord = dailyQueue[dailyQueuePos];
+      w = VOCAB.find(v => v.word === queueWord);
+      if (w) inQueue = true;
     }
 
-    if (vocabIndex >= filtered.length) vocabIndex = filtered.length - 1;
-    if (vocabIndex < 0) vocabIndex = 0;
-
-    const w = filtered[vocabIndex];
+    if (!w) {
+      // Queue finished?
+      if (dailyQueue.length > 0 && dailyQueuePos >= dailyQueue.length) {
+        const mastered = dailyQueue.filter(word => vocabState[word] === 'known').length;
+        front.innerHTML = `
+          <div class="vocab-done-msg">
+            <strong>今日复习完成!</strong><br>
+            <span style="font-size:0.85rem;color:var(--text-secondary);">本轮 ${dailyQueue.length} 词中掌握 ${mastered} 词</span><br><br>
+            <button onclick="startDailyQueue()" style="padding:8px 20px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;">再来一轮</button>
+          </div>`;
+        back.innerHTML = '';
+        navInfo.textContent = '完成';
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
+        return;
+      }
+      // Fallback to browse mode
+      if (filtered.length === 0) {
+        front.innerHTML = VOCAB.length === 0
+          ? `<div class="vocab-done-msg"><strong>词库加载中…</strong>正在获取词汇数据</div>`
+          : `<div class="vocab-done-msg"><strong>没有单词</strong>该分类下暂无单词</div>`;
+        back.innerHTML = '';
+        navInfo.textContent = '0 / 0';
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
+        return;
+      }
+      if (vocabIndex >= filtered.length) vocabIndex = filtered.length - 1;
+      if (vocabIndex < 0) vocabIndex = 0;
+      w = filtered[vocabIndex];
+    }
     const status = vocabState[w.word];
     const statusBadge = status === 'known'
       ? '<span style="font-size:0.625rem;padding:2px 6px;border-radius:4px;background:var(--success-soft);color:var(--success);font-family:JetBrains Mono,monospace;">已掌握</span>'
@@ -2149,9 +2241,15 @@
       </div>` : ''}
     `;
 
-    navInfo.textContent = (vocabIndex + 1) + ' / ' + filtered.length;
-    prevBtn.disabled = vocabIndex === 0;
-    nextBtn.disabled = vocabIndex >= filtered.length - 1;
+    if (inQueue) {
+      navInfo.textContent = (dailyQueuePos + 1) + ' / ' + dailyQueue.length + ' 今日复习';
+      prevBtn.disabled = true;
+      nextBtn.disabled = true;
+    } else {
+      navInfo.textContent = (vocabIndex + 1) + ' / ' + filtered.length;
+      prevBtn.disabled = vocabIndex === 0;
+      nextBtn.disabled = vocabIndex >= filtered.length - 1;
+    }
 
     renderVocabFilters();
     renderVocabProgress();
@@ -2187,12 +2285,43 @@
   }
 
   function vocabMark(status) {
-    const filtered = getFilteredVocab();
-    if (filtered.length === 0) return;
-    const w = filtered[vocabIndex];
-    vocabState[w.word] = status;
-    saveVocabState();
-    renderVocabCard();
+    if (dailyQueue.length > 0 && dailyQueuePos < dailyQueue.length) {
+      // Queue mode: dynamic re-insertion
+      const word = dailyQueue[dailyQueuePos];
+      const currentWord = word; // save before removing
+
+      // Remove current word from queue
+      dailyQueue.splice(dailyQueuePos, 1);
+      // Don't advance pos — the next word slides into current position
+
+      if (status === 'known') {
+        // Permanently mastered — don't re-insert
+        vocabState[currentWord] = 'known';
+      } else if (status === 'forgot') {
+        // Re-insert nearby (short step: +2)
+        const insertPos = Math.min(dailyQueuePos + 2, dailyQueue.length);
+        dailyQueue.splice(insertPos, 0, currentWord);
+        vocabState[currentWord] = 'review';
+      } else if (status === 'vague') {
+        // Re-insert further away (longer step: +5)
+        const insertPos = Math.min(dailyQueuePos + 5, dailyQueue.length);
+        dailyQueue.splice(insertPos, 0, currentWord);
+        vocabState[currentWord] = 'review';
+      }
+
+      saveVocabState();
+      saveDailyQueue();
+      renderVocabCard();
+    } else {
+      // Browse mode: just mark and advance
+      const filtered = getFilteredVocab();
+      if (filtered.length === 0) return;
+      const w = filtered[vocabIndex];
+      vocabState[w.word] = status === 'known' ? 'known' : 'review';
+      saveVocabState();
+      if (vocabIndex < filtered.length - 1) vocabIndex++;
+      renderVocabCard();
+    }
   }
 
   // ═══ REVIEW MODE (spaced repetition) ═══
@@ -2982,6 +3111,7 @@
       // 3. Load vocab data from external JSON, then init vocab UI
       await loadVocab();
       loadVocabState();
+      loadDailyQueue();
       renderVocabCard();
       updateDashboardStats();
       updateReviewCounts();
