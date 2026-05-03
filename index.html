@@ -748,17 +748,23 @@
   }
   .crop-container {
     position: relative;
-    max-width: 90vw;
-    max-height: 70vh;
-    overflow: hidden;
+    width: 90vw;
+    max-width: 900px;
+    height: 70vh;
+    overflow: auto;
     border-radius: 8px;
+    cursor: grab;
   }
+  .crop-container.grabbing { cursor: grabbing; }
+  .crop-container::-webkit-scrollbar { width: 6px; height: 6px; }
+  .crop-container::-webkit-scrollbar-thumb { background: oklch(1 0 0 / 0.3); border-radius: 3px; }
+  .crop-container::-webkit-scrollbar-track { background: transparent; }
   .crop-container img {
     display: block;
-    max-width: 90vw;
-    max-height: 70vh;
+    transform-origin: 0 0;
     user-select: none;
     -webkit-user-drag: none;
+    pointer-events: none;
   }
   .crop-box {
     position: absolute;
@@ -810,6 +816,27 @@
     border: 1px solid oklch(1 0 0 / 0.25) !important;
   }
   .crop-cancel:hover { background: oklch(1 0 0 / 0.25); }
+  .crop-zoom-hint {
+    color: oklch(1 0 0 / 0.5);
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .crop-zoom-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: oklch(0 0 0 / 0.6);
+    color: #fff;
+    font-size: 0.6875rem;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 3px 8px;
+    border-radius: 4px;
+    pointer-events: none;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .crop-zoom-badge.show { opacity: 1; }
 
   /* ═══ NOTEBOOK ═══ */
   .notebook-empty {
@@ -2973,6 +3000,9 @@
       cropBox.appendChild(h);
     });
 
+    const zoomBadge = document.createElement('div');
+    zoomBadge.className = 'crop-zoom-badge';
+
     const actions = document.createElement('div');
     actions.className = 'crop-actions';
     const cancelBtn = document.createElement('button');
@@ -2982,32 +3012,54 @@
     const confirmBtn = document.createElement('button');
     confirmBtn.className = 'crop-confirm';
     confirmBtn.textContent = '确认裁剪';
+    const zoomHint = document.createElement('span');
+    zoomHint.className = 'crop-zoom-hint';
+    zoomHint.textContent = '滚轮缩放 · 拖动平移';
     actions.appendChild(cancelBtn);
     actions.appendChild(confirmBtn);
+    actions.appendChild(zoomHint);
 
     container.appendChild(img);
     container.appendChild(cropBox);
+    container.appendChild(zoomBadge);
     overlay.appendChild(container);
     overlay.appendChild(actions);
     document.body.appendChild(overlay);
 
     img.onload = function() {
-      const imgW = img.offsetWidth;
-      const imgH = img.offsetHeight;
+      const baseW = img.naturalWidth;
+      const baseH = img.naturalHeight;
+      let zoom = 1;
+
+      // Fit image to container initially
+      const contW = container.clientWidth - 2; // scrollbar
+      const contH = container.clientHeight - 2;
+      const fitScale = Math.min(contW / baseW, contH / baseH, 1);
+      zoom = fitScale;
+      img.style.width = baseW + 'px';
+      img.style.height = baseH + 'px';
+      img.style.transform = 'scale(' + zoom + ')';
 
       // Default crop: matches card aspect ratio
       const aspect = cardW / cardH;
-      let cropW = imgW * 0.85;
-      let cropH = cropW / aspect;
-      if (cropH > imgH * 0.85) {
-        cropH = imgH * 0.85;
-        cropW = cropH * aspect;
+      let box = {};
+      function initCropBox() {
+        const dispW = baseW * zoom;
+        const dispH = baseH * zoom;
+        let cw = dispW * 0.85;
+        let ch = cw / aspect;
+        if (ch > dispH * 0.85) { ch = dispH * 0.85; cw = ch * aspect; }
+        box = { x: (dispW - cw) / 2, y: (dispH - ch) / 2, w: cw, h: ch };
       }
-      const cropX = (imgW - cropW) / 2;
-      const cropY = (imgH - cropH) / 2;
-
-      let box = { x: cropX, y: cropY, w: cropW, h: cropH };
+      initCropBox();
       renderCropBox();
+
+      // Center scroll on crop box
+      function centerOnBox() {
+        container.scrollLeft = box.x + box.w / 2 - container.clientWidth / 2;
+        container.scrollTop = box.y + box.h / 2 - container.clientHeight / 2;
+      }
+      centerOnBox();
 
       function renderCropBox() {
         cropBox.style.left = box.x + 'px';
@@ -3016,12 +3068,69 @@
         cropBox.style.height = box.h + 'px';
       }
 
-      // Drag to move
-      let dragMode = null; // 'move' or handle pos
+      function showZoomBadge() {
+        zoomBadge.textContent = Math.round(zoom * 100) + '%';
+        zoomBadge.classList.add('show');
+        clearTimeout(zoomBadge._t);
+        zoomBadge._t = setTimeout(() => zoomBadge.classList.remove('show'), 800);
+      }
+
+      // Mouse wheel zoom
+      container.addEventListener('wheel', function(e) {
+        e.preventDefault();
+        const rect = container.getBoundingClientRect();
+        const mx = e.clientX - rect.left + container.scrollLeft;
+        const my = e.clientY - rect.top + container.scrollTop;
+        const ix = mx / zoom, iy = my / zoom;
+
+        const delta = e.deltaY > 0 ? 0.9 : 1.1;
+        const newZoom = Math.max(fitScale * 0.5, Math.min(5, zoom * delta));
+        zoom = newZoom;
+
+        img.style.transform = 'scale(' + zoom + ')';
+        container.scrollLeft = ix * zoom - (e.clientX - rect.left);
+        container.scrollTop = iy * zoom - (e.clientY - rect.top);
+
+        // Reposition crop box to stay pointing at same image area
+        const cix = (box.x + box.w / 2) / (zoom / delta);
+        const ciy = (box.y + box.h / 2) / (zoom / delta);
+        box.w = Math.min(baseW * zoom, box.w * (zoom / (zoom / delta)));
+        box.h = box.w / aspect;
+        box.x = cix - box.w / 2;
+        box.y = ciy - box.h / 2;
+        box.x = Math.max(0, Math.min(baseW * zoom - box.w, box.x));
+        box.y = Math.max(0, Math.min(baseH * zoom - box.h, box.y));
+        renderCropBox();
+        showZoomBadge();
+      }, { passive: false });
+
+      // Pan drag on container background
+      let panning = false, panSX, panSY, scrollSX, scrollSY;
+      container.addEventListener('pointerdown', function(e) {
+        if (e.target.closest('.crop-box')) return;
+        panning = true;
+        panSX = e.clientX; panSY = e.clientY;
+        scrollSX = container.scrollLeft; scrollSY = container.scrollTop;
+        container.classList.add('grabbing');
+        container.setPointerCapture(e.pointerId);
+      });
+      container.addEventListener('pointermove', function(e) {
+        if (!panning) return;
+        container.scrollLeft = scrollSX - (e.clientX - panSX);
+        container.scrollTop = scrollSY - (e.clientY - panSY);
+      });
+      container.addEventListener('pointerup', function() {
+        panning = false;
+        container.classList.remove('grabbing');
+      });
+
+      // Drag to move/resize crop box
+      let dragMode = null;
       let startX, startY, startBox;
 
       function onPointerDown(e) {
         e.preventDefault();
+        e.stopPropagation();
         const handle = e.target.closest('.crop-handle');
         dragMode = handle ? handle.dataset.pos : 'move';
         startX = e.clientX;
@@ -3034,33 +3143,31 @@
       function onPointerMove(e) {
         const dx = e.clientX - startX;
         const dy = e.clientY - startY;
+        const dispW = baseW * zoom;
+        const dispH = baseH * zoom;
 
         if (dragMode === 'move') {
-          box.x = Math.max(0, Math.min(imgW - startBox.w, startBox.x + dx));
-          box.y = Math.max(0, Math.min(imgH - startBox.h, startBox.y + dy));
+          box.x = Math.max(0, Math.min(dispW - startBox.w, startBox.x + dx));
+          box.y = Math.max(0, Math.min(dispH - startBox.h, startBox.y + dy));
         } else {
           let nx = startBox.x, ny = startBox.y, nw = startBox.w, nh = startBox.h;
-          // Use horizontal drag as primary, lock aspect ratio
           if (dragMode.includes('l')) {
             nx = Math.max(0, Math.min(startBox.x + startBox.w - 60, startBox.x + dx));
             nw = startBox.w - (nx - startBox.x);
           } else if (dragMode.includes('r')) {
-            nw = Math.max(60, Math.min(imgW - startBox.x, startBox.w + dx));
+            nw = Math.max(60, Math.min(dispW - startBox.x, startBox.w + dx));
           }
           nh = nw / aspect;
-          // For top corners, adjust y to keep bottom edge fixed
           if (dragMode.includes('t')) {
             ny = startBox.y + startBox.h - nh;
             if (ny < 0) { ny = 0; nh = startBox.y + startBox.h; nw = nh * aspect; }
           }
-          // For bottom corners, just update height
           if (dragMode.includes('b')) {
-            nh = Math.max(30, Math.min(imgH - startBox.y, nh));
+            nh = Math.max(30, Math.min(dispH - startBox.y, nh));
             nw = nh * aspect;
           }
-          // Clamp to image bounds
-          if (nx + nw > imgW) { nw = imgW - nx; nh = nw / aspect; }
-          if (ny + nh > imgH) { nh = imgH - ny; nw = nh * aspect; }
+          if (nx + nw > dispW) { nw = dispW - nx; nh = nw / aspect; }
+          if (ny + nh > dispH) { nh = dispH - ny; nw = nh * aspect; }
           box = { x: nx, y: ny, w: nw, h: nh };
         }
         renderCropBox();
@@ -3074,23 +3181,19 @@
 
       cropBox.addEventListener('pointerdown', onPointerDown);
 
-      // Confirm crop
+      // Confirm crop — convert viewport coords to original image coords
       confirmBtn.onclick = function() {
-        // Scale from display size to natural size
-        const scaleX = img.naturalWidth / imgW;
-        const scaleY = img.naturalHeight / imgH;
-
+        const sx = img.naturalWidth / (baseW * zoom);
+        const sy = img.naturalHeight / (baseH * zoom);
         const canvas = document.createElement('canvas');
         canvas.width = cardW;
         canvas.height = cardH;
         const ctx = canvas.getContext('2d');
-
         ctx.drawImage(img,
-          box.x * scaleX, box.y * scaleY,
-          box.w * scaleX, box.h * scaleY,
+          box.x * sx, box.y * sy,
+          box.w * sx, box.h * sy,
           0, 0, cardW, cardH
         );
-
         const cropped = canvas.toDataURL('image/jpeg', 0.85);
         overlay.remove();
         setCardBg({ id: 'custom', name: '自定义', img: cropped });
