@@ -2299,7 +2299,7 @@
         <div class="flip-cs-zh">${w.cszh || ''}</div>
       </div>` : ''}`;
 
-    return { front, back: wrapClickableWords(back) };
+    return { front, back };
   }
 
   function renderVocabCard() {
@@ -3217,8 +3217,7 @@
 
       const span = document.createElement('span');
       span.innerHTML = text.replace(/\b([a-zA-Z]{3,})\b/g, (match) => {
-        const inNB = isInNotebook(match.toLowerCase());
-        return `<span class="clickable-word${inNB ? ' added' : ''}" data-word="${match.toLowerCase()}" onclick="toggleNotebookWord(this, '${match.toLowerCase()}', '${source}')">${match}</span>`;
+        return `<span class="clickable-word" onclick="event.stopPropagation();showWordPopup('${match.toLowerCase()}', this)">${match}</span>`;
       });
       if (span.innerHTML !== text) {
         node.parentNode.replaceChild(span, node);
@@ -3236,6 +3235,25 @@
       const context = vocabItem ? vocabItem.cet4 : '';
       addToNotebook(word, def, context, source);
       el.classList.add('added');
+    }
+  }
+
+  function toggleNotebookFromPopup(word, btn) {
+    const vocabItem = VOCAB.find(w => w.word.toLowerCase() === word);
+    if (isInNotebook(word)) {
+      removeFromNotebook(word);
+      btn.style.borderColor = 'var(--border)';
+      btn.style.color = 'var(--accent)';
+      btn.querySelector('svg').setAttribute('fill', 'none');
+      btn.lastChild.textContent = ' 加入生词本';
+    } else {
+      const def = vocabItem ? vocabItem.def : '';
+      const context = vocabItem ? vocabItem.cet4 : '';
+      addToNotebook(word, def, context, 'vocab');
+      btn.style.borderColor = 'var(--success)';
+      btn.style.color = 'var(--success)';
+      btn.querySelector('svg').setAttribute('fill', 'currentColor');
+      btn.lastChild.textContent = ' 已收藏';
     }
   }
 
@@ -3274,7 +3292,9 @@
   // ═══ WORD POPUP (clickable words in example sentences) ═══
   function closeWordPopup() {
     const overlay = document.getElementById('word-popup-overlay');
+    const popup = document.querySelector('.word-popup');
     if (overlay) overlay.remove();
+    if (popup) popup.remove();
   }
 
   function showWordPopup(word, anchorEl) {
@@ -3302,6 +3322,7 @@
       exampleHTML += `<div class="wp-section">CS CONTEXT</div><div class="wp-example">${w.cs}</div><div class="wp-example-zh">${w.cszh || ''}</div>`;
     }
 
+    const inNB = isInNotebook(w.word.toLowerCase());
     popup.innerHTML = `
       <button class="wp-close" onclick="closeWordPopup()" title="关闭">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -3310,10 +3331,16 @@
       <div class="wp-phonetic">${w.phonetic || ''}</div>
       <div class="wp-def">${w.def || ''}</div>
       ${exampleHTML}
-      <button class="wp-speak" onclick="speakWord('${esc(w.word)}')">
-        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"/></svg>
-        朗读
-      </button>`;
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <button class="wp-speak" onclick="speakWord('${esc(w.word)}')">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"/></svg>
+          朗读
+        </button>
+        <button class="wp-speak" onclick="toggleNotebookFromPopup('${esc(w.word.toLowerCase())}', this)" style="border-color:${inNB ? 'var(--success)' : 'var(--border)'};color:${inNB ? 'var(--success)' : 'var(--accent)'};">
+          <svg width="13" height="13" fill="${inNB ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+          ${inNB ? '已收藏' : '加入生词本'}
+        </button>
+      </div>`;
 
     document.body.appendChild(overlay);
     document.body.appendChild(popup);
