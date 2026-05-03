@@ -1777,6 +1777,42 @@
         <div style="font-size:0.875rem;color:var(--text-muted);margin-bottom:20px;" id="review-final-detail"></div>
         <button onclick="resetReview()" class="vocab-action-btn btn-know">返回</button>
       </div>
+
+      <!-- Card Review: uses WordScheduler + renderVocabCardUI -->
+      <div style="border-top:1px solid var(--border);padding-top:20px;margin-top:20px;">
+        <div style="font-weight:600;font-size:0.95rem;margin-bottom:12px;">卡片复习</div>
+        <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:12px;">翻卡片 + 三按钮反馈，与高频词汇墙同样的复习体验</div>
+        <div id="review-card-setup">
+          <button onclick="startCardReview()" style="padding:10px 28px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent);color:#fff;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;">
+            开始卡片复习
+          </button>
+        </div>
+        <div id="review-card-area" style="display:none;">
+          <div class="flip-scene">
+            <div class="flip-card" id="review-flip-card" onclick="if(!event.target.closest('.clickable-word,.flip-front-word,.flip-front-phonetic'))this.classList.toggle('flipped')">
+              <div class="flip-face flip-front" id="review-flip-front"></div>
+              <div class="flip-face flip-back" id="review-flip-back"></div>
+            </div>
+          </div>
+          <div class="vocab-nav">
+            <span class="vocab-nav-info" id="review-card-nav">1 / 1</span>
+          </div>
+          <div class="vocab-actions">
+            <button class="vocab-action-btn btn-review" onclick="reviewCardMark('forgot')" style="flex:1">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+              忘记了
+            </button>
+            <button class="vocab-action-btn btn-review" onclick="reviewCardMark('vague')" style="flex:1">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+              模糊
+            </button>
+            <button class="vocab-action-btn btn-know" onclick="reviewCardMark('known')" style="flex:1">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              已掌握
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Notebook -->
@@ -2007,7 +2043,7 @@
 
     // Update dashboard stats from vocab state
     if (page === 'dashboard') { updateDashboardStats(); updateEvoBar(); }
-    if (page === 'review') updateReviewCounts();
+    if (page === 'review') { updateReviewCounts(); ReviewScheduler.restore('omni-review-queue', VOCAB); renderReviewCard(); }
     if (page === 'vocab') { renderVocabCard(); }
   }
 
@@ -2100,6 +2136,9 @@
       } catch { return false; }
     }
   };
+
+  // Second scheduler instance for review mode
+  const ReviewScheduler = Object.create(WordScheduler);
 
   // ═══ VOCABULARY WALL ═══
   let VOCAB = [];
@@ -2510,6 +2549,83 @@
     document.getElementById('review-quiz').style.display = 'none';
     document.getElementById('review-result').style.display = 'none';
     updateReviewCounts();
+  }
+
+  // ═══ CARD REVIEW MODE (uses ReviewScheduler + renderVocabCardUI) ═══
+  function startCardReview() {
+    // Gather words marked as 'review' (not yet mastered)
+    const reviewWords = VOCAB.filter(w => vocabState[w.word] === 'review');
+    if (reviewWords.length === 0) {
+      alert('没有待复习的单词！先在高频词汇墙标记一些"模糊"或"忘记了"的词。');
+      return;
+    }
+    ReviewScheduler.init(reviewWords);
+    ReviewScheduler.persist('omni-review-queue');
+    renderReviewCard();
+  }
+
+  function renderReviewCard() {
+    const setupEl = document.getElementById('review-card-setup');
+    const areaEl = document.getElementById('review-card-area');
+    const front = document.getElementById('review-flip-front');
+    const back = document.getElementById('review-flip-back');
+    const navInfo = document.getElementById('review-card-nav');
+    const card = document.getElementById('review-flip-card');
+
+    const w = ReviewScheduler.current();
+
+    if (!w) {
+      if (ReviewScheduler._originalCount > 0 && ReviewScheduler.isFinished()) {
+        setupEl.style.display = 'none';
+        areaEl.style.display = 'block';
+        card.classList.remove('flipped');
+        front.innerHTML = `
+          <div class="vocab-done-msg">
+            <strong>卡片复习完成!</strong><br>
+            <span style="font-size:0.85rem;color:var(--text-secondary);">共复习 ${ReviewScheduler._originalCount} 词</span><br><br>
+            <button onclick="startCardReview()" style="padding:8px 20px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;">再来一轮</button>
+          </div>`;
+        back.innerHTML = '';
+        navInfo.textContent = '完成';
+      } else {
+        setupEl.style.display = 'block';
+        areaEl.style.display = 'none';
+      }
+      return;
+    }
+
+    setupEl.style.display = 'none';
+    areaEl.style.display = 'block';
+    card.classList.remove('flipped');
+
+    const { front: fHTML, back: bHTML } = renderVocabCardUI(w);
+    front.innerHTML = fHTML;
+    back.innerHTML = bHTML;
+
+    const prog = ReviewScheduler.progress();
+    navInfo.textContent = prog.current + ' / ' + (prog.total + prog.done);
+
+    if (document.getElementById('page-review').classList.contains('active')) {
+      setTimeout(() => speakWord(w.word), 30);
+    }
+  }
+
+  function reviewCardMark(status) {
+    const w = ReviewScheduler.current();
+    if (!w) return;
+
+    if (status === 'known') {
+      ReviewScheduler.known();
+      vocabState[w.word] = 'known';
+    } else if (status === 'forgot') {
+      ReviewScheduler.forgot();
+    } else if (status === 'vague') {
+      ReviewScheduler.vague();
+    }
+
+    saveVocabState();
+    ReviewScheduler.persist('omni-review-queue');
+    renderReviewCard();
   }
 
   // ═══ WRITING / TRANSLATION MOCK EXAM ═══
