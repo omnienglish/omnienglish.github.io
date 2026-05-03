@@ -2902,7 +2902,7 @@
     if (!front || !back) return;
 
     if (cfg.img) {
-      const style = `url(${cfg.img}) center/cover no-repeat`;
+      const style = `url(${cfg.img}) center/100% 100% no-repeat`;
       front.style.background = style;
       back.style.background = style;
       front.style.color = cfg.text || null;
