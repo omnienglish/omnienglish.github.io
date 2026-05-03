@@ -2126,7 +2126,7 @@
               <div class="bg-presets" id="bg-presets"></div>
               <div class="bg-picker-title">背景透明度</div>
               <div class="bg-opacity-row">
-                <input type="range" id="bg-opacity-slider" min="0.1" max="1" step="0.05" value="0.35" class="bg-opacity-slider" oninput="setCardBgOpacity(this.value)">
+                <input type="range" id="bg-opacity-slider" min="0.1" max="1" step="0.05" value="0.35" class="bg-opacity-slider" oninput="setCardBgOpacity(this.value)" onclick="event.stopPropagation()" onpointerdown="event.stopPropagation()">
                 <span id="bg-opacity-val" class="bg-opacity-val">35%</span>
               </div>
               <div class="bg-picker-title">自定义图片</div>
@@ -2984,13 +2984,17 @@
     renderBgPresets();
   }
 
+  let _opacityTimer = null;
   function setCardBgOpacity(val) {
-    const cfg = getCardBg();
-    cfg.opacity = parseFloat(val);
-    localStorage.setItem('oe-card-bg', JSON.stringify(cfg));
     const valEl = document.getElementById('bg-opacity-val');
     if (valEl) valEl.textContent = Math.round(val * 100) + '%';
-    applyCardBg();
+    clearTimeout(_opacityTimer);
+    _opacityTimer = setTimeout(() => {
+      const cfg = getCardBg();
+      cfg.opacity = parseFloat(val);
+      localStorage.setItem('oe-card-bg', JSON.stringify(cfg));
+      applyCardBg();
+    }, 80);
   }
 
   function resetCardBg() {
