@@ -81,13 +81,18 @@ async function handleRequest(request) {
       });
 
       // 文档不存在，用 POST 创建
-      if (resp.status === 404) {
+      if (!resp.ok) {
+        const errBody = await resp.text();
         const createUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT}/databases/(default)/documents/users?documentId=${uid}`;
         resp = await fetch(createUrl, {
           method: 'POST',
           headers: { 'Authorization': `Firebase ${token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ fields: { ...fields, uid: { stringValue: uid } } })
         });
+        if (!resp.ok) {
+          const errBody2 = await resp.text();
+          return new Response(JSON.stringify({ ok: false, error: errBody2, patchErr: errBody }), { status: 500, headers: corsHeaders });
+        }
       }
 
       return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
