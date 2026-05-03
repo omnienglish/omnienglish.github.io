@@ -2422,10 +2422,18 @@
     vocabPriority = p;
     vocabIndex = 0;
     Store.set('daily-priority', p);
-    // Sync the select dropdown in setup panel
+    // Sync select dropdown
     const sel = document.getElementById('vocab-priority-select');
     if (sel) sel.value = p;
-    renderVocabCard();
+    // Update filter buttons active state
+    renderVocabFilters();
+    // Update pool info
+    const filtered = getFilteredVocab();
+    const remaining = filtered.filter(w => vocabState[w.word] !== 'known').length;
+    const poolEl = document.getElementById('vocab-pool-info');
+    if (poolEl) poolEl.textContent = '该词库共 ' + filtered.length + ' 词，可学 ' + remaining + ' 词';
+    // Update progress bar
+    renderVocabProgress();
   }
 
   function vocabPrev() {
