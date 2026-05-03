@@ -1628,43 +1628,46 @@
 
       <div class="vocab-filters" id="vocab-filters"></div>
 
-      <div id="vocab-queue-bar" style="display:none;margin-bottom:12px;text-align:center;">
-        <button onclick="startDailyQueue()" style="padding:8px 20px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;">
-          开始今日复习 (40词)
-        </button>
-      </div>
-
-      <div class="flip-scene">
-        <div class="flip-card" id="flip-card" onclick="if(!event.target.closest('.clickable-word,.flip-front-word,.flip-front-phonetic'))this.classList.toggle('flipped')">
-          <div class="flip-face flip-front" id="flip-front"></div>
-          <div class="flip-face flip-back" id="flip-back"></div>
+      <!-- Setup panel: shown when no active session -->
+      <div id="vocab-setup" style="display:none;margin-bottom:16px;padding:20px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg-surface);text-align:center;">
+        <div style="font-weight:600;font-size:1rem;margin-bottom:12px;">开始今日学习</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+          <label style="font-size:0.85rem;color:var(--text-secondary);">学习词量：</label>
+          <input type="number" id="vocab-daily-count" value="40" min="5" max="200" style="width:70px;padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-muted);color:var(--text-primary);font-size:0.85rem;text-align:center;">
         </div>
-      </div>
-
-      <div class="vocab-nav">
-        <button class="vocab-nav-btn" id="btn-prev" onclick="vocabPrev()">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
-        </button>
-        <span class="vocab-nav-info" id="vocab-nav-info">1 / 1</span>
-        <button class="vocab-nav-btn" id="btn-next" onclick="vocabNext()">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+        <button onclick="startLearnSession()" style="padding:10px 28px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent);color:#fff;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;">
+          开始学习
         </button>
       </div>
 
-      <div class="vocab-actions">
-        <button class="vocab-action-btn btn-review" onclick="vocabMark('forgot')" style="flex:1">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-          忘记了
-        </button>
-        <button class="vocab-action-btn btn-review" onclick="vocabMark('vague')" style="flex:1">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
-          模糊
-        </button>
-        <button class="vocab-action-btn btn-know" onclick="vocabMark('known')" style="flex:1">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          已掌握
+      <!-- Card area: shown during active session -->
+      <div id="vocab-card-area" style="display:none;">
+        <div class="flip-scene">
+          <div class="flip-card" id="flip-card" onclick="if(!event.target.closest('.clickable-word,.flip-front-word,.flip-front-phonetic'))this.classList.toggle('flipped')">
+            <div class="flip-face flip-front" id="flip-front"></div>
+            <div class="flip-face flip-back" id="flip-back"></div>
+          </div>
+        </div>
+
+        <div class="vocab-nav">
+          <span class="vocab-nav-info" id="vocab-nav-info">1 / 1</span>
+        </div>
+
+        <div class="vocab-actions">
+          <button class="vocab-action-btn btn-review" onclick="vocabMark('forgot')" style="flex:1">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            忘记了
+          </button>
+          <button class="vocab-action-btn btn-review" onclick="vocabMark('vague')" style="flex:1">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+            模糊
+          </button>
+          <button class="vocab-action-btn btn-know" onclick="vocabMark('known')" style="flex:1">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            已掌握
         </button>
       </div>
+      </div><!-- /vocab-card-area -->
     </div>
     <div class="page-section" id="page-writing">
       <div class="page-header">
@@ -2020,6 +2023,84 @@
     document.querySelector('.today-count').textContent = done + '/4';
   }
 
+  // ═══ WORD SCHEDULER (reusable queue engine) ═══
+  const WordScheduler = {
+    queue: [],  // word objects
+    pos: 0,
+    _originalCount: 0,
+
+    // Initialize with an array of word objects, shuffle them
+    init(words) {
+      this.queue = words.slice().sort(() => Math.random() - 0.5);
+      this.pos = 0;
+      this._originalCount = this.queue.length;
+    },
+
+    // Get current word object, or null if finished
+    current() {
+      return this.pos < this.queue.length ? this.queue[this.pos] : null;
+    },
+
+    // "Forgot": re-insert at pos+2 (short repetition)
+    forgot() {
+      if (this.pos >= this.queue.length) return;
+      const w = this.queue.splice(this.pos, 1)[0];
+      const insertAt = Math.min(this.pos + 2, this.queue.length);
+      this.queue.splice(insertAt, 0, w);
+      // pos stays — next word slides in
+    },
+
+    // "Vague": re-insert at pos+5 (longer repetition)
+    vague() {
+      if (this.pos >= this.queue.length) return;
+      const w = this.queue.splice(this.pos, 1)[0];
+      const insertAt = Math.min(this.pos + 5, this.queue.length);
+      this.queue.splice(insertAt, 0, w);
+    },
+
+    // "Known": remove from queue permanently, return the word object
+    known() {
+      if (this.pos >= this.queue.length) return null;
+      return this.queue.splice(this.pos, 1)[0];
+    },
+
+    // Progress info
+    progress() {
+      const done = this._originalCount - this.queue.length;
+      return { current: this.pos + 1, total: this.queue.length, done, original: this._originalCount };
+    },
+
+    isFinished() { return this.queue.length === 0; },
+    isEmpty() { return this.queue.length === 0; },
+
+    // Persist queue to localStorage (saves word strings only)
+    persist(key) {
+      const data = {
+        date: new Date().toISOString().slice(0, 10),
+        words: this.queue.map(w => w.word),
+        pos: this.pos,
+        original: this._originalCount
+      };
+      localStorage.setItem(key, JSON.stringify(data));
+    },
+
+    // Restore queue from localStorage, returns false if stale or missing
+    restore(key, vocabArray) {
+      try {
+        const data = JSON.parse(localStorage.getItem(key) || '{}');
+        const today = new Date().toISOString().slice(0, 10);
+        if (data.date !== today || !data.words || data.words.length === 0) return false;
+        // Map word strings back to word objects
+        const wordMap = {};
+        vocabArray.forEach(w => { wordMap[w.word] = w; });
+        this.queue = data.words.map(s => wordMap[s]).filter(Boolean);
+        this.pos = data.pos || 0;
+        this._originalCount = data.original || this.queue.length;
+        return this.queue.length > 0;
+      } catch { return false; }
+    }
+  };
+
   // ═══ VOCABULARY WALL ═══
   let VOCAB = [];
 
@@ -2037,58 +2118,6 @@
   let vocabState = {};
   let vocabPriority = 'core';
   let vocabIndex = 0;
-
-  // ═══ DAILY QUEUE (spaced repetition with dynamic re-insertion) ═══
-  const DAILY_QUEUE_SIZE = 40;
-  let dailyQueue = [];      // array of word strings
-  let dailyQueuePos = 0;    // current position in queue
-  let dailyQueueDate = '';  // date string for the queue
-
-  function getTodayStr() { return new Date().toISOString().slice(0, 10); }
-
-  function loadDailyQueue() {
-    try {
-      const data = JSON.parse(localStorage.getItem('omni-daily-queue') || '{}');
-      if (data.date === getTodayStr()) {
-        dailyQueue = data.queue || [];
-        dailyQueuePos = data.pos || 0;
-        dailyQueueDate = data.date;
-      } else {
-        dailyQueue = [];
-        dailyQueuePos = 0;
-        dailyQueueDate = '';
-      }
-    } catch { dailyQueue = []; dailyQueuePos = 0; dailyQueueDate = ''; }
-  }
-
-  function saveDailyQueue() {
-    localStorage.setItem('omni-daily-queue', JSON.stringify({
-      date: dailyQueueDate, queue: dailyQueue, pos: dailyQueuePos
-    }));
-  }
-
-  function initDailyQueue() {
-    const today = getTodayStr();
-    const filtered = getFilteredVocab();
-    // Pick words not yet mastered
-    const candidates = filtered.filter(w => vocabState[w.word] !== 'known');
-    // Shuffle and take up to DAILY_QUEUE_SIZE
-    const shuffled = candidates.slice().sort(() => Math.random() - 0.5);
-    dailyQueue = shuffled.slice(0, DAILY_QUEUE_SIZE).map(w => w.word);
-    dailyQueuePos = 0;
-    dailyQueueDate = today;
-    saveDailyQueue();
-  }
-
-  function getQueueWord() {
-    if (dailyQueuePos >= dailyQueue.length) return null;
-    return dailyQueue[dailyQueuePos];
-  }
-
-  function startDailyQueue() {
-    initDailyQueue();
-    renderVocabCard();
-  }
 
   function loadVocabState() {
     try {
@@ -2132,90 +2161,35 @@
     `;
   }
 
-  function renderVocabCard() {
-    const filtered = getFilteredVocab();
-    const card = document.getElementById('flip-card');
-    const front = document.getElementById('flip-front');
-    const back = document.getElementById('flip-back');
-    const navInfo = document.getElementById('vocab-nav-info');
-    const prevBtn = document.getElementById('btn-prev');
-    const nextBtn = document.getElementById('btn-next');
-    const queueBar = document.getElementById('vocab-queue-bar');
-
-    card.classList.remove('flipped');
-
-    // Show/hide queue bar
-    const hasQueue = dailyQueue.length > 0 && dailyQueueDate === getTodayStr();
-    queueBar.style.display = hasQueue ? 'none' : 'block';
-
-    // Queue mode: show queue word if available
-    let w = null;
-    let inQueue = false;
-    if (dailyQueue.length > 0 && dailyQueuePos < dailyQueue.length) {
-      const queueWord = dailyQueue[dailyQueuePos];
-      w = VOCAB.find(v => v.word === queueWord);
-      if (w) inQueue = true;
-    }
-
-    if (!w) {
-      // Queue finished?
-      if (dailyQueue.length > 0 && dailyQueuePos >= dailyQueue.length) {
-        const mastered = dailyQueue.filter(word => vocabState[word] === 'known').length;
-        front.innerHTML = `
-          <div class="vocab-done-msg">
-            <strong>今日复习完成!</strong><br>
-            <span style="font-size:0.85rem;color:var(--text-secondary);">本轮 ${dailyQueue.length} 词中掌握 ${mastered} 词</span><br><br>
-            <button onclick="startDailyQueue()" style="padding:8px 20px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;">再来一轮</button>
-          </div>`;
-        back.innerHTML = '';
-        navInfo.textContent = '完成';
-        prevBtn.disabled = true;
-        nextBtn.disabled = true;
-        return;
-      }
-      // Fallback to browse mode
-      if (filtered.length === 0) {
-        front.innerHTML = VOCAB.length === 0
-          ? `<div class="vocab-done-msg"><strong>词库加载中…</strong>正在获取词汇数据</div>`
-          : `<div class="vocab-done-msg"><strong>没有单词</strong>该分类下暂无单词</div>`;
-        back.innerHTML = '';
-        navInfo.textContent = '0 / 0';
-        prevBtn.disabled = true;
-        nextBtn.disabled = true;
-        return;
-      }
-      if (vocabIndex >= filtered.length) vocabIndex = filtered.length - 1;
-      if (vocabIndex < 0) vocabIndex = 0;
-      w = filtered[vocabIndex];
-    }
+  // Pure card renderer — returns { front, back } HTML strings
+  function renderVocabCardUI(w) {
     const status = vocabState[w.word];
     const statusBadge = status === 'known'
       ? '<span style="font-size:0.625rem;padding:2px 6px;border-radius:4px;background:var(--success-soft);color:var(--success);font-family:JetBrains Mono,monospace;">已掌握</span>'
       : status === 'review'
       ? '<span style="font-size:0.625rem;padding:2px 6px;border-radius:4px;background:var(--warning-soft);color:oklch(0.55 0.15 75);font-family:JetBrains Mono,monospace;">待加强</span>'
       : '';
-
     const inNB = isInNotebook(w.word.toLowerCase());
+    const esc = s => (s || '').replace(/'/g, "\\'");
 
-    front.innerHTML = `
+    const front = `
       <div class="flip-front-hint">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zM12 2.25V4.5m5.834.166l-1.591 1.591M20.25 10.5H18M7.757 14.743l-1.59 1.59M6 10.5H3.75m4.007-4.243l-1.59-1.59"/></svg>
         点击翻转
       </div>
       <div style="margin-bottom:12px;display:flex;align-items:center;gap:8px;">${statusBadge}</div>
-      <div class="flip-front-word" onclick="event.stopPropagation();speakWord('${w.word}')" style="cursor:pointer" title="点击朗读">${w.word}</div>
+      <div class="flip-front-word" onclick="event.stopPropagation();speakWord('${esc(w.word)}')" style="cursor:pointer" title="点击朗读">${w.word}</div>
       <div style="display:flex;align-items:center;gap:6px;justify-content:center;margin-bottom:16px;">
-        <span class="flip-front-phonetic" onclick="event.stopPropagation();speakWord('${w.word}')" style="cursor:pointer" title="点击朗读">${w.phonetic}</span>
+        <span class="flip-front-phonetic" onclick="event.stopPropagation();speakWord('${esc(w.word)}')" style="cursor:pointer" title="点击朗读">${w.phonetic}</span>
       </div>
       <div style="display:flex;gap:8px;">
-        <button onclick="event.stopPropagation();toggleNotebookFromCard('${w.word.toLowerCase()}')" style="padding:6px 14px;border-radius:var(--radius-sm);border:1px solid ${inNB ? 'var(--success)' : 'var(--border)'};background:${inNB ? 'var(--success-soft)' : 'var(--bg-muted)'};color:${inNB ? 'var(--success)' : 'var(--text-muted)'};font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:4px;">
+        <button onclick="event.stopPropagation();toggleNotebookFromCard('${esc(w.word.toLowerCase())}')" style="padding:6px 14px;border-radius:var(--radius-sm);border:1px solid ${inNB ? 'var(--success)' : 'var(--border)'};background:${inNB ? 'var(--success-soft)' : 'var(--bg-muted)'};color:${inNB ? 'var(--success)' : 'var(--text-muted)'};font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:4px;">
           <svg width="12" height="12" fill="${inNB ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
           ${inNB ? '已收藏' : '加入生词本'}
         </button>
-      </div>
-    `;
+      </div>`;
 
-    back.innerHTML = `
+    const back = `
       <div class="flip-back-word">${w.word}</div>
       <div>
         <div class="flip-section-title">释义</div>
@@ -2223,7 +2197,7 @@
       </div>
       ${w.cet4 ? `<div>
         <div class="flip-section-title" style="display:flex;align-items:center;gap:6px;">四级例句
-          <button onclick="event.stopPropagation();speakSentence('${w.cet4.replace(/'/g, "\\'")}')" title="朗读例句" style="background:none;border:none;cursor:pointer;color:var(--accent);padding:0;display:flex;align-items:center;">
+          <button onclick="event.stopPropagation();speakSentence('${esc(w.cet4)}')" title="朗读例句" style="background:none;border:none;cursor:pointer;color:var(--accent);padding:0;display:flex;align-items:center;">
             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"/></svg>
           </button>
         </div>
@@ -2232,32 +2206,103 @@
       </div>` : ''}
       ${w.cs ? `<div>
         <div class="flip-cs-label" style="display:flex;align-items:center;gap:6px;">CS CONTEXT
-          <button onclick="event.stopPropagation();speakSentence('${w.cs.replace(/'/g, "\\'")}')" title="朗读例句" style="background:none;border:none;cursor:pointer;color:var(--accent);padding:0;display:flex;align-items:center;">
+          <button onclick="event.stopPropagation();speakSentence('${esc(w.cs)}')" title="朗读例句" style="background:none;border:none;cursor:pointer;color:var(--accent);padding:0;display:flex;align-items:center;">
             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"/></svg>
           </button>
         </div>
         <div class="flip-cs-example">${w.cs}</div>
         <div class="flip-cs-zh">${w.cszh || ''}</div>
-      </div>` : ''}
-    `;
+      </div>` : ''}`;
 
-    if (inQueue) {
-      navInfo.textContent = (dailyQueuePos + 1) + ' / ' + dailyQueue.length + ' 今日复习';
-      prevBtn.disabled = true;
-      nextBtn.disabled = true;
-    } else {
-      navInfo.textContent = (vocabIndex + 1) + ' / ' + filtered.length;
-      prevBtn.disabled = vocabIndex === 0;
-      nextBtn.disabled = vocabIndex >= filtered.length - 1;
+    return { front, back };
+  }
+
+  function renderVocabCard() {
+    const setupEl = document.getElementById('vocab-setup');
+    const cardAreaEl = document.getElementById('vocab-card-area');
+    const front = document.getElementById('flip-front');
+    const back = document.getElementById('flip-back');
+    const navInfo = document.getElementById('vocab-nav-info');
+    const card = document.getElementById('flip-card');
+
+    const w = WordScheduler.current();
+
+    if (!w) {
+      // No active session or session finished
+      if (WordScheduler._originalCount > 0 && WordScheduler.isFinished()) {
+        // Session finished — show completion
+        setupEl.style.display = 'none';
+        cardAreaEl.style.display = 'block';
+        card.classList.remove('flipped');
+        const done = WordScheduler._originalCount;
+        front.innerHTML = `
+          <div class="vocab-done-msg">
+            <strong>本轮学习完成!</strong><br>
+            <span style="font-size:0.85rem;color:var(--text-secondary);">共 ${done} 词</span><br><br>
+            <button onclick="continueLearning()" style="padding:8px 20px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;margin-right:8px;">继续背词</button>
+            <button onclick="showVocabSetup()" style="padding:8px 20px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-muted);color:var(--text-secondary);font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;">返回</button>
+          </div>`;
+        back.innerHTML = '';
+        navInfo.textContent = '完成';
+      } else {
+        // No session — show setup
+        showVocabSetup();
+      }
+      return;
     }
 
-    renderVocabFilters();
-    renderVocabProgress();
+    // Active session — show card
+    setupEl.style.display = 'none';
+    cardAreaEl.style.display = 'block';
+    card.classList.remove('flipped');
 
-    // Auto-pronounce only when on vocab page
+    const { front: fHTML, back: bHTML } = renderVocabCardUI(w);
+    front.innerHTML = fHTML;
+    back.innerHTML = bHTML;
+
+    const prog = WordScheduler.progress();
+    navInfo.textContent = prog.current + ' / ' + (prog.total + prog.done);
+
+    renderVocabProgress();
     if (document.getElementById('page-vocab').classList.contains('active')) {
       setTimeout(() => speakWord(w.word), 30);
     }
+  }
+
+  function showVocabSetup() {
+    document.getElementById('vocab-setup').style.display = 'block';
+    document.getElementById('vocab-card-area').style.display = 'none';
+    // Restore saved count
+    const saved = Store.get('daily-count');
+    if (saved) document.getElementById('vocab-daily-count').value = saved;
+    renderVocabFilters();
+    renderVocabProgress();
+  }
+
+  function startLearnSession() {
+    const count = Math.max(5, Math.min(200, parseInt(document.getElementById('vocab-daily-count').value) || 40));
+    Store.set('daily-count', count);
+    const filtered = getFilteredVocab();
+    const candidates = filtered.filter(w => vocabState[w.word] !== 'known');
+    const words = candidates.slice(0, count);
+    if (words.length === 0) {
+      alert('没有可学的单词了！');
+      return;
+    }
+    WordScheduler.init(words);
+    WordScheduler.persist('omni-daily-queue');
+    renderVocabCard();
+  }
+
+  function continueLearning() {
+    const count = parseInt(document.getElementById('vocab-daily-count')?.value) || Store.get('daily-count') || 40;
+    const filtered = getFilteredVocab();
+    const candidates = filtered.filter(w => vocabState[w.word] !== 'known');
+    const words = candidates.slice(0, count);
+    if (words.length === 0) { alert('没有可学的单词了！'); return; }
+    WordScheduler.init(words);
+    WordScheduler.persist('omni-daily-queue');
+    renderVocabCard();
   }
 
   function renderVocabProgress() {
@@ -2285,43 +2330,23 @@
   }
 
   function vocabMark(status) {
-    if (dailyQueue.length > 0 && dailyQueuePos < dailyQueue.length) {
-      // Queue mode: dynamic re-insertion
-      const word = dailyQueue[dailyQueuePos];
-      const currentWord = word; // save before removing
+    const w = WordScheduler.current();
+    if (!w) return;
 
-      // Remove current word from queue
-      dailyQueue.splice(dailyQueuePos, 1);
-      // Don't advance pos — the next word slides into current position
-
-      if (status === 'known') {
-        // Permanently mastered — don't re-insert
-        vocabState[currentWord] = 'known';
-      } else if (status === 'forgot') {
-        // Re-insert nearby (short step: +2)
-        const insertPos = Math.min(dailyQueuePos + 2, dailyQueue.length);
-        dailyQueue.splice(insertPos, 0, currentWord);
-        vocabState[currentWord] = 'review';
-      } else if (status === 'vague') {
-        // Re-insert further away (longer step: +5)
-        const insertPos = Math.min(dailyQueuePos + 5, dailyQueue.length);
-        dailyQueue.splice(insertPos, 0, currentWord);
-        vocabState[currentWord] = 'review';
-      }
-
-      saveVocabState();
-      saveDailyQueue();
-      renderVocabCard();
-    } else {
-      // Browse mode: just mark and advance
-      const filtered = getFilteredVocab();
-      if (filtered.length === 0) return;
-      const w = filtered[vocabIndex];
-      vocabState[w.word] = status === 'known' ? 'known' : 'review';
-      saveVocabState();
-      if (vocabIndex < filtered.length - 1) vocabIndex++;
-      renderVocabCard();
+    if (status === 'known') {
+      WordScheduler.known();
+      vocabState[w.word] = 'known';
+    } else if (status === 'forgot') {
+      WordScheduler.forgot();
+      vocabState[w.word] = 'review';
+    } else if (status === 'vague') {
+      WordScheduler.vague();
+      vocabState[w.word] = 'review';
     }
+
+    saveVocabState();
+    WordScheduler.persist('omni-daily-queue');
+    renderVocabCard();
   }
 
   // ═══ REVIEW MODE (spaced repetition) ═══
@@ -3111,7 +3136,7 @@
       // 3. Load vocab data from external JSON, then init vocab UI
       await loadVocab();
       loadVocabState();
-      loadDailyQueue();
+      WordScheduler.restore('omni-daily-queue', VOCAB);
       renderVocabCard();
       updateDashboardStats();
       updateReviewCounts();
