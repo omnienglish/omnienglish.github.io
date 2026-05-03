@@ -72,17 +72,18 @@ async function handleRequest(request) {
       fields[key] = toValue(data);
       fields['updatedAt'] = { timestampValue: new Date().toISOString() };
 
-      // PATCH (merge)，如果文档不存在会 404
-      const fbUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT}/databases/(default)/documents/users/${uid}?updateMask.fieldPaths=${key}&updateMask.fieldPaths=updatedAt`;
+      // 先尝试 PATCH (merge)，属性名含连字符需要反引号
+      const safeKey = key.includes('-') ? '`' + key + '`' : key;
+      const fbUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT}/databases/(default)/documents/users/${uid}?updateMask.fieldPaths=${safeKey}&updateMask.fieldPaths=updatedAt`;
       let resp = await fetch(fbUrl, {
         method: 'PATCH',
         headers: { 'Authorization': `Firebase ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ fields })
       });
 
-      // 文档不存在，用 POST 创建
       if (!resp.ok) {
-        const errBody = await resp.text();
+        const patchErr = await resp.text();
+        // 文档不存在，用 POST 创建
         const createUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT}/databases/(default)/documents/users?documentId=${uid}`;
         resp = await fetch(createUrl, {
           method: 'POST',
@@ -90,12 +91,24 @@ async function handleRequest(request) {
           body: JSON.stringify({ fields: { ...fields, uid: { stringValue: uid } } })
         });
         if (!resp.ok) {
-          const errBody2 = await resp.text();
-          return new Response(JSON.stringify({ ok: false, error: errBody2, patchErr: errBody }), { status: 500, headers: corsHeaders });
+          const postErr = await resp.text();
+          return new Response(JSON.stringify({ ok: false, patchErr, postErr }), { headers: corsHeaders });
         }
+        const postResult = await resp.json();
+        return new Response(JSON.stringify({ ok: true, created: true }), { headers: corsHeaders });
       }
 
-      return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
+      return new Response(JSON.stringify({ ok: true, updated: true }), { headers: corsHeaders });
+    }
+
+    // GET /debug?uid=xxx&token=xxx — 原始 Firestore 响应
+    if (url.pathname === '/debug' && request.method === 'GET') {
+      const uid = url.searchParams.get('uid');
+      const token = url.searchParams.get('token');
+      const fbUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT}/databases/(default)/documents/users/${uid}`;
+      const resp = await fetch(fbUrl, { headers: { 'Authorization': `Firebase ${token}` } });
+      const raw = await resp.text();
+      return new Response(raw, { headers: corsHeaders });
     }
 
     return new Response(JSON.stringify({ error: 'not found' }), { status: 404, headers: corsHeaders });
