@@ -560,6 +560,99 @@
     border-radius: 50%;
   }
 
+  /* ═══ HEATMAP ═══ */
+  :root {
+    --heatmap-0: oklch(0.25 0.01 250);
+    --heatmap-1: oklch(0.40 0.10 145);
+    --heatmap-2: oklch(0.55 0.15 145);
+    --heatmap-3: oklch(0.70 0.18 145);
+    --heatmap-4: oklch(0.82 0.20 145);
+  }
+  .heatmap-wrap {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  .heatmap-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .heatmap-title {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text);
+  }
+  .heatmap-count {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .heatmap-container {
+    display: flex;
+    gap: 3px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+  }
+  .heatmap-week {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .heatmap-cell {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    background: var(--heatmap-0);
+    position: relative;
+    cursor: default;
+  }
+  .heatmap-cell[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: var(--bg);
+    font-size: 0.625rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 10;
+  }
+  .heatmap-months {
+    display: flex;
+    gap: 3px;
+    margin-bottom: 4px;
+    padding-left: 0;
+  }
+  .heatmap-month-label {
+    font-size: 0.625rem;
+    color: var(--text-muted);
+    min-width: 12px;
+    text-align: left;
+  }
+  .heatmap-legend {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    justify-content: flex-end;
+    margin-top: 10px;
+    font-size: 0.625rem;
+    color: var(--text-muted);
+  }
+  .heatmap-legend .heatmap-cell {
+    cursor: default;
+  }
+  .heatmap-legend-label {
+    margin: 0 2px;
+  }
+
   /* ═══ NOTEBOOK ═══ */
   .notebook-empty {
     text-align: center;
@@ -1564,10 +1657,28 @@
         </div>
       </div>
 
+      <!-- Heatmap -->
+      <div class="heatmap-wrap anim" style="--i: 4">
+        <div class="heatmap-header">
+          <span class="heatmap-title">学习日历</span>
+          <span class="heatmap-count" id="heatmap-total">今日: 0 词</span>
+        </div>
+        <div class="heatmap-container" id="heatmap-container"></div>
+        <div class="heatmap-legend">
+          <span class="heatmap-legend-label">少</span>
+          <span class="heatmap-cell" style="background:var(--heatmap-0)"></span>
+          <span class="heatmap-cell" style="background:var(--heatmap-1)"></span>
+          <span class="heatmap-cell" style="background:var(--heatmap-2)"></span>
+          <span class="heatmap-cell" style="background:var(--heatmap-3)"></span>
+          <span class="heatmap-cell" style="background:var(--heatmap-4)"></span>
+          <span class="heatmap-legend-label">多</span>
+        </div>
+      </div>
+
       <!-- Features -->
-      <div class="section-title anim" style="--i: 4">功能入口</div>
+      <div class="section-title anim" style="--i: 5">功能入口</div>
       <div class="features">
-        <div class="feature-card fc-vocab anim" style="--i: 5" onclick="switchPage('vocab')">
+        <div class="feature-card fc-vocab anim" style="--i: 6" onclick="switchPage('vocab')">
           <div class="feature-icon">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
           </div>
@@ -1576,7 +1687,7 @@
           <span class="feature-tag">2000+ 词</span>
         </div>
 
-        <div class="feature-card fc-write anim" style="--i: 6" onclick="switchPage('writing')">
+        <div class="feature-card fc-write anim" style="--i: 7" onclick="switchPage('writing')">
           <div class="feature-icon">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
           </div>
@@ -1585,7 +1696,7 @@
           <span class="feature-tag">AI 批改</span>
         </div>
 
-        <div class="feature-card fc-sentence anim" style="--i: 7" onclick="switchPage('sentence')">
+        <div class="feature-card fc-sentence anim" style="--i: 8" onclick="switchPage('sentence')">
           <div class="feature-icon">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
           </div>
@@ -1594,7 +1705,7 @@
           <span class="feature-tag">逐句拆解</span>
         </div>
 
-        <div class="feature-card fc-cs anim" style="--i: 8" onclick="switchPage('cs')">
+        <div class="feature-card fc-cs anim" style="--i: 9" onclick="switchPage('cs')">
           <div class="feature-icon">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
           </div>
@@ -1603,7 +1714,7 @@
           <span class="feature-tag">CS 专属</span>
         </div>
 
-        <div class="feature-card fc-vocab anim" style="--i: 9" onclick="switchPage('review')">
+        <div class="feature-card fc-vocab anim" style="--i: 10" onclick="switchPage('review')">
           <div class="feature-icon">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
           </div>
@@ -2072,6 +2183,119 @@
     const knownCount = VOCAB.filter(w => vocabState[w.word] === 'known').length;
     const statNums = document.querySelectorAll('.stat-num');
     if (statNums.length > 0) statNums[0].textContent = knownCount;
+
+    // Calculate streak
+    const log = getLearnLog();
+    let streak = 0;
+    const d = new Date();
+    // Check if today has activity; if not, start checking from yesterday
+    const todayStr = d.toISOString().slice(0, 10);
+    if (!log[todayStr]) d.setDate(d.getDate() - 1);
+    while (true) {
+      const ds = d.toISOString().slice(0, 10);
+      if (log[ds] && log[ds] > 0) { streak++; d.setDate(d.getDate() - 1); }
+      else break;
+    }
+    if (statNums.length > 2) statNums[2].textContent = streak;
+
+    renderHeatmap();
+  }
+
+  // ═══ LEARNING HEATMAP ═══
+  function getLearnLog() {
+    try { return JSON.parse(localStorage.getItem('oe-learn-log') || '{}'); } catch { return {}; }
+  }
+
+  function logLearnActivity(count) {
+    if (!count) return;
+    const today = new Date().toISOString().slice(0, 10);
+    const log = getLearnLog();
+    log[today] = (log[today] || 0) + count;
+    localStorage.setItem('oe-learn-log', JSON.stringify(log));
+  }
+
+  function renderHeatmap() {
+    const container = document.getElementById('heatmap-container');
+    const totalEl = document.getElementById('heatmap-total');
+    if (!container) return;
+
+    const log = getLearnLog();
+    const today = new Date();
+    const todayStr = today.toISOString().slice(0, 10);
+
+    // Update today's count
+    if (totalEl) totalEl.textContent = '今日: ' + (log[todayStr] || 0) + ' 词';
+
+    // Calculate date range: ~6 months back, aligned to Sunday
+    const startDate = new Date(today);
+    startDate.setMonth(startDate.getMonth() - 6);
+    // Align to previous Sunday
+    while (startDate.getDay() !== 0) startDate.setDate(startDate.getDate() - 1);
+
+    // Build weeks
+    const weeks = [];
+    let currentDate = new Date(startDate);
+    let currentWeek = [];
+
+    while (currentDate <= today) {
+      const dateStr = currentDate.toISOString().slice(0, 10);
+      const count = log[dateStr] || 0;
+      currentWeek.push({ date: dateStr, count, day: currentDate.getDay() });
+
+      if (currentDate.getDay() === 6 || currentDate.getTime() === today.getTime()) {
+        weeks.push(currentWeek);
+        currentWeek = [];
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    if (currentWeek.length > 0) weeks.push(currentWeek);
+
+    // Month labels
+    const monthsRow = document.createElement('div');
+    monthsRow.className = 'heatmap-months';
+    let lastMonth = -1;
+    const monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+    for (const week of weeks) {
+      const firstDay = week[0];
+      const m = new Date(firstDay.date).getMonth();
+      const label = document.createElement('span');
+      label.className = 'heatmap-month-label';
+      if (m !== lastMonth) {
+        label.textContent = monthNames[m];
+        lastMonth = m;
+      }
+      monthsRow.appendChild(label);
+    }
+
+    // Build grid
+    container.innerHTML = '';
+    container.appendChild(monthsRow);
+
+    for (const week of weeks) {
+      const weekEl = document.createElement('div');
+      weekEl.className = 'heatmap-week';
+
+      // Fill empty cells at start of week if needed
+      if (week.length < 7 && week[0].day !== 0) {
+        for (let i = 0; i < week[0].day; i++) {
+          const empty = document.createElement('div');
+          empty.className = 'heatmap-cell';
+          empty.style.visibility = 'hidden';
+          weekEl.appendChild(empty);
+        }
+      }
+
+      for (const day of week) {
+        const cell = document.createElement('div');
+        cell.className = 'heatmap-cell';
+        const level = day.count === 0 ? 0 : day.count <= 5 ? 1 : day.count <= 15 ? 2 : day.count <= 30 ? 3 : 4;
+        cell.style.background = 'var(--heatmap-' + level + ')';
+        cell.title = day.date + ': ' + day.count + ' 词';
+        weekEl.appendChild(cell);
+      }
+
+      container.appendChild(weekEl);
+    }
   }
 
   // ═══ TASK COUNTER ═══
@@ -2436,6 +2660,7 @@
     if (status === 'known') {
       WordScheduler.known();
       vocabState[w.word] = 'known';
+      logLearnActivity(1);
     } else if (status === 'forgot') {
       WordScheduler.forgot();
       vocabState[w.word] = 'review';
