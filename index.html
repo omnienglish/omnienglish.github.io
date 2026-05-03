@@ -1427,7 +1427,6 @@
   }
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/leancloud-storage/dist/av-min.js" onerror="console.warn('[LeanCloud] SDK load failed')"></script>
 
 </head>
 <body>
@@ -1935,11 +1934,9 @@
 </nav>
 
 <script>
-  // ═══ LEANCLOUD ═══
-  // TODO: 去 leancloud.cn 注册应用，填入你的 App ID / App Key / Server URL
-  const LC_APP_ID = 'YOUR_APP_ID';
-  const LC_APP_KEY = 'YOUR_APP_KEY';
-  const LC_SERVER_URL = 'https://your-app.leancloud.cn'; // 控制台 → 设置 → 应用凭证 → 服务器地址
+  // ═══ CLOUD SYNC (via Cloudflare Worker → Firebase) ═══
+  // TODO: 部署 cf-worker.js 到 Cloudflare Workers，填入 Worker 地址
+  const WORKER_URL = 'https://omni-proxy.YOUR-SUBDOMAIN.workers.dev';
   let cloudUser = null, cloudReady = false;
 
   function updateCloudStatus(connected) {
@@ -1951,105 +1948,59 @@
     text.style.color = connected ? 'var(--success)' : 'var(--text-muted)';
   }
 
-  function getDeviceId() {
-    let id = localStorage.getItem('oe-device-id');
-    if (!id) {
-      id = 'dev_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
-      localStorage.setItem('oe-device-id', id);
-    }
-    return id;
-  }
-
-  function initLeanCloud() {
-    if (typeof AV === 'undefined') {
-      console.warn('[LeanCloud] SDK not loaded');
-      updateCloudStatus(false);
-      return;
-    }
-    if (LC_APP_ID === 'YOUR_APP_ID') {
-      console.warn('[LeanCloud] 请填写 App ID / App Key');
+  async function initCloudSync() {
+    if (WORKER_URL.includes('YOUR-SUBDOMAIN')) {
+      console.warn('[CloudSync] 请填写 Worker 地址');
       updateCloudStatus(false);
       return;
     }
     try {
-      AV.init({ appId: LC_APP_ID, appKey: LC_APP_KEY, serverURL: LC_SERVER_URL });
-    } catch (err) {
-      console.warn('[LeanCloud] Init failed:', err.message);
-      updateCloudStatus(false);
-      return;
-    }
-    const deviceId = getDeviceId();
-    const user = new AV.User();
-    user.setUsername(deviceId);
-    user.setPassword(deviceId);
-    user.signUp().then(u => {
-      cloudUser = u;
+      const resp = await fetch(WORKER_URL + '/auth', { method: 'POST' });
+      if (!resp.ok) throw new Error('auth failed: ' + resp.status);
+      cloudUser = await resp.json();
       cloudReady = true;
       updateCloudStatus(true);
-      console.log('[LeanCloud] Auth OK, uid:', u.id);
+      console.log('[CloudSync] Auth OK, uid:', cloudUser.uid);
       loadFromCloud();
-    }).catch(err => {
-      if (err.code === 202) {
-        // Username taken — login instead
-        AV.User.logIn(deviceId, deviceId).then(u => {
-          cloudUser = u;
-          cloudReady = true;
-          updateCloudStatus(true);
-          console.log('[LeanCloud] Login OK, uid:', u.id);
-          loadFromCloud();
-        }).catch(e2 => {
-          console.warn('[LeanCloud] Login failed:', e2.message);
-          updateCloudStatus(false);
-        });
-      } else {
-        console.warn('[LeanCloud] Auth failed:', err.code, err.message);
-        updateCloudStatus(false);
-      }
-    });
+    } catch (err) {
+      console.warn('[CloudSync] Auth failed:', err.message);
+      updateCloudStatus(false);
+    }
   }
 
   async function loadFromCloud() {
     if (!cloudReady || !cloudUser) return;
     try {
-      const query = new AV.Query('UserConfig');
-      query.equalTo('uid', cloudUser.id);
-      const obj = await query.first();
-      if (obj) {
-        const nb = obj.get('notebook');
-        const prog = obj.get('progress');
-        const vs = obj.get('vocabState');
-        if (nb) Store.set('notebook', nb);
-        if (prog) Store.set('progress', prog);
-        if (vs) {
-          localStorage.setItem('omni-vocab-state', JSON.stringify(vs));
-          Object.assign(vocabState, vs);
+      const resp = await fetch(`${WORKER_URL}/doc?uid=${cloudUser.uid}&token=${cloudUser.idToken}`);
+      if (!resp.ok) throw new Error('load failed: ' + resp.status);
+      const data = await resp.json();
+      if (data.exists) {
+        if (data.notebook) Store.set('notebook', data.notebook);
+        if (data.progress) Store.set('progress', data.progress);
+        if (data.vocabState) {
+          localStorage.setItem('omni-vocab-state', JSON.stringify(data.vocabState));
+          Object.assign(vocabState, data.vocabState);
           renderVocabCard();
         }
         updateEvoBar();
         updateNotebookBadge();
-        console.log('[LeanCloud] Data loaded from cloud');
+        console.log('[CloudSync] Data loaded from cloud');
       }
     } catch (err) {
-      console.warn('[LeanCloud] Load failed:', err.message);
+      console.warn('[CloudSync] Load failed:', err.message);
     }
   }
 
   async function saveToCloud(key, data) {
     if (!cloudReady || !cloudUser) return;
     try {
-      const query = new AV.Query('UserConfig');
-      query.equalTo('uid', cloudUser.id);
-      let obj = await query.first();
-      if (!obj) {
-        const ConfigObj = AV.Object.extend('UserConfig');
-        obj = new ConfigObj();
-        obj.set('uid', cloudUser.id);
-      }
-      obj.set(key, data);
-      obj.set('updatedAt', new Date());
-      await obj.save();
+      await fetch(WORKER_URL + '/doc', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid: cloudUser.uid, token: cloudUser.idToken, key, data })
+      });
     } catch (err) {
-      console.warn('[LeanCloud] Save failed:', err.message);
+      console.warn('[CloudSync] Save failed:', err.message);
     }
   }
 
@@ -3117,7 +3068,7 @@
     document.getElementById('api-status-settings').classList.toggle('connected', key.startsWith('sk-'));
   }
 
-  // ═══ DATA STORE (localStorage + LeanCloud sync) ═══
+  // ═══ DATA STORE (localStorage + cloud sync) ═══
 
 
   // ═══ PROGRESS TRACKING ═══
@@ -3479,8 +3430,8 @@
       updateEvoBar();
       updateNotebookBadge();
 
-      // 6. LeanCloud (async, non-blocking)
-      initLeanCloud();
+      // 6. Cloud sync (async, non-blocking)
+      initCloudSync();
     } catch (err) {
       console.error('Init error:', err);
     }
