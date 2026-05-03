@@ -1631,10 +1631,20 @@
       <!-- Setup panel: shown when no active session -->
       <div id="vocab-setup" style="display:none;margin-bottom:16px;padding:20px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg-surface);text-align:center;">
         <div style="font-weight:600;font-size:1rem;margin-bottom:12px;">开始今日学习</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:8px;">
+          <label style="font-size:0.85rem;color:var(--text-secondary);">词库：</label>
+          <select id="vocab-priority-select" onchange="setVocabPriority(this.value)" style="padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-muted);color:var(--text-primary);font-size:0.85rem;">
+            <option value="core">核心词</option>
+            <option value="cet4">四级词汇</option>
+            <option value="xindongfang">补充词</option>
+            <option value="all">全部</option>
+          </select>
+        </div>
         <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
           <label style="font-size:0.85rem;color:var(--text-secondary);">学习词量：</label>
           <input type="number" id="vocab-daily-count" value="40" min="5" max="200" style="width:70px;padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-muted);color:var(--text-primary);font-size:0.85rem;text-align:center;">
         </div>
+        <div id="vocab-pool-info" style="font-size:0.75rem;color:var(--text-muted);margin-bottom:12px;"></div>
         <button onclick="startLearnSession()" style="padding:10px 28px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent);color:#fff;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;">
           开始学习
         </button>
@@ -2311,16 +2321,27 @@
   function showVocabSetup() {
     document.getElementById('vocab-setup').style.display = 'block';
     document.getElementById('vocab-card-area').style.display = 'none';
-    // Restore saved count
-    const saved = Store.get('daily-count');
-    if (saved) document.getElementById('vocab-daily-count').value = saved;
+    // Restore saved count and priority
+    const savedCount = Store.get('daily-count');
+    if (savedCount) document.getElementById('vocab-daily-count').value = savedCount;
+    const savedPriority = Store.get('daily-priority');
+    if (savedPriority) document.getElementById('vocab-priority-select').value = savedPriority;
+    // Sync vocabPriority with select
+    vocabPriority = document.getElementById('vocab-priority-select').value;
+    // Show pool info
+    const filtered = getFilteredVocab();
+    const remaining = filtered.filter(w => vocabState[w.word] !== 'known').length;
+    document.getElementById('vocab-pool-info').textContent = '该词库共 ' + filtered.length + ' 词，可学 ' + remaining + ' 词';
     renderVocabFilters();
     renderVocabProgress();
   }
 
   function startLearnSession() {
     const count = Math.max(5, Math.min(200, parseInt(document.getElementById('vocab-daily-count').value) || 40));
+    const priority = document.getElementById('vocab-priority-select').value;
     Store.set('daily-count', count);
+    Store.set('daily-priority', priority);
+    vocabPriority = priority;
     const filtered = getFilteredVocab();
     const candidates = filtered.filter(w => vocabState[w.word] !== 'known');
     const words = candidates.slice(0, count);
@@ -2355,6 +2376,9 @@
   function setVocabPriority(p) {
     vocabPriority = p;
     vocabIndex = 0;
+    // Sync the select dropdown in setup panel
+    const sel = document.getElementById('vocab-priority-select');
+    if (sel) sel.value = p;
     renderVocabCard();
   }
 
