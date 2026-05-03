@@ -203,8 +203,16 @@
     padding: 24px;
     margin-bottom: 20px;
     box-shadow: var(--shadow-sm);
+    text-align: center;
   }
 
+  .countdown-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
   .countdown-label {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.6875rem;
@@ -212,57 +220,78 @@
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--text-muted);
-    margin-bottom: 16px;
   }
-
-  .countdown-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-
-  .countdown-unit {
-    text-align: center;
-  }
-
-  .countdown-num {
+  .countdown-date {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 2rem;
+    font-size: 0.6875rem;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 1px 8px;
+    border-radius: 4px;
+  }
+  .countdown-hero {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 3.5rem;
     font-weight: 700;
     color: var(--accent);
-    line-height: 1;
-    margin-bottom: 4px;
+    line-height: 1.1;
+    margin: 12px 0 2px;
+    letter-spacing: -0.02em;
   }
-  @media (min-width: 768px) { .countdown-num { font-size: 2.5rem; } }
-
-  .countdown-num-label {
+  @media (min-width: 768px) { .countdown-hero { font-size: 4.5rem; } }
+  .countdown-hero-label {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.625rem;
+    font-size: 0.75rem;
     color: var(--text-muted);
-    letter-spacing: 0.05em;
     text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 16px;
   }
-
+  .countdown-hms {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+  .countdown-hms span {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
   .countdown-bar-track {
-    height: 4px;
+    height: 6px;
     background: var(--bg-muted);
-    border-radius: 2px;
+    border-radius: 3px;
     overflow: hidden;
+    margin-bottom: 10px;
   }
-
   .countdown-bar {
     height: 100%;
-    background: var(--accent);
-    border-radius: 2px;
+    background: linear-gradient(90deg, var(--accent), oklch(0.65 0.18 280));
+    border-radius: 3px;
     transition: width 0.5s ease;
   }
-
-  .countdown-meta {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 8px;
+  .countdown-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    margin-top: 4px;
+  }
+  .countdown-stat {
+    text-align: center;
+    padding: 8px 0;
+  }
+  .countdown-stat + .countdown-stat {
+    border-left: 1px solid var(--border);
+  }
+  .countdown-stat-num {
     font-family: 'JetBrains Mono', monospace;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+  .countdown-stat-label {
     font-size: 0.6875rem;
     color: var(--text-muted);
   }
@@ -1650,31 +1679,29 @@
 
       <!-- Countdown -->
       <div class="countdown anim" style="--i: 1">
-        <div class="countdown-label">考试倒计时 · 2026.06.13</div>
-        <div class="countdown-grid">
-          <div class="countdown-unit">
-            <div class="countdown-num" id="cd-days">--</div>
-            <div class="countdown-num-label">days</div>
-          </div>
-          <div class="countdown-unit">
-            <div class="countdown-num" id="cd-hours">--</div>
-            <div class="countdown-num-label">hours</div>
-          </div>
-          <div class="countdown-unit">
-            <div class="countdown-num" id="cd-mins">--</div>
-            <div class="countdown-num-label">mins</div>
-          </div>
-          <div class="countdown-unit">
-            <div class="countdown-num" id="cd-secs">--</div>
-            <div class="countdown-num-label">secs</div>
-          </div>
+        <div class="countdown-header">
+          <span class="countdown-label">CET-4 考试倒计时</span>
+          <span class="countdown-date">2026.06.13</span>
         </div>
+        <div class="countdown-hero" id="cd-days">--</div>
+        <div class="countdown-hero-label">days to go</div>
+        <div class="countdown-hms"><span id="cd-hms">--h --m --s</span></div>
         <div class="countdown-bar-track">
           <div class="countdown-bar" id="cd-bar" style="width: 0%"></div>
         </div>
-        <div class="countdown-meta">
-          <span id="cd-percent">0%</span>
-          <span>目标: 425+</span>
+        <div class="countdown-stats" id="cd-stats">
+          <div class="countdown-stat">
+            <div class="countdown-stat-num" id="cd-words">0</div>
+            <div class="countdown-stat-label">已背单词</div>
+          </div>
+          <div class="countdown-stat">
+            <div class="countdown-stat-num" id="cd-percent">0%</div>
+            <div class="countdown-stat-label">进度</div>
+          </div>
+          <div class="countdown-stat">
+            <div class="countdown-stat-num" id="cd-streak">0</div>
+            <div class="countdown-stat-label">连续天数</div>
+          </div>
         </div>
       </div>
 
@@ -1693,23 +1720,10 @@
       </div>
 
       <!-- Stats -->
-      <div class="stats anim" style="--i: 3">
-        <div class="stat-card">
-          <div class="stat-num">0</div>
-          <div class="stat-label">已背单词</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num">0</div>
-          <div class="stat-label">模考次数</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num">0</div>
-          <div class="stat-label">连续天数</div>
-        </div>
-      </div>
+      <!-- Stats merged into countdown card above -->
 
       <!-- Heatmap -->
-      <div class="heatmap-wrap anim" style="--i: 4">
+      <div class="heatmap-wrap anim" style="--i: 2">
         <div class="heatmap-header">
           <span class="heatmap-title" id="heatmap-total">学习日历</span>
         </div>
@@ -2189,9 +2203,7 @@
 
     if (diff <= 0) {
       document.getElementById('cd-days').textContent = '00';
-      document.getElementById('cd-hours').textContent = '00';
-      document.getElementById('cd-mins').textContent = '00';
-      document.getElementById('cd-secs').textContent = '00';
+      document.getElementById('cd-hms').innerHTML = '<span>00h 00m 00s</span>';
       document.getElementById('cd-percent').textContent = '100%';
       document.getElementById('cd-bar').style.width = '100%';
       return;
@@ -2203,15 +2215,32 @@
     const s = Math.floor((diff % 60000) / 1000);
 
     document.getElementById('cd-days').textContent = String(d).padStart(2, '0');
-    document.getElementById('cd-hours').textContent = String(h).padStart(2, '0');
-    document.getElementById('cd-mins').textContent = String(m).padStart(2, '0');
-    document.getElementById('cd-secs').textContent = String(s).padStart(2, '0');
+    document.getElementById('cd-hms').innerHTML = '<span>' + String(h).padStart(2, '0') + 'h ' + String(m).padStart(2, '0') + 'm ' + String(s).padStart(2, '0') + 's</span>';
 
     const total = EXAM_DATE - START_DATE;
     const elapsed = now - START_DATE;
     const pct = Math.min(100, Math.max(0, (elapsed / total) * 100));
     document.getElementById('cd-percent').textContent = pct.toFixed(1) + '%';
     document.getElementById('cd-bar').style.width = pct + '%';
+
+    // Update stats inside countdown
+    const knownCount = VOCAB.filter(w => vocabState[w.word] === 'known').length;
+    const cdWords = document.getElementById('cd-words');
+    if (cdWords) cdWords.textContent = knownCount;
+    const cdStreak = document.getElementById('cd-streak');
+    if (cdStreak) {
+      const log = getLearnLog();
+      let streak = 0;
+      const d2 = new Date();
+      const todayStr = d2.toISOString().slice(0, 10);
+      if (!log[todayStr]) d2.setDate(d2.getDate() - 1);
+      while (true) {
+        const ds = d2.toISOString().slice(0, 10);
+        if (log[ds] && log[ds] > 0) { streak++; d2.setDate(d2.getDate() - 1); }
+        else break;
+      }
+      cdStreak.textContent = streak;
+    }
   }
 
   // ═══ PAGE SWITCHING ═══
@@ -2231,24 +2260,7 @@
   }
 
   function updateDashboardStats() {
-    const knownCount = VOCAB.filter(w => vocabState[w.word] === 'known').length;
-    const statNums = document.querySelectorAll('.stat-num');
-    if (statNums.length > 0) statNums[0].textContent = knownCount;
-
-    // Calculate streak
-    const log = getLearnLog();
-    let streak = 0;
-    const d = new Date();
-    // Check if today has activity; if not, start checking from yesterday
-    const todayStr = d.toISOString().slice(0, 10);
-    if (!log[todayStr]) d.setDate(d.getDate() - 1);
-    while (true) {
-      const ds = d.toISOString().slice(0, 10);
-      if (log[ds] && log[ds] > 0) { streak++; d.setDate(d.getDate() - 1); }
-      else break;
-    }
-    if (statNums.length > 2) statNums[2].textContent = streak;
-
+    updateCountdown();
     renderHeatmap();
   }
 
