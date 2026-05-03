@@ -2995,12 +2995,12 @@
       const imgW = img.offsetWidth;
       const imgH = img.offsetHeight;
 
-      // Default crop: 80% of image, centered, 3:4 aspect ratio
-      const aspect = 3 / 4;
-      let cropW = imgW * 0.8;
+      // Default crop: 80% of image, centered, 2:1 landscape (matches card shape)
+      const aspect = 2 / 1;
+      let cropW = imgW * 0.85;
       let cropH = cropW / aspect;
-      if (cropH > imgH * 0.8) {
-        cropH = imgH * 0.8;
+      if (cropH > imgH * 0.85) {
+        cropH = imgH * 0.85;
         cropW = cropH * aspect;
       }
       const cropX = (imgW - cropW) / 2;
@@ -3040,20 +3040,27 @@
           box.y = Math.max(0, Math.min(imgH - startBox.h, startBox.y + dy));
         } else {
           let nx = startBox.x, ny = startBox.y, nw = startBox.w, nh = startBox.h;
+          // Use horizontal drag as primary, lock aspect ratio
           if (dragMode.includes('l')) {
-            nx = Math.max(0, Math.min(startBox.x + startBox.w - 30, startBox.x + dx));
+            nx = Math.max(0, Math.min(startBox.x + startBox.w - 60, startBox.x + dx));
             nw = startBox.w - (nx - startBox.x);
+          } else if (dragMode.includes('r')) {
+            nw = Math.max(60, Math.min(imgW - startBox.x, startBox.w + dx));
           }
-          if (dragMode.includes('r')) {
-            nw = Math.max(30, Math.min(imgW - startBox.x, startBox.w + dx));
-          }
+          nh = nw / aspect;
+          // For top corners, adjust y to keep bottom edge fixed
           if (dragMode.includes('t')) {
-            ny = Math.max(0, Math.min(startBox.y + startBox.h - 30, startBox.y + dy));
-            nh = startBox.h - (ny - startBox.y);
+            ny = startBox.y + startBox.h - nh;
+            if (ny < 0) { ny = 0; nh = startBox.y + startBox.h; nw = nh * aspect; }
           }
+          // For bottom corners, just update height
           if (dragMode.includes('b')) {
-            nh = Math.max(30, Math.min(imgH - startBox.y, startBox.h + dy));
+            nh = Math.max(30, Math.min(imgH - startBox.y, nh));
+            nw = nh * aspect;
           }
+          // Clamp to image bounds
+          if (nx + nw > imgW) { nw = imgW - nx; nh = nw / aspect; }
+          if (ny + nh > imgH) { nh = imgH - ny; nw = nh * aspect; }
           box = { x: nx, y: ny, w: nw, h: nh };
         }
         renderCropBox();
@@ -3074,9 +3081,9 @@
         const scaleY = img.naturalHeight / imgH;
 
         const canvas = document.createElement('canvas');
-        // Output at card size (3:4 ratio, reasonable resolution)
-        canvas.width = 450;
-        canvas.height = 600;
+        // Output at card size (2:1 landscape)
+        canvas.width = 700;
+        canvas.height = 350;
         const ctx = canvas.getContext('2d');
 
         ctx.drawImage(img,
