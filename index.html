@@ -560,16 +560,16 @@
     border-radius: 50%;
   }
 
-  /* ═══ HEATMAP ═══ */
+  /* ═══ HEATMAP (GitHub-style) ═══ */
   :root {
-    --heatmap-0: oklch(0.25 0.01 250);
-    --heatmap-1: oklch(0.40 0.10 145);
-    --heatmap-2: oklch(0.55 0.15 145);
-    --heatmap-3: oklch(0.70 0.18 145);
-    --heatmap-4: oklch(0.82 0.20 145);
+    --heatmap-0: #ebedf0;
+    --heatmap-1: #9be9a8;
+    --heatmap-2: #40c463;
+    --heatmap-3: #30a14e;
+    --heatmap-4: #216e39;
   }
   .heatmap-wrap {
-    background: var(--card);
+    background: var(--bg-surface);
     border-radius: 16px;
     padding: 20px;
     border: 1px solid var(--border);
@@ -579,23 +579,68 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
   }
   .heatmap-title {
     font-weight: 700;
     font-size: 1rem;
-    color: var(--text);
+    color: var(--text-primary);
+  }
+  .heatmap-title-link {
+    font-size: 0.8125rem;
+    color: var(--accent);
+    text-decoration: none;
+    margin-left: 6px;
   }
   .heatmap-count {
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     color: var(--text-muted);
-    font-family: 'JetBrains Mono', monospace;
   }
-  .heatmap-container {
+  .heatmap-body {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    position: relative;
+  }
+  .heatmap-labels {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding-right: 8px;
+    padding-top: 22px;
+  }
+  .heatmap-labels .heatmap-label {
+    height: 11px;
+    line-height: 11px;
+    font-size: 10px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+  }
+  .heatmap-grid-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    min-width: 0;
+  }
+  .heatmap-months {
     display: flex;
     gap: 3px;
-    overflow-x: auto;
-    padding-bottom: 6px;
+    height: 18px;
+    align-items: flex-end;
+  }
+  .heatmap-month-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    position: relative;
+    height: 18px;
+    display: flex;
+    align-items: flex-end;
+  }
+  .heatmap-grid {
+    display: flex;
+    gap: 3px;
   }
   .heatmap-week {
     display: flex;
@@ -603,54 +648,60 @@
     gap: 3px;
   }
   .heatmap-cell {
-    width: 12px;
-    height: 12px;
+    width: 11px;
+    height: 11px;
     border-radius: 2px;
     background: var(--heatmap-0);
-    position: relative;
     cursor: default;
   }
-  .heatmap-cell[title]:hover::after {
-    content: attr(title);
+  .heatmap-cell.empty {
+    visibility: hidden;
+  }
+  .heatmap-tooltip {
+    position: fixed;
+    background: #24292f;
+    color: #fff;
+    font-size: 11px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    pointer-events: none;
+    z-index: 99999;
+    white-space: nowrap;
+    line-height: 1.4;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.15);
+    opacity: 0;
+    transition: opacity 0.1s;
+  }
+  .heatmap-tooltip.visible {
+    opacity: 1;
+  }
+  .heatmap-tooltip::after {
+    content: '';
     position: absolute;
-    bottom: calc(100% + 4px);
+    top: 100%;
     left: 50%;
     transform: translateX(-50%);
-    background: var(--text);
-    color: var(--bg);
-    font-size: 0.625rem;
-    padding: 2px 6px;
-    border-radius: 4px;
-    white-space: nowrap;
-    pointer-events: none;
-    z-index: 10;
+    border: 5px solid transparent;
+    border-top-color: #24292f;
   }
-  .heatmap-months {
-    display: flex;
-    gap: 3px;
-    margin-bottom: 4px;
-    padding-left: 0;
-  }
-  .heatmap-month-label {
-    font-size: 0.625rem;
-    color: var(--text-muted);
-    min-width: 12px;
-    text-align: left;
+  .heatmap-tooltip strong {
+    color: #fff;
   }
   .heatmap-legend {
     display: flex;
     align-items: center;
     gap: 3px;
     justify-content: flex-end;
-    margin-top: 10px;
-    font-size: 0.625rem;
+    margin-top: 12px;
+    font-size: 10px;
     color: var(--text-muted);
   }
   .heatmap-legend .heatmap-cell {
     cursor: default;
+    outline: none;
   }
   .heatmap-legend-label {
-    margin: 0 2px;
+    margin: 0 4px;
   }
 
   /* ═══ NOTEBOOK ═══ */
@@ -1660,20 +1711,20 @@
       <!-- Heatmap -->
       <div class="heatmap-wrap anim" style="--i: 4">
         <div class="heatmap-header">
-          <span class="heatmap-title">学习日历</span>
-          <span class="heatmap-count" id="heatmap-total">今日: 0 词</span>
+          <span class="heatmap-title" id="heatmap-total">学习日历</span>
         </div>
-        <div class="heatmap-container" id="heatmap-container"></div>
+        <div class="heatmap-body" id="heatmap-container"></div>
         <div class="heatmap-legend">
-          <span class="heatmap-legend-label">少</span>
+          <span class="heatmap-legend-label">Less</span>
           <span class="heatmap-cell" style="background:var(--heatmap-0)"></span>
           <span class="heatmap-cell" style="background:var(--heatmap-1)"></span>
           <span class="heatmap-cell" style="background:var(--heatmap-2)"></span>
           <span class="heatmap-cell" style="background:var(--heatmap-3)"></span>
           <span class="heatmap-cell" style="background:var(--heatmap-4)"></span>
-          <span class="heatmap-legend-label">多</span>
+          <span class="heatmap-legend-label">More</span>
         </div>
       </div>
+      <div class="heatmap-tooltip" id="heatmap-tooltip"></div>
 
       <!-- Features -->
       <div class="section-title anim" style="--i: 5">功能入口</div>
@@ -2216,48 +2267,76 @@
 
   function renderHeatmap() {
     const container = document.getElementById('heatmap-container');
-    const totalEl = document.getElementById('heatmap-total');
+    const titleEl = document.getElementById('heatmap-total');
+    const tooltip = document.getElementById('heatmap-tooltip');
     if (!container) return;
 
     const log = getLearnLog();
     const today = new Date();
     const todayStr = today.toISOString().slice(0, 10);
+    const totalToday = log[todayStr] || 0;
+    const totalContributions = Object.values(log).reduce((s, v) => s + v, 0);
 
-    // Update today's count
-    if (totalEl) totalEl.textContent = '今日: ' + (log[todayStr] || 0) + ' 词';
+    if (titleEl) titleEl.innerHTML = totalContributions + ' words in the last 6 months<br style="font-size:0.65rem;color:var(--text-muted);font-weight:400">' + totalToday + ' words today';
 
-    // Calculate date range: ~6 months back, aligned to Sunday
+    // Date range: ~6 months back, aligned to start of week (Sunday)
     const startDate = new Date(today);
     startDate.setMonth(startDate.getMonth() - 6);
-    // Align to previous Sunday
-    while (startDate.getDay() !== 0) startDate.setDate(startDate.getDate() - 1);
+    startDate.setDate(startDate.getDate() - startDate.getDay());
 
     // Build weeks
     const weeks = [];
-    let currentDate = new Date(startDate);
-    let currentWeek = [];
+    let d = new Date(startDate);
+    let week = [];
 
-    while (currentDate <= today) {
-      const dateStr = currentDate.toISOString().slice(0, 10);
-      const count = log[dateStr] || 0;
-      currentWeek.push({ date: dateStr, count, day: currentDate.getDay() });
+    while (d <= today) {
+      const ds = d.toISOString().slice(0, 10);
+      const count = log[ds] || 0;
+      week.push({ date: ds, count, day: d.getDay(), month: d.getMonth() });
 
-      if (currentDate.getDay() === 6 || currentDate.getTime() === today.getTime()) {
-        weeks.push(currentWeek);
-        currentWeek = [];
+      if (d.getDay() === 6) {
+        weeks.push(week);
+        week = [];
       }
-      currentDate.setDate(currentDate.getDate() + 1);
+      d.setDate(d.getDate() + 1);
     }
-    if (currentWeek.length > 0) weeks.push(currentWeek);
+    if (week.length > 0) {
+      // Pad last week to 7 days
+      while (week.length < 7) {
+        const padDate = new Date(today);
+        padDate.setDate(padDate.getDate() + (week.length - today.getDay()));
+        week.push({ date: padDate.toISOString().slice(0, 10), count: 0, day: week.length, month: padDate.getMonth(), future: true });
+      }
+      weeks.push(week);
+    }
 
-    // Month labels
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const dayLabels = ['','Mon','','Wed','','Fri',''];
+
+    container.innerHTML = '';
+
+    // Left column: weekday labels
+    const labelsCol = document.createElement('div');
+    labelsCol.className = 'heatmap-labels';
+    for (let i = 0; i < 7; i++) {
+      const lbl = document.createElement('div');
+      lbl.className = 'heatmap-label';
+      lbl.textContent = dayLabels[i];
+      labelsCol.appendChild(lbl);
+    }
+    container.appendChild(labelsCol);
+
+    // Right column: months + grid
+    const gridWrap = document.createElement('div');
+    gridWrap.className = 'heatmap-grid-wrap';
+
+    // Month labels row
     const monthsRow = document.createElement('div');
     monthsRow.className = 'heatmap-months';
     let lastMonth = -1;
-    const monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-    for (const week of weeks) {
-      const firstDay = week[0];
-      const m = new Date(firstDay.date).getMonth();
+    for (const w of weeks) {
+      const firstDay = w[0];
+      const m = firstDay.month;
       const label = document.createElement('span');
       label.className = 'heatmap-month-label';
       if (m !== lastMonth) {
@@ -2266,36 +2345,56 @@
       }
       monthsRow.appendChild(label);
     }
+    gridWrap.appendChild(monthsRow);
 
-    // Build grid
-    container.innerHTML = '';
-    container.appendChild(monthsRow);
+    // Grid
+    const grid = document.createElement('div');
+    grid.className = 'heatmap-grid';
 
-    for (const week of weeks) {
+    for (const w of weeks) {
       const weekEl = document.createElement('div');
       weekEl.className = 'heatmap-week';
 
-      // Fill empty cells at start of week if needed
-      if (week.length < 7 && week[0].day !== 0) {
-        for (let i = 0; i < week[0].day; i++) {
+      if (w[0].day > 0) {
+        for (let i = 0; i < w[0].day; i++) {
           const empty = document.createElement('div');
-          empty.className = 'heatmap-cell';
-          empty.style.visibility = 'hidden';
+          empty.className = 'heatmap-cell empty';
           weekEl.appendChild(empty);
         }
       }
 
-      for (const day of week) {
+      for (const day of w) {
         const cell = document.createElement('div');
         cell.className = 'heatmap-cell';
-        const level = day.count === 0 ? 0 : day.count <= 5 ? 1 : day.count <= 15 ? 2 : day.count <= 30 ? 3 : 4;
-        cell.style.background = 'var(--heatmap-' + level + ')';
-        cell.title = day.date + ': ' + day.count + ' 词';
+        if (day.future) {
+          cell.classList.add('empty');
+        } else {
+          const level = day.count === 0 ? 0 : day.count <= 3 ? 1 : day.count <= 8 ? 2 : day.count <= 15 ? 3 : 4;
+          cell.style.background = 'var(--heatmap-' + level + ')';
+
+          // Tooltip
+          const dateObj = new Date(day.date + 'T00:00:00');
+          const dateStr = monthNames[dateObj.getMonth()] + ' ' + dateObj.getDate() + ', ' + dateObj.getFullYear();
+          const wordText = day.count === 0 ? 'No words' : day.count + ' word' + (day.count > 1 ? 's' : '');
+          cell.addEventListener('mouseenter', function(e) {
+            tooltip.innerHTML = '<strong>' + wordText + '</strong> on ' + dateStr;
+            tooltip.classList.add('visible');
+            const r = cell.getBoundingClientRect();
+            tooltip.style.left = (r.left + r.width / 2 - tooltip.offsetWidth / 2) + 'px';
+            tooltip.style.top = (r.top - tooltip.offsetHeight - 8) + 'px';
+          });
+          cell.addEventListener('mouseleave', function() {
+            tooltip.classList.remove('visible');
+          });
+        }
         weekEl.appendChild(cell);
       }
 
-      container.appendChild(weekEl);
+      grid.appendChild(weekEl);
     }
+
+    gridWrap.appendChild(grid);
+    container.appendChild(gridWrap);
   }
 
   // ═══ TASK COUNTER ═══
