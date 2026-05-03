@@ -2280,6 +2280,7 @@
         <div class="flip-section-title">释义</div>
         <div class="flip-def">${w.def}</div>
       </div>
+      ${(() => { const bnc = w.bnc || 0; if (bnc > 0 && bnc <= 3000) return '<span style="display:inline-block;font-size:0.65rem;padding:2px 6px;border-radius:4px;background:var(--success-soft);color:var(--success);font-family:JetBrains Mono,monospace;margin-bottom:8px;">高频 BNC#' + bnc + '</span>'; if (bnc > 3000 && bnc <= 8000) return '<span style="display:inline-block;font-size:0.65rem;padding:2px 6px;border-radius:4px;background:var(--warning-soft);color:oklch(0.55 0.15 75);font-family:JetBrains Mono,monospace;margin-bottom:8px;">中频 BNC#' + bnc + '</span>'; if (bnc > 8000) return '<span style="display:inline-block;font-size:0.65rem;padding:2px 6px;border-radius:4px;background:var(--bg-muted);color:var(--text-muted);font-family:JetBrains Mono,monospace;margin-bottom:8px;">低频 BNC#' + bnc + '</span>'; return ''; })()}
       ${w.cet4 ? `<div>
         <div class="flip-section-title" style="display:flex;align-items:center;gap:6px;">四级例句
           <button onclick="event.stopPropagation();speakSentence('${esc(w.cet4)}')" title="朗读例句" style="background:none;border:none;cursor:pointer;color:var(--accent);padding:0;display:flex;align-items:center;">
@@ -3330,6 +3331,7 @@
       <div class="wp-word">${w.word}</div>
       <div class="wp-phonetic">${w.phonetic || ''}</div>
       <div class="wp-def">${w.def || ''}</div>
+      ${(() => { const bnc = w.bnc || 0; if (bnc > 0 && bnc <= 3000) return '<span style="display:inline-block;font-size:0.65rem;padding:2px 6px;border-radius:4px;background:var(--success-soft);color:var(--success);font-family:JetBrains Mono,monospace;margin-bottom:8px;">高频 BNC#' + bnc + '</span>'; if (bnc > 3000 && bnc <= 8000) return '<span style="display:inline-block;font-size:0.65rem;padding:2px 6px;border-radius:4px;background:var(--warning-soft);color:oklch(0.55 0.15 75);font-family:JetBrains Mono,monospace;margin-bottom:8px;">中频 BNC#' + bnc + '</span>'; if (bnc > 8000) return '<span style="display:inline-block;font-size:0.65rem;padding:2px 6px;border-radius:4px;background:var(--bg-muted);color:var(--text-muted);font-family:JetBrains Mono,monospace;margin-bottom:8px;">低频 BNC#' + bnc + '</span>'; return ''; })()}
       ${exampleHTML}
       <div style="display:flex;gap:8px;margin-top:4px;">
         <button class="wp-speak" onclick="speakWord('${esc(w.word)}')">
