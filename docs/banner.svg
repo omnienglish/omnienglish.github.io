@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea"/>
+      <stop offset="100%" style="stop-color:#764ba2"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Logo circle -->
+  <circle cx="100" cy="100" r="40" fill="rgba(255,255,255,0.15)"/>
+  <text x="100" y="115" text-anchor="middle" fill="white" font-family="system-ui" font-size="36" font-weight="700">O</text>
+
+  <!-- Title -->
+  <text x="600" y="220" text-anchor="middle" fill="white" font-family="system-ui" font-size="64" font-weight="700">OmniEnglish</text>
+  <text x="600" y="280" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-family="system-ui" font-size="28">CET-4 备考平台</text>
+
+  <!-- Feature pills -->
+  <rect x="180" y="330" width="180" height="44" rx="22" fill="rgba(255,255,255,0.2)"/>
+  <text x="270" y="358" text-anchor="middle" fill="white" font-family="system-ui" font-size="18">📖 4544 词汇</text>
+
+  <rect x="400" y="330" width="180" height="44" rx="22" fill="rgba(255,255,255,0.2)"/>
+  <text x="490" y="358" text-anchor="middle" fill="white" font-family="system-ui" font-size="18">🧠 智能复习</text>
+
+  <rect x="620" y="330" width="180" height="44" rx="22" fill="rgba(255,255,255,0.2)"/>
+  <text x="710" y="358" text-anchor="middle" fill="white" font-family="system-ui" font-size="18">✍️ AI 批改</text>
+
+  <rect x="840" y="330" width="180" height="44" rx="22" fill="rgba(255,255,255,0.2)"/>
+  <text x="930" y="358" text-anchor="middle" fill="white" font-family="system-ui" font-size="18">📊 热力图</text>
+
+  <!-- Bottom bar -->
+  <rect x="0" y="530" width="1200" height="100" fill="rgba(0,0,0,0.2)"/>
+  <text x="600" y="575" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-family="system-ui" font-size="20">omnienglish.github.io</text>
+  <text x="600" y="605" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-family="system-ui" font-size="16">单文件架构 · 零依赖 · 国内直连 · 开源免费</text>
+</svg>

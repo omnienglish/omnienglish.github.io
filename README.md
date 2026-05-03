@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/banner.svg" alt="OmniEnglish" width="100%">
+
 # OmniEnglish
 
 **CET-4 备考平台 · 专为中国大学生打造**
