@@ -1004,6 +1004,116 @@
     color: var(--accent);
   }
 
+  /* ═══ CARD BG PICKER ═══ */
+  .bg-picker-wrap {
+    position: relative;
+    display: inline-block;
+  }
+  .bg-picker-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 4px 8px;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s;
+  }
+  .bg-picker-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .bg-picker-btn svg { width: 14px; height: 14px; }
+  .bg-picker-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px;
+    z-index: 100;
+    box-shadow: 0 8px 24px oklch(0 0 0 / 0.12);
+    display: none;
+    min-width: 220px;
+  }
+  .bg-picker-dropdown.open { display: block; }
+  .bg-picker-title {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .bg-presets {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .bg-preset {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    border-radius: 6px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .bg-preset:hover {
+    transform: scale(1.08);
+  }
+  .bg-preset.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-soft);
+  }
+  .bg-preset.active::after {
+    content: '✓';
+    position: absolute;
+    bottom: 2px;
+    right: 3px;
+    font-size: 9px;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  }
+  .bg-upload-row {
+    display: flex;
+    gap: 6px;
+  }
+  .bg-upload-btn {
+    flex: 1;
+    padding: 6px 0;
+    font-size: 0.6875rem;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .bg-upload-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .bg-reset-btn {
+    padding: 6px 10px;
+    font-size: 0.6875rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .bg-reset-btn:hover {
+    border-color: var(--error);
+    color: var(--error);
+  }
+
   .flip-section-title {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.625rem;
@@ -1858,8 +1968,24 @@
 
       <!-- Card area: shown during active session -->
       <div id="vocab-card-area" style="display:none;">
-        <div style="margin-bottom:12px;">
+        <div style="margin-bottom:12px;display:flex;align-items:center;gap:8px;">
           <button onclick="exitLearnSession()" style="background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px 12px;font-size:0.75rem;color:var(--text-muted);cursor:pointer;">← 返回设置</button>
+          <div class="bg-picker-wrap">
+            <button class="bg-picker-btn" onclick="toggleBgPicker(event)">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.098 19.902a3.75 3.75 0 005.304 0l6.401-6.402M6.75 21A3.75 3.75 0 013 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 003.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008z"/></svg>
+              卡片背景
+            </button>
+            <div class="bg-picker-dropdown" id="bg-picker-dropdown">
+              <div class="bg-picker-title">预设主题</div>
+              <div class="bg-presets" id="bg-presets"></div>
+              <div class="bg-picker-title">自定义图片</div>
+              <div class="bg-upload-row">
+                <button class="bg-upload-btn" onclick="document.getElementById('bg-file-input').click()">上传图片</button>
+                <button class="bg-reset-btn" onclick="resetCardBg()">重置</button>
+              </div>
+              <input type="file" id="bg-file-input" accept="image/*" style="display:none" onchange="handleBgUpload(event)">
+            </div>
+          </div>
         </div>
         <div class="flip-scene">
           <div class="flip-card" id="flip-card" onclick="if(!event.target.closest('.clickable-word,.flip-front-word,.flip-front-phonetic'))this.classList.toggle('flipped')">
@@ -2640,6 +2766,7 @@
           </div>`;
         back.innerHTML = '';
         navInfo.textContent = '完成';
+        applyCardBg();
       } else {
         // No session — show setup
         showVocabSetup();
@@ -2655,6 +2782,7 @@
     const { front: fHTML, back: bHTML } = renderVocabCardUI(w);
     front.innerHTML = fHTML;
     back.innerHTML = bHTML;
+    applyCardBg();
 
     const prog = WordScheduler.progress();
     navInfo.textContent = prog.current + ' / ' + (prog.total + prog.done);
@@ -2671,6 +2799,105 @@
     WordScheduler._originalCount = 0;
     localStorage.removeItem('omni-daily-queue');
     showVocabSetup();
+  }
+
+  // ═══ CARD BG PICKER ═══
+  const CARD_BG_PRESETS = [
+    { id: 'default', name: '默认', bg: 'var(--bg-surface)', text: null },
+    { id: 'warm', name: '暖阳', bg: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)', text: '#5d4037' },
+    { id: 'ocean', name: '海洋', bg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', text: '#fff' },
+    { id: 'forest', name: '森林', bg: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)', text: '#fff' },
+    { id: 'sunset', name: '日落', bg: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', text: '#5d4037' },
+    { id: 'night', name: '夜空', bg: 'linear-gradient(135deg, #0c0c1d 0%, #1a1a3e 50%, #2d1b69 100%)', text: '#e0e0ff' },
+    { id: 'sakura', name: '樱花', bg: 'linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)', text: '#4a148c' },
+    { id: 'mint', name: '薄荷', bg: 'linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)', text: '#1b5e20' },
+  ];
+
+  function getCardBg() {
+    try { return JSON.parse(localStorage.getItem('oe-card-bg') || '{}'); } catch { return {}; }
+  }
+
+  function applyCardBg() {
+    const cfg = getCardBg();
+    const front = document.querySelector('.flip-front');
+    const back = document.querySelector('.flip-back');
+    if (!front || !back) return;
+
+    if (cfg.img) {
+      const style = `url(${cfg.img}) center/cover no-repeat`;
+      front.style.background = style;
+      back.style.background = style;
+      front.style.color = cfg.text || null;
+      back.style.color = cfg.text || null;
+    } else if (cfg.bg && cfg.id !== 'default') {
+      front.style.background = cfg.bg;
+      back.style.background = cfg.bg;
+      front.style.color = cfg.text || null;
+      back.style.color = cfg.text || null;
+    } else {
+      front.style.background = '';
+      back.style.background = '';
+      front.style.color = '';
+      back.style.color = '';
+    }
+  }
+
+  function setCardBg(preset) {
+    localStorage.setItem('oe-card-bg', JSON.stringify(preset));
+    applyCardBg();
+    renderBgPresets();
+  }
+
+  function resetCardBg() {
+    localStorage.removeItem('oe-card-bg');
+    applyCardBg();
+    renderBgPresets();
+  }
+
+  function handleBgUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      alert('图片不能超过 2MB');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      setCardBg({ id: 'custom', name: '自定义', img: ev.target.result });
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  }
+
+  function renderBgPresets() {
+    const container = document.getElementById('bg-presets');
+    if (!container) return;
+    const cfg = getCardBg();
+    container.innerHTML = '';
+    CARD_BG_PRESETS.forEach(p => {
+      const el = document.createElement('div');
+      el.className = 'bg-preset' + (cfg.id === p.id ? ' active' : '');
+      el.style.background = p.bg;
+      el.title = p.name;
+      el.onclick = () => setCardBg({ id: p.id, bg: p.bg, text: p.text });
+      container.appendChild(el);
+    });
+  }
+
+  function toggleBgPicker(e) {
+    e.stopPropagation();
+    const dd = document.getElementById('bg-picker-dropdown');
+    dd.classList.toggle('open');
+    if (dd.classList.contains('open')) {
+      renderBgPresets();
+      const close = (ev) => {
+        if (!dd.contains(ev.target)) {
+          dd.classList.remove('open');
+          document.removeEventListener('click', close);
+        }
+      };
+      setTimeout(() => document.addEventListener('click', close), 0);
+    }
   }
 
   function showVocabSetup() {
