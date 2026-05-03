@@ -734,6 +734,83 @@
     margin: 0 4px;
   }
 
+  /* ═══ IMAGE CROP MODAL ═══ */
+  .crop-overlay {
+    position: fixed;
+    inset: 0;
+    background: oklch(0 0 0 / 0.7);
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .crop-container {
+    position: relative;
+    max-width: 90vw;
+    max-height: 70vh;
+    overflow: hidden;
+    border-radius: 8px;
+  }
+  .crop-container img {
+    display: block;
+    max-width: 90vw;
+    max-height: 70vh;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+  .crop-box {
+    position: absolute;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 9999px oklch(0 0 0 / 0.5);
+    cursor: move;
+    box-sizing: border-box;
+  }
+  .crop-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1px dashed oklch(1 1 0 / 0.4);
+  }
+  .crop-handle {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: #fff;
+    border-radius: 2px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+  .crop-handle.tl { top: -6px; left: -6px; cursor: nwse-resize; }
+  .crop-handle.tr { top: -6px; right: -6px; cursor: nesw-resize; }
+  .crop-handle.bl { bottom: -6px; left: -6px; cursor: nesw-resize; }
+  .crop-handle.br { bottom: -6px; right: -6px; cursor: nwse-resize; }
+  .crop-actions {
+    display: flex;
+    gap: 10px;
+  }
+  .crop-actions button {
+    padding: 8px 24px;
+    border-radius: 6px;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .crop-confirm {
+    background: var(--accent);
+    color: #fff;
+  }
+  .crop-confirm:hover { opacity: 0.85; }
+  .crop-cancel {
+    background: oklch(1 0 0 / 0.15);
+    color: #fff;
+    border: 1px solid oklch(1 0 0 / 0.25) !important;
+  }
+  .crop-cancel:hover { background: oklch(1 0 0 / 0.25); }
+
   /* ═══ NOTEBOOK ═══ */
   .notebook-empty {
     text-align: center;
@@ -2864,10 +2941,155 @@
     }
     const reader = new FileReader();
     reader.onload = function(ev) {
-      setCardBg({ id: 'custom', name: '自定义', img: ev.target.result });
+      showCropModal(ev.target.result);
     };
     reader.readAsDataURL(file);
     e.target.value = '';
+  }
+
+  function showCropModal(dataUrl) {
+    // Remove existing
+    const old = document.getElementById('crop-overlay');
+    if (old) old.remove();
+
+    const overlay = document.createElement('div');
+    overlay.className = 'crop-overlay';
+    overlay.id = 'crop-overlay';
+
+    const container = document.createElement('div');
+    container.className = 'crop-container';
+
+    const img = document.createElement('img');
+    img.src = dataUrl;
+
+    const cropBox = document.createElement('div');
+    cropBox.className = 'crop-box';
+
+    // Corner handles
+    ['tl','tr','bl','br'].forEach(pos => {
+      const h = document.createElement('div');
+      h.className = 'crop-handle ' + pos;
+      h.dataset.pos = pos;
+      cropBox.appendChild(h);
+    });
+
+    const actions = document.createElement('div');
+    actions.className = 'crop-actions';
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'crop-cancel';
+    cancelBtn.textContent = '取消';
+    cancelBtn.onclick = () => overlay.remove();
+    const confirmBtn = document.createElement('button');
+    confirmBtn.className = 'crop-confirm';
+    confirmBtn.textContent = '确认裁剪';
+    actions.appendChild(cancelBtn);
+    actions.appendChild(confirmBtn);
+
+    container.appendChild(img);
+    container.appendChild(cropBox);
+    overlay.appendChild(container);
+    overlay.appendChild(actions);
+    document.body.appendChild(overlay);
+
+    img.onload = function() {
+      const imgW = img.offsetWidth;
+      const imgH = img.offsetHeight;
+
+      // Default crop: 80% of image, centered, 3:4 aspect ratio
+      const aspect = 3 / 4;
+      let cropW = imgW * 0.8;
+      let cropH = cropW / aspect;
+      if (cropH > imgH * 0.8) {
+        cropH = imgH * 0.8;
+        cropW = cropH * aspect;
+      }
+      const cropX = (imgW - cropW) / 2;
+      const cropY = (imgH - cropH) / 2;
+
+      let box = { x: cropX, y: cropY, w: cropW, h: cropH };
+      renderCropBox();
+
+      function renderCropBox() {
+        cropBox.style.left = box.x + 'px';
+        cropBox.style.top = box.y + 'px';
+        cropBox.style.width = box.w + 'px';
+        cropBox.style.height = box.h + 'px';
+      }
+
+      // Drag to move
+      let dragMode = null; // 'move' or handle pos
+      let startX, startY, startBox;
+
+      function onPointerDown(e) {
+        e.preventDefault();
+        const handle = e.target.closest('.crop-handle');
+        dragMode = handle ? handle.dataset.pos : 'move';
+        startX = e.clientX;
+        startY = e.clientY;
+        startBox = { ...box };
+        document.addEventListener('pointermove', onPointerMove);
+        document.addEventListener('pointerup', onPointerUp);
+      }
+
+      function onPointerMove(e) {
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+
+        if (dragMode === 'move') {
+          box.x = Math.max(0, Math.min(imgW - startBox.w, startBox.x + dx));
+          box.y = Math.max(0, Math.min(imgH - startBox.h, startBox.y + dy));
+        } else {
+          let nx = startBox.x, ny = startBox.y, nw = startBox.w, nh = startBox.h;
+          if (dragMode.includes('l')) {
+            nx = Math.max(0, Math.min(startBox.x + startBox.w - 30, startBox.x + dx));
+            nw = startBox.w - (nx - startBox.x);
+          }
+          if (dragMode.includes('r')) {
+            nw = Math.max(30, Math.min(imgW - startBox.x, startBox.w + dx));
+          }
+          if (dragMode.includes('t')) {
+            ny = Math.max(0, Math.min(startBox.y + startBox.h - 30, startBox.y + dy));
+            nh = startBox.h - (ny - startBox.y);
+          }
+          if (dragMode.includes('b')) {
+            nh = Math.max(30, Math.min(imgH - startBox.y, startBox.h + dy));
+          }
+          box = { x: nx, y: ny, w: nw, h: nh };
+        }
+        renderCropBox();
+      }
+
+      function onPointerUp() {
+        dragMode = null;
+        document.removeEventListener('pointermove', onPointerMove);
+        document.removeEventListener('pointerup', onPointerUp);
+      }
+
+      cropBox.addEventListener('pointerdown', onPointerDown);
+
+      // Confirm crop
+      confirmBtn.onclick = function() {
+        // Scale from display size to natural size
+        const scaleX = img.naturalWidth / imgW;
+        const scaleY = img.naturalHeight / imgH;
+
+        const canvas = document.createElement('canvas');
+        // Output at card size (3:4 ratio, reasonable resolution)
+        canvas.width = 450;
+        canvas.height = 600;
+        const ctx = canvas.getContext('2d');
+
+        ctx.drawImage(img,
+          box.x * scaleX, box.y * scaleY,
+          box.w * scaleX, box.h * scaleY,
+          0, 0, 450, 600
+        );
+
+        const cropped = canvas.toDataURL('image/jpeg', 0.85);
+        overlay.remove();
+        setCardBg({ id: 'custom', name: '自定义', img: cropped });
+      };
+    };
   }
 
   function renderBgPresets() {
