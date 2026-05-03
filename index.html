@@ -1065,6 +1065,17 @@
     justify-content: center;
     text-align: center;
   }
+  .card-bg-overlay {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .flip-face > *:not(.card-bg-overlay) {
+    position: relative;
+    z-index: 1;
+  }
 
   .flip-front-word {
     font-family: 'JetBrains Mono', monospace;
@@ -1217,6 +1228,36 @@
   .bg-reset-btn:hover {
     border-color: var(--error);
     color: var(--error);
+  }
+  .bg-opacity-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .bg-opacity-slider {
+    flex: 1;
+    height: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--bg-muted);
+    border-radius: 2px;
+    outline: none;
+  }
+  .bg-opacity-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+  }
+  .bg-opacity-val {
+    font-size: 0.6875rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+    min-width: 30px;
+    text-align: right;
   }
 
   .flip-section-title {
@@ -2083,6 +2124,11 @@
             <div class="bg-picker-dropdown" id="bg-picker-dropdown">
               <div class="bg-picker-title">预设主题</div>
               <div class="bg-presets" id="bg-presets"></div>
+              <div class="bg-picker-title">背景透明度</div>
+              <div class="bg-opacity-row">
+                <input type="range" id="bg-opacity-slider" min="0.1" max="1" step="0.05" value="0.35" class="bg-opacity-slider" oninput="setCardBgOpacity(this.value)">
+                <span id="bg-opacity-val" class="bg-opacity-val">35%</span>
+              </div>
               <div class="bg-picker-title">自定义图片</div>
               <div class="bg-upload-row">
                 <button class="bg-upload-btn" onclick="document.getElementById('bg-file-input').click()">上传图片</button>
@@ -2228,41 +2274,6 @@
         <button onclick="resetReview()" class="vocab-action-btn btn-know">返回</button>
       </div>
 
-      <!-- Card Review: uses WordScheduler + renderVocabCardUI -->
-      <div style="border-top:1px solid var(--border);padding-top:20px;margin-top:20px;">
-        <div style="font-weight:600;font-size:0.95rem;margin-bottom:12px;">卡片复习</div>
-        <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:12px;">翻卡片 + 三按钮反馈，与高频词汇墙同样的复习体验</div>
-        <div id="review-card-setup">
-          <button onclick="startCardReview()" style="padding:10px 28px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent);color:#fff;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;">
-            开始卡片复习
-          </button>
-        </div>
-        <div id="review-card-area" style="display:none;">
-          <div class="flip-scene">
-            <div class="flip-card" id="review-flip-card" onclick="if(!event.target.closest('.clickable-word,.flip-front-word,.flip-front-phonetic'))this.classList.toggle('flipped')">
-              <div class="flip-face flip-front" id="review-flip-front"></div>
-              <div class="flip-face flip-back" id="review-flip-back"></div>
-            </div>
-          </div>
-          <div class="vocab-nav">
-            <span class="vocab-nav-info" id="review-card-nav">1 / 1</span>
-          </div>
-          <div class="vocab-actions">
-            <button class="vocab-action-btn btn-review" onclick="reviewCardMark('forgot')" style="flex:1">
-              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-              忘记了
-            </button>
-            <button class="vocab-action-btn btn-review" onclick="reviewCardMark('vague')" style="flex:1">
-              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
-              模糊
-            </button>
-            <button class="vocab-action-btn btn-know" onclick="reviewCardMark('known')" style="flex:1">
-              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              已掌握
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- Notebook -->
@@ -2486,7 +2497,7 @@
 
     // Update dashboard stats from vocab state
     if (page === 'dashboard') { updateDashboardStats(); updateEvoBar(); }
-    if (page === 'review') { updateReviewCounts(); ReviewScheduler.restore('omni-review-queue', VOCAB); renderReviewCard(); }
+    if (page === 'review') { updateReviewCounts(); }
     if (page === 'vocab') { renderVocabCard(); }
   }
 
@@ -2922,35 +2933,64 @@
     try { return JSON.parse(localStorage.getItem('oe-card-bg') || '{}'); } catch { return {}; }
   }
 
+  function ensureBgOverlay(face) {
+    let ov = face.querySelector('.card-bg-overlay');
+    if (!ov) {
+      ov = document.createElement('div');
+      ov.className = 'card-bg-overlay';
+      face.insertBefore(ov, face.firstChild);
+    }
+    return ov;
+  }
+
   function applyCardBg() {
     const cfg = getCardBg();
     const front = document.querySelector('.flip-front');
     const back = document.querySelector('.flip-back');
     if (!front || !back) return;
 
-    if (cfg.img) {
-      const style = `url(${cfg.img}) center/100% 100% no-repeat`;
-      front.style.background = style;
-      back.style.background = style;
-      front.style.color = cfg.text || null;
-      back.style.color = cfg.text || null;
-    } else if (cfg.bg && cfg.id !== 'default') {
-      front.style.background = cfg.bg;
-      back.style.background = cfg.bg;
-      front.style.color = cfg.text || null;
-      back.style.color = cfg.text || null;
+    const opacity = cfg.opacity != null ? cfg.opacity : 0.35;
+
+    if (cfg.img || (cfg.bg && cfg.id !== 'default')) {
+      const bgVal = cfg.img ? `url(${cfg.img}) center/100% 100% no-repeat` : cfg.bg;
+      const ovF = ensureBgOverlay(front);
+      const ovB = ensureBgOverlay(back);
+      ovF.style.background = bgVal;
+      ovF.style.opacity = opacity;
+      ovB.style.background = bgVal;
+      ovB.style.opacity = opacity;
+      if (cfg.text) { front.style.color = cfg.text; back.style.color = cfg.text; }
     } else {
-      front.style.background = '';
-      back.style.background = '';
+      const ovF = front.querySelector('.card-bg-overlay');
+      const ovB = back.querySelector('.card-bg-overlay');
+      if (ovF) ovF.remove();
+      if (ovB) ovB.remove();
       front.style.color = '';
       back.style.color = '';
     }
+
+    // Sync slider
+    const slider = document.getElementById('bg-opacity-slider');
+    const valEl = document.getElementById('bg-opacity-val');
+    if (slider) slider.value = opacity;
+    if (valEl) valEl.textContent = Math.round(opacity * 100) + '%';
   }
 
   function setCardBg(preset) {
+    const cfg = getCardBg();
+    preset.opacity = cfg.opacity != null ? cfg.opacity : 0.35;
     localStorage.setItem('oe-card-bg', JSON.stringify(preset));
     applyCardBg();
     renderBgPresets();
+  }
+
+  function setCardBgOpacity(val) {
+    const cfg = getCardBg();
+    cfg.opacity = parseFloat(val);
+    localStorage.setItem('oe-card-bg', JSON.stringify(cfg));
+    const valEl = document.getElementById('bg-opacity-val');
+    if (valEl) valEl.textContent = Math.round(val * 100) + '%';
+    applyCardBg();
   }
 
   function resetCardBg() {
@@ -3505,83 +3545,6 @@
     document.getElementById('review-quiz').style.display = 'none';
     document.getElementById('review-result').style.display = 'none';
     updateReviewCounts();
-  }
-
-  // ═══ CARD REVIEW MODE (uses ReviewScheduler + renderVocabCardUI) ═══
-  function startCardReview() {
-    // Gather words marked as 'review' (not yet mastered)
-    const reviewWords = VOCAB.filter(w => vocabState[w.word] === 'review');
-    if (reviewWords.length === 0) {
-      alert('没有待复习的单词！先在高频词汇墙标记一些"模糊"或"忘记了"的词。');
-      return;
-    }
-    ReviewScheduler.init(reviewWords);
-    ReviewScheduler.persist('omni-review-queue');
-    renderReviewCard();
-  }
-
-  function renderReviewCard() {
-    const setupEl = document.getElementById('review-card-setup');
-    const areaEl = document.getElementById('review-card-area');
-    const front = document.getElementById('review-flip-front');
-    const back = document.getElementById('review-flip-back');
-    const navInfo = document.getElementById('review-card-nav');
-    const card = document.getElementById('review-flip-card');
-
-    const w = ReviewScheduler.current();
-
-    if (!w) {
-      if (ReviewScheduler._originalCount > 0 && ReviewScheduler.isFinished()) {
-        setupEl.style.display = 'none';
-        areaEl.style.display = 'block';
-        card.classList.remove('flipped');
-        front.innerHTML = `
-          <div class="vocab-done-msg">
-            <strong>卡片复习完成!</strong><br>
-            <span style="font-size:0.85rem;color:var(--text-secondary);">共复习 ${ReviewScheduler._originalCount} 词</span><br><br>
-            <button onclick="startCardReview()" style="padding:8px 20px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;">再来一轮</button>
-          </div>`;
-        back.innerHTML = '';
-        navInfo.textContent = '完成';
-      } else {
-        setupEl.style.display = 'block';
-        areaEl.style.display = 'none';
-      }
-      return;
-    }
-
-    setupEl.style.display = 'none';
-    areaEl.style.display = 'block';
-    card.classList.remove('flipped');
-
-    const { front: fHTML, back: bHTML } = renderVocabCardUI(w);
-    front.innerHTML = fHTML;
-    back.innerHTML = bHTML;
-
-    const prog = ReviewScheduler.progress();
-    navInfo.textContent = prog.current + ' / ' + (prog.total + prog.done);
-
-    if (document.getElementById('page-review').classList.contains('active')) {
-      setTimeout(() => speakWord(w.word), 30);
-    }
-  }
-
-  function reviewCardMark(status) {
-    const w = ReviewScheduler.current();
-    if (!w) return;
-
-    if (status === 'known') {
-      ReviewScheduler.known();
-      vocabState[w.word] = 'known';
-    } else if (status === 'forgot') {
-      ReviewScheduler.forgot();
-    } else if (status === 'vague') {
-      ReviewScheduler.vague();
-    }
-
-    saveVocabState();
-    ReviewScheduler.persist('omni-review-queue');
-    renderReviewCard();
   }
 
   // ═══ WRITING / TRANSLATION MOCK EXAM ═══
