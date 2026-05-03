@@ -1652,6 +1652,9 @@
 
       <!-- Card area: shown during active session -->
       <div id="vocab-card-area" style="display:none;">
+        <div style="margin-bottom:12px;">
+          <button onclick="exitLearnSession()" style="background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px 12px;font-size:0.75rem;color:var(--text-muted);cursor:pointer;">← 返回设置</button>
+        </div>
         <div class="flip-scene">
           <div class="flip-card" id="flip-card" onclick="if(!event.target.closest('.clickable-word,.flip-front-word,.flip-front-phonetic'))this.classList.toggle('flipped')">
             <div class="flip-face flip-front" id="flip-front"></div>
@@ -2316,6 +2319,14 @@
     if (document.getElementById('page-vocab').classList.contains('active')) {
       setTimeout(() => speakWord(w.word), 30);
     }
+  }
+
+  function exitLearnSession() {
+    WordScheduler.queue = [];
+    WordScheduler.pos = 0;
+    WordScheduler._originalCount = 0;
+    localStorage.removeItem('omni-daily-queue');
+    showVocabSetup();
   }
 
   function showVocabSetup() {
