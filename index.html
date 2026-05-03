@@ -2422,6 +2422,14 @@
     vocabPriority = p;
     vocabIndex = 0;
     Store.set('daily-priority', p);
+    // Exit current learning session if active
+    WordScheduler.queue = [];
+    WordScheduler.pos = 0;
+    WordScheduler._originalCount = 0;
+    localStorage.removeItem('omni-daily-queue');
+    // Show setup panel, hide card area
+    document.getElementById('vocab-setup').style.display = 'block';
+    document.getElementById('vocab-card-area').style.display = 'none';
     // Sync select dropdown
     const sel = document.getElementById('vocab-priority-select');
     if (sel) sel.value = p;
