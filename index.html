@@ -1037,7 +1037,7 @@
   .flip-card {
     position: relative;
     width: 100%;
-    min-height: 320px;
+    min-height: 420px;
     cursor: pointer;
     transform-style: preserve-3d;
     transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1045,7 +1045,7 @@
   }
   .flip-card.flipped { transform: rotateY(180deg); }
 
-  @media (min-width: 480px) { .flip-card { min-height: 360px; } }
+  @media (min-width: 480px) { .flip-card { min-height: 460px; } }
 
   .flip-face {
     position: absolute;
@@ -1062,8 +1062,10 @@
     background: var(--bg-surface);
     border: 1px solid var(--border);
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     text-align: center;
+    overflow-y: auto;
+    padding-top: 20px;
   }
   .card-bg-overlay {
     position: absolute;
@@ -2180,7 +2182,7 @@
           </div>
         </div>
         <div class="flip-scene">
-          <div class="flip-card" id="flip-card" onclick="if(!event.target.closest('.clickable-word,.flip-front-word,.flip-front-phonetic'))this.classList.toggle('flipped')">
+          <div class="flip-card" id="flip-card" onclick="if(!event.target.closest('.clickable-word,.flip-front-word,.flip-front-phonetic,.quiz-option-btn,.quiz-next-btn,.quiz-continue-btn,button'))this.classList.toggle('flipped')">
             <div class="flip-face flip-front" id="flip-front"></div>
             <div class="flip-face flip-back" id="flip-back"></div>
           </div>
