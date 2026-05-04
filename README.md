@@ -26,7 +26,7 @@
 
 ### 🧠 智能复习
 - 根据遗忘曲线自动安排复习
-- 卡片式复习 + 选择题模式
+- 选择题模式，自动计分
 - 生词本一键收藏，随时回顾
 
 ### ✍️ AI 写作批改
@@ -39,34 +39,36 @@
 - 每日学习统计，连续天数追踪
 - 6 个月历史记录
 
+### 🔄 跨设备同步
+- 一键导出全部学习数据为 JSON 文件
+- 一键导入，自动合并，无缝切换设备
+- 文件仅几 KB，微信/QQ/邮件随手传
+
 ### 🎯 更多功能
 - **真题长难句** — 逐句拆解，点击单词即查
 - **CS 术语潜伏区** — 计算机专业英语
 - **Live2D 看板娘** — 陪伴学习不孤单
-- **云端同步** — 多设备数据互通
+- **自定义卡片背景** — 8 种预设主题 + 自定义图片裁剪
 
 ---
 
 ## 技术架构
 
 ```
-┌─────────────────────────────────────────────┐
-│  index.html  (单文件, ~4000 行)              │
-│  ├── 内联 CSS (自定义属性主题系统)            │
-│  └── 内联 JS (原生, 零依赖)                  │
-├─────────────────────────────────────────────┤
-│  vocab.json  (4544 词, BNC 词频数据)         │
-├─────────────────────────────────────────────┤
-│  Cloudflare Worker (cf-worker.js)            │
-│  └── 代理 Firebase REST API (国内可直连)     │
-└─────────────────────────────────────────────┘
+┌─────────────────────────────────────┐
+│  index.html  (单文件, ~4500 行)      │
+│  ├── 内联 CSS (oklch 色彩 + 主题)   │
+│  └── 内联 JS (原生, 零依赖)          │
+├─────────────────────────────────────┤
+│  vocab.json  (4544 词, BNC 词频)     │
+└─────────────────────────────────────┘
 ```
 
 | 技术 | 选型理由 |
 |------|----------|
 | 原生 HTML/CSS/JS | 零依赖，秒开加载 |
-| Firebase (via Worker) | 免费额度充足，实时同步 |
-| Cloudflare Worker | 国内 CDN 节点，10 万次/天免费 |
+| localStorage | 本地持久化，离线可用 |
+| Web Speech API | 单词/例句朗读 |
 | Google Fonts | DM Sans + JetBrains Mono |
 
 ---
@@ -80,11 +82,10 @@
 ```bash
 git clone https://github.com/omnienglish/omnienglish.github.io.git
 cd omnienglish.github.io
-# 用任意 HTTP 服务器打开 index.html
 npx http-server -p 8080
 ```
 
-### 部署到自己的 GitHub Pages
+### Fork 部署
 1. Fork 本仓库
 2. 仓库设置 → Pages → 选择 `main` 分支
 3. 访问 `https://<你的用户名>.github.io`
@@ -96,38 +97,27 @@ npx http-server -p 8080
 ```
 .
 ├── index.html          # 唯一前端文件 (HTML + CSS + JS)
-├── vocab.json          # CET-4 词汇数据 (4544 词)
-├── cf-worker.js        # Cloudflare Worker 代理代码
-├── CLAUDE.md           # 项目开发文档
-├── DESIGN.md           # 设计规范
-└── PRODUCT.md          # 产品说明
+├── vocab.json          # CET-4 词汇数据 (4544 词, 含 BNC 词频)
+├── cf-worker.js        # Cloudflare Worker 代理 (可选, 备用)
+└── docs/banner.svg     # 仓库 Banner
 ```
 
 ---
 
-## 数据同步架构
+## 数据存储
 
-```
-Store.set(key, val)
-  → localStorage          (本地持久化)
-  → Cloudflare Worker     (国内中转)
-    → Firebase Firestore  (云端存储)
-```
+所有数据保存在浏览器 `localStorage` 中：
 
-- 匿名认证，无需注册
-- 数据自动双向同步
-- 国内直连，无需代理
+| Key | 内容 |
+|-----|------|
+| `oe-notebook` | 生词本 |
+| `oe-daily-priority` | 当前词库选择 |
+| `oe-daily-count` | 每日学习量 |
+| `oe-card-bg` | 卡片背景设置 |
+| `oe-learn-log` | 学习热力图数据 |
+| `omni-vocab-state` | 词汇掌握状态 |
 
----
-
-## 自托管 Cloudflare Worker
-
-如果需要独立的云端同步：
-
-1. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com)
-2. 创建 Worker，粘贴 `cf-worker.js` 代码
-3. 部署后获取 Worker URL
-4. 修改 `index.html` 中的 `WORKER_URL`
+**跨设备同步**：设置页 → 导出数据 → 发送到其他设备 → 导入数据
 
 ---
 
