@@ -2182,7 +2182,7 @@
           </div>
         </div>
         <div class="flip-scene">
-          <div class="flip-card" id="flip-card" onclick="if(!event.target.closest('.clickable-word,.flip-front-word,.flip-front-phonetic,.quiz-option-btn,.quiz-next-btn,.quiz-continue-btn,button'))this.classList.toggle('flipped')">
+          <div class="flip-card" id="flip-card" onclick="handleCardFlip(event)">
             <div class="flip-face flip-front" id="flip-front"></div>
             <div class="flip-face flip-back" id="flip-back"></div>
           </div>
@@ -2981,8 +2981,8 @@
       ${(() => { const bnc = w.bnc || 0; if (bnc > 0 && bnc <= 3000) return '<span style="display:inline-block;font-size:0.65rem;padding:2px 6px;border-radius:4px;background:var(--success-soft);color:var(--success);font-family:JetBrains Mono,monospace;margin-bottom:8px;">高频 BNC#' + bnc + '</span>'; if (bnc > 3000 && bnc <= 8000) return '<span style="display:inline-block;font-size:0.65rem;padding:2px 6px;border-radius:4px;background:var(--warning-soft);color:oklch(0.55 0.15 75);font-family:JetBrains Mono,monospace;margin-bottom:8px;">中频 BNC#' + bnc + '</span>'; if (bnc > 8000) return '<span style="display:inline-block;font-size:0.65rem;padding:2px 6px;border-radius:4px;background:var(--bg-muted);color:var(--text-muted);font-family:JetBrains Mono,monospace;margin-bottom:8px;">低频 BNC#' + bnc + '</span>'; return ''; })()}
       ${w.cet4 ? `<div>
         <div class="flip-section-title" style="display:flex;align-items:center;gap:6px;">四级例句
-          <button onclick="event.stopPropagation();speakSentence('${esc(w.cet4)}')" title="朗读例句" style="background:none;border:none;cursor:pointer;color:var(--accent);padding:0;display:flex;align-items:center;">
-            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"/></svg>
+          <button onclick="event.stopPropagation();speakSentence('${esc(w.cet4)}')" title="朗读例句" style="background:none;border:none;cursor:pointer;color:var(--accent);padding:6px;display:flex;align-items:center;border-radius:var(--radius-sm);flex-shrink:0;">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"/></svg>
           </button>
         </div>
         <div class="flip-example">${w.cet4}</div>
@@ -2990,8 +2990,8 @@
       </div>` : ''}
       ${w.cs ? `<div>
         <div class="flip-cs-label" style="display:flex;align-items:center;gap:6px;">CS CONTEXT
-          <button onclick="event.stopPropagation();speakSentence('${esc(w.cs)}')" title="朗读例句" style="background:none;border:none;cursor:pointer;color:var(--accent);padding:0;display:flex;align-items:center;">
-            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"/></svg>
+          <button onclick="event.stopPropagation();speakSentence('${esc(w.cs)}')" title="朗读例句" style="background:none;border:none;cursor:pointer;color:var(--accent);padding:6px;display:flex;align-items:center;border-radius:var(--radius-sm);flex-shrink:0;">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"/></svg>
           </button>
         </div>
         <div class="flip-cs-example">${w.cs}</div>
@@ -3042,6 +3042,20 @@
   function flipToBack() {
     const card = document.getElementById('flip-card');
     if (card) card.classList.add('flipped');
+  }
+
+  function handleCardFlip(e) {
+    // Only flip if click was on non-interactive area (card background)
+    const t = e.target;
+    if (t.tagName === 'BUTTON' || t.closest('button')) return;
+    if (t.closest('.clickable-word')) return;
+    if (t.closest('.quiz-option-btn')) return;
+    if (t.closest('.quiz-next-btn')) return;
+    if (t.closest('.quiz-continue-btn')) return;
+    if (t.closest('.flip-front-word')) return;
+    if (t.closest('.flip-front-phonetic')) return;
+    const card = document.getElementById('flip-card');
+    if (card) card.classList.toggle('flipped');
   }
 
   function renderVocabCard() {
