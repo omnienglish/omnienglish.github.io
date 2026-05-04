@@ -3108,6 +3108,7 @@
     applyCardBg();
 
     const prog = WordScheduler.progress();
+    console.log('[renderVocabCard] prog =', JSON.stringify(prog), 'navInfo =', prog.current + ' / ' + (prog.total + prog.done));
     navInfo.textContent = prog.current + ' / ' + (prog.total + prog.done);
 
     renderVocabProgress();
@@ -3626,11 +3627,14 @@
   }
 
   function continueToNextWord() {
-    vocabMark(_lastQuizCorrect ? 'known' : 'forgot');
+    const status = _lastQuizCorrect ? 'known' : 'forgot';
+    console.log('[continueToNextWord] _lastQuizCorrect =', _lastQuizCorrect, 'status =', status);
+    vocabMark(status);
   }
 
   function vocabMark(status) {
     const w = WordScheduler.current();
+    console.log('[vocabMark] status =', status, 'current word =', w?.word, 'queue len =', WordScheduler.queue.length, 'pos =', WordScheduler.pos);
     if (!w) return;
 
     if (status === 'known') {
