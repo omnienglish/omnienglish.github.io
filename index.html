@@ -4314,6 +4314,13 @@
   }
 
   // Make words in vocab cards clickable for notebook
+  let _vocabWordSet = null;
+  function getVocabWordSet() {
+    if (!_vocabWordSet) {
+      _vocabWordSet = new Set(VOCAB.map(w => w.word.toLowerCase()));
+    }
+    return _vocabWordSet;
+  }
   function makeWordsClickable(container, source) {
     const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
     const textNodes = [];
@@ -4321,6 +4328,7 @@
 
     // Skip phonetic elements and buttons
     const skipClasses = ['flip-front-phonetic', 'flip-front-word', 'flip-back-word', 'notebook-word'];
+    const wordSet = getVocabWordSet();
 
     textNodes.forEach(node => {
       const text = node.textContent;
@@ -4333,6 +4341,8 @@
 
       const span = document.createElement('span');
       span.innerHTML = text.replace(/\b([a-zA-Z]{3,})\b/g, (match) => {
+        // Only make clickable if word exists in VOCAB
+        if (!wordSet.has(match.toLowerCase())) return match;
         return `<span class="clickable-word" onclick="event.stopPropagation();showWordPopup('${match.toLowerCase()}', this)">${match}</span>`;
       });
       if (span.innerHTML !== text) {
