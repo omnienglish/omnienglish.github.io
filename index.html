@@ -4283,23 +4283,51 @@
   }
 
   function speakWord(word) {
-    if (!('speechSynthesis' in window)) return;
-    window.speechSynthesis.cancel();
-    const utter = new SpeechSynthesisUtterance(word);
-    utter.lang = 'en-US';
-    utter.rate = 0.85;
-    utter.pitch = 1;
-    window.speechSynthesis.speak(utter);
+    // Try Web Speech API first, fallback to Youdao audio
+    if ('speechSynthesis' in window) {
+      try {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(word);
+        utter.lang = 'en-US';
+        utter.rate = 0.85;
+        utter.pitch = 1;
+        utter.onerror = () => playYoudaoAudio(word);
+        window.speechSynthesis.speak(utter);
+        // If voices not loaded (common in China), fallback after short delay
+        setTimeout(() => {
+          if (window.speechSynthesis.speaking) return;
+          playYoudaoAudio(word);
+        }, 300);
+        return;
+      } catch (e) {}
+    }
+    playYoudaoAudio(word);
   }
 
   function speakSentence(text) {
-    if (!('speechSynthesis' in window)) return;
-    window.speechSynthesis.cancel();
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = 'en-US';
-    utter.rate = 0.75;
-    utter.pitch = 1;
-    window.speechSynthesis.speak(utter);
+    if ('speechSynthesis' in window) {
+      try {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'en-US';
+        utter.rate = 0.75;
+        utter.pitch = 1;
+        utter.onerror = () => playYoudaoAudio(text);
+        window.speechSynthesis.speak(utter);
+        setTimeout(() => {
+          if (window.speechSynthesis.speaking) return;
+          playYoudaoAudio(text);
+        }, 300);
+        return;
+      } catch (e) {}
+    }
+    playYoudaoAudio(text);
+  }
+
+  function playYoudaoAudio(text) {
+    const url = 'https://dict.youdao.com/dictvoice?audio=' + encodeURIComponent(text) + '&type=2';
+    const audio = new Audio(url);
+    audio.play().catch(() => {});
   }
 
   // ═══ WORD POPUP (clickable words in example sentences) ═══
