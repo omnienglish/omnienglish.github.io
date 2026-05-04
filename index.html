@@ -1037,7 +1037,7 @@
   .flip-card {
     position: relative;
     width: 100%;
-    min-height: 420px;
+    min-height: 380px;
     cursor: pointer;
     transform-style: preserve-3d;
     transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1045,7 +1045,7 @@
   }
   .flip-card.flipped { transform: rotateY(180deg); }
 
-  @media (min-width: 480px) { .flip-card { min-height: 460px; } }
+  @media (min-width: 480px) { .flip-card { min-height: 420px; } }
 
   .flip-face {
     position: absolute;
@@ -1053,7 +1053,7 @@
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     border-radius: var(--radius);
-    padding: 28px 24px;
+    padding: 20px 20px;
     display: flex;
     flex-direction: column;
   }
@@ -1065,7 +1065,7 @@
     justify-content: flex-start;
     text-align: center;
     overflow-y: auto;
-    padding-top: 20px;
+    padding-top: 16px;
   }
   .card-bg-overlay {
     position: absolute;
@@ -1112,7 +1112,7 @@
     border: 1px solid var(--border);
     transform: rotateY(180deg);
     overflow-y: auto;
-    gap: 20px;
+    gap: 12px;
   }
 
   .flip-back-word {
@@ -2948,31 +2948,28 @@
     // Generate quiz options
     const options = generateOptions(w, VOCAB);
     const optionsHTML = options.map((opt, i) => `
-      <button class="quiz-option-btn" data-index="${i}" data-correct="${opt.isCorrect}" onclick="checkVocabAnswer(this, ${opt.isCorrect}, '${esc(w.word)}')" style="
+      <button class="quiz-option-btn" data-index="${i}" data-correct="${opt.isCorrect}" onclick="event.stopPropagation();checkVocabAnswer(this, ${opt.isCorrect}, '${esc(w.word)}')" style="
         background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-sm);
-        padding:12px 16px;font-size:0.9rem;cursor:pointer;transition:all 0.2s;
+        padding:10px 14px;font-size:0.85rem;cursor:pointer;transition:all 0.2s;
         font-family:'DM Sans',sans-serif;color:var(--text-primary);text-align:left;width:100%;
       ">${opt.def}</button>
     `).join('');
 
     const front = `
-      <div style="margin-bottom:12px;display:flex;align-items:center;gap:8px;">${statusBadge}</div>
-      <div class="flip-front-word" onclick="event.stopPropagation();speakWord('${esc(w.word)}')" style="cursor:pointer" title="点击朗读">${w.word}</div>
-      <div style="display:flex;align-items:center;gap:6px;justify-content:center;margin-bottom:16px;">
-        <span class="flip-front-phonetic" onclick="event.stopPropagation();speakWord('${esc(w.word)}')" style="cursor:pointer" title="点击朗读">${w.phonetic}</span>
-      </div>
-      <div style="display:flex;gap:8px;margin-bottom:16px;">
-        <button onclick="event.stopPropagation();toggleNotebookFromCard('${esc(w.word.toLowerCase())}')" style="padding:6px 14px;border-radius:var(--radius-sm);border:1px solid ${inNB ? 'var(--success)' : 'var(--border)'};background:${inNB ? 'var(--success-soft)' : 'var(--bg-muted)'};color:${inNB ? 'var(--success)' : 'var(--text-muted)'};font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:4px;">
-          <svg width="12" height="12" fill="${inNB ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
-          ${inNB ? '已收藏' : '加入生词本'}
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">${statusBadge}
+        <button onclick="event.stopPropagation();toggleNotebookFromCard('${esc(w.word.toLowerCase())}')" style="margin-left:auto;padding:4px 10px;border-radius:var(--radius-sm);border:1px solid ${inNB ? 'var(--success)' : 'var(--border)'};background:${inNB ? 'var(--success-soft)' : 'var(--bg-muted)'};color:${inNB ? 'var(--success)' : 'var(--text-muted)'};font-family:'DM Sans',sans-serif;font-size:0.7rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:4px;">
+          <svg width="11" height="11" fill="${inNB ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+          ${inNB ? '已收藏' : '收藏'}
         </button>
       </div>
-      <div class="quiz-options" style="display:flex;flex-direction:column;gap:8px;width:100%;">
+      <div class="flip-front-word" onclick="event.stopPropagation();speakWord('${esc(w.word)}')" style="cursor:pointer;margin-bottom:2px;" title="点击朗读">${w.word}</div>
+      <span class="flip-front-phonetic" onclick="event.stopPropagation();speakWord('${esc(w.word)}')" style="cursor:pointer;margin-bottom:14px;" title="点击朗读">${w.phonetic}</span>
+      <div class="quiz-options" style="display:flex;flex-direction:column;gap:6px;width:100%;margin-bottom:10px;">
         ${optionsHTML}
       </div>
-      <div class="quiz-feedback" id="quiz-feedback" style="margin-top:12px;min-height:24px;"></div>
-      <div class="quiz-next-btn" id="quiz-next-btn" style="margin-top:8px;display:none;">
-        <button onclick="event.stopPropagation();flipToBack()" style="padding:8px 24px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;">下一步</button>
+      <div class="quiz-feedback" id="quiz-feedback" style="min-height:20px;font-size:0.85rem;"></div>
+      <div class="quiz-next-btn" id="quiz-next-btn" style="margin-top:6px;display:none;">
+        <button onclick="event.stopPropagation();flipToBack()" style="padding:7px 20px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;">下一步</button>
       </div>`;
 
     const back = `
@@ -3000,8 +2997,8 @@
         <div class="flip-cs-example">${w.cs}</div>
         <div class="flip-cs-zh">${w.cszh || ''}</div>
       </div>` : ''}
-      <div class="quiz-continue-btn" id="quiz-continue-btn" style="margin-top:16px;">
-        <button onclick="event.stopPropagation();vocabMark(_lastQuizCorrect ? 'known' : 'forgot')" style="padding:8px 24px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent);color:#fff;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;">继续</button>
+      <div class="quiz-continue-btn" id="quiz-continue-btn" style="margin-top:auto;padding-top:12px;">
+        <button onclick="event.stopPropagation();event.preventDefault();vocabMark(_lastQuizCorrect ? 'known' : 'forgot');return false;" style="padding:8px 24px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent);color:#fff;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;">继续</button>
       </div>`;
 
     return { front, back };
