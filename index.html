@@ -2317,12 +2317,20 @@
       </div>
 
       <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;font-weight:600;color:var(--text-muted);letter-spacing:0.05em;margin-bottom:12px;">云同步状态</div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div id="firebase-status-dot" style="width:8px;height:8px;border-radius:50%;background:var(--text-muted);"></div>
-          <span id="firebase-status-text" style="font-size:0.8125rem;color:var(--text-secondary);">正在连接...</span>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;font-weight:600;color:var(--text-muted);letter-spacing:0.05em;margin-bottom:12px;">数据同步</div>
+        <div style="font-size:0.8125rem;color:var(--text-secondary);margin-bottom:14px;">导出学习数据为 JSON 文件，发送到其他设备后导入，即可跨设备同步。</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button onclick="exportData()" style="padding:8px 20px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent);color:#fff;font-family:'DM Sans',sans-serif;font-size:0.8125rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+            导出数据
+          </button>
+          <button onclick="document.getElementById('import-file-input').click()" style="padding:8px 20px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-muted);color:var(--text-primary);font-family:'DM Sans',sans-serif;font-size:0.8125rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+            导入数据
+          </button>
         </div>
-        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:8px;">数据自动同步到 LeanCloud 云存储。无需注册，打开即用。</div>
+        <input type="file" id="import-file-input" accept=".json" style="display:none" onchange="importData(event)">
+        <div id="import-status" style="font-size:0.75rem;color:var(--text-muted);margin-top:10px;"></div>
       </div>
 
       <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;">
@@ -2449,6 +2457,91 @@
       }
     }
   };
+
+  // ═══ DATA EXPORT / IMPORT ═══
+  function exportData() {
+    const data = {
+      _app: 'OmniEnglish',
+      _version: '1.0',
+      _exported: new Date().toISOString(),
+      vocabState: vocabState,
+    };
+    // Collect all oe- prefixed keys
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key.startsWith('oe-')) {
+        try { data[key] = JSON.parse(localStorage.getItem(key)); }
+        catch { data[key] = localStorage.getItem(key); }
+      }
+    }
+    // Also include non-prefixed keys used by the app
+    const extraKeys = ['omni-vocab-state', 'omni-daily-queue', 'omni-review-queue', 'omni-review-schedule'];
+    for (const key of extraKeys) {
+      const val = localStorage.getItem(key);
+      if (val !== null) {
+        try { data[key] = JSON.parse(val); } catch { data[key] = val; }
+      }
+    }
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const date = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = 'omnienglish-backup-' + date + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('数据已导出');
+  }
+
+  function importData(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (data._app !== 'OmniEnglish') {
+          document.getElementById('import-status').textContent = '无效的备份文件';
+          document.getElementById('import-status').style.color = 'var(--error)';
+          return;
+        }
+
+        // Restore vocabState
+        if (data.vocabState) {
+          Object.assign(vocabState, data.vocabState);
+          localStorage.setItem('omni-vocab-state', JSON.stringify(vocabState));
+        }
+
+        // Restore all oe- keys
+        for (const [key, val] of Object.entries(data)) {
+          if (key.startsWith('oe-')) {
+            localStorage.setItem(key, JSON.stringify(val));
+          }
+        }
+
+        // Restore extra keys
+        const extraKeys = ['omni-vocab-state', 'omni-daily-queue', 'omni-review-queue', 'omni-review-schedule'];
+        for (const key of extraKeys) {
+          if (data[key] !== undefined) {
+            localStorage.setItem(key, JSON.stringify(data[key]));
+          }
+        }
+
+        const status = document.getElementById('import-status');
+        status.textContent = '导入成功！' + (data._exported ? ' 备份时间: ' + data._exported.slice(0, 16).replace('T', ' ') : '');
+        status.style.color = 'var(--success)';
+        showToast('数据已导入，刷新中...');
+
+        setTimeout(() => location.reload(), 1000);
+      } catch (err) {
+        document.getElementById('import-status').textContent = '文件解析失败: ' + err.message;
+        document.getElementById('import-status').style.color = 'var(--error)';
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  }
 
   // ═══ COUNTDOWN ═══
   const EXAM_DATE = new Date('2026-06-13T09:00:00+08:00');
@@ -4360,9 +4453,6 @@
 
       // 6. Custom opacity slider
       initOpacitySlider();
-
-      // 7. Cloud sync (async, non-blocking)
-      initCloudSync();
     } catch (err) {
       console.error('Init error:', err);
     }
