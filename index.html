@@ -1400,6 +1400,32 @@
     color: var(--success);
   }
 
+  /* Quiz option buttons */
+  .quiz-option-btn {
+    transition: all 0.2s ease;
+  }
+  .quiz-option-btn:hover:not(:disabled) {
+    background: var(--bg-muted);
+    border-color: var(--accent);
+  }
+  .quiz-option-btn:disabled {
+    cursor: default;
+    opacity: 0.9;
+  }
+
+  /* Review option buttons */
+  .review-option-btn {
+    transition: all 0.2s ease;
+  }
+  .review-option-btn:hover:not(:disabled) {
+    background: var(--bg-muted);
+    border-color: var(--accent);
+  }
+  .review-option-btn:disabled {
+    cursor: default;
+    opacity: 0.9;
+  }
+
   .review-start-btn {
     background: var(--bg-surface);
     border: 1px solid var(--border);
@@ -2164,20 +2190,6 @@
           <span class="vocab-nav-info" id="vocab-nav-info">1 / 1</span>
         </div>
 
-        <div class="vocab-actions">
-          <button class="vocab-action-btn btn-review" onclick="vocabMark('forgot')" style="flex:1">
-            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-            忘记了
-          </button>
-          <button class="vocab-action-btn btn-review" onclick="vocabMark('vague')" style="flex:1">
-            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
-            模糊
-          </button>
-          <button class="vocab-action-btn btn-know" onclick="vocabMark('known')" style="flex:1">
-            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            已掌握
-        </button>
-      </div>
       </div><!-- /vocab-card-area -->
     </div>
     <div class="page-section" id="page-writing">
@@ -2273,11 +2285,11 @@
           <span id="review-score" style="font-size:0.75rem;color:var(--text-muted);font-family:JetBrains Mono,monospace;">正确率 0%</span>
         </div>
         <div id="review-question" style="background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px 24px;text-align:center;margin-bottom:16px;">
-          <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:8px;font-family:JetBrains Mono,monospace;">选择正确的单词</div>
-          <div id="review-def" style="font-size:1.125rem;font-weight:600;color:var(--text-primary);margin-bottom:8px;"></div>
-          <div id="review-hint" style="font-size:0.8rem;color:var(--text-muted);min-height:20px;"></div>
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:8px;font-family:JetBrains Mono,monospace;">选择正确的释义</div>
+          <div id="review-word" style="font-size:1.5rem;font-weight:700;color:var(--text-primary);margin-bottom:4px;cursor:pointer;" onclick="speakWord(this.textContent)" title="点击朗读"></div>
+          <div id="review-phonetic" style="font-size:0.85rem;color:var(--text-muted);min-height:20px;cursor:pointer;" onclick="speakWord(document.getElementById('review-word').textContent)" title="点击朗读"></div>
         </div>
-        <div id="review-options" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;"></div>
+        <div id="review-options" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;"></div>
         <div id="review-feedback" style="text-align:center;min-height:40px;margin-bottom:12px;"></div>
         <div style="text-align:center;">
           <button id="review-next-btn" onclick="nextReviewQuestion()" class="vocab-action-btn btn-know" style="display:none;">下一题</button>
@@ -2906,7 +2918,21 @@
     `;
   }
 
+  // Generate 4 options for quiz (1 correct + 3 wrong)
+  function generateOptions(w, pool) {
+    const correct = { def: w.def, isCorrect: true };
+    const others = pool
+      .filter(o => o.word !== w.word)
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 3)
+      .map(o => ({ def: o.def, isCorrect: false }));
+    return [correct, ...others].sort(() => Math.random() - 0.5);
+  }
+
   // Pure card renderer — returns { front, back } HTML strings
+  // Now with quiz mode: front shows word + options, back shows details
+  let _lastQuizCorrect = null; // Track if last quiz answer was correct
+
   function renderVocabCardUI(w) {
     const status = vocabState[w.word];
     const statusBadge = status === 'known'
@@ -2917,21 +2943,34 @@
     const inNB = isInNotebook(w.word.toLowerCase());
     const esc = s => (s || '').replace(/'/g, "\\'");
 
+    // Generate quiz options
+    const options = generateOptions(w, VOCAB);
+    const optionsHTML = options.map((opt, i) => `
+      <button class="quiz-option-btn" data-index="${i}" data-correct="${opt.isCorrect}" onclick="checkVocabAnswer(this, ${opt.isCorrect}, '${esc(w.word)}')" style="
+        background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-sm);
+        padding:12px 16px;font-size:0.9rem;cursor:pointer;transition:all 0.2s;
+        font-family:'DM Sans',sans-serif;color:var(--text-primary);text-align:left;width:100%;
+      ">${opt.def}</button>
+    `).join('');
+
     const front = `
-      <div class="flip-front-hint">
-        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zM12 2.25V4.5m5.834.166l-1.591 1.591M20.25 10.5H18M7.757 14.743l-1.59 1.59M6 10.5H3.75m4.007-4.243l-1.59-1.59"/></svg>
-        点击翻转
-      </div>
       <div style="margin-bottom:12px;display:flex;align-items:center;gap:8px;">${statusBadge}</div>
       <div class="flip-front-word" onclick="event.stopPropagation();speakWord('${esc(w.word)}')" style="cursor:pointer" title="点击朗读">${w.word}</div>
       <div style="display:flex;align-items:center;gap:6px;justify-content:center;margin-bottom:16px;">
         <span class="flip-front-phonetic" onclick="event.stopPropagation();speakWord('${esc(w.word)}')" style="cursor:pointer" title="点击朗读">${w.phonetic}</span>
       </div>
-      <div style="display:flex;gap:8px;">
+      <div style="display:flex;gap:8px;margin-bottom:16px;">
         <button onclick="event.stopPropagation();toggleNotebookFromCard('${esc(w.word.toLowerCase())}')" style="padding:6px 14px;border-radius:var(--radius-sm);border:1px solid ${inNB ? 'var(--success)' : 'var(--border)'};background:${inNB ? 'var(--success-soft)' : 'var(--bg-muted)'};color:${inNB ? 'var(--success)' : 'var(--text-muted)'};font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:4px;">
           <svg width="12" height="12" fill="${inNB ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
           ${inNB ? '已收藏' : '加入生词本'}
         </button>
+      </div>
+      <div class="quiz-options" style="display:flex;flex-direction:column;gap:8px;width:100%;">
+        ${optionsHTML}
+      </div>
+      <div class="quiz-feedback" id="quiz-feedback" style="margin-top:12px;min-height:24px;"></div>
+      <div class="quiz-next-btn" id="quiz-next-btn" style="margin-top:8px;display:none;">
+        <button onclick="event.stopPropagation();flipToBack()" style="padding:8px 24px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;">下一步</button>
       </div>`;
 
     const back = `
@@ -2958,9 +2997,52 @@
         </div>
         <div class="flip-cs-example">${w.cs}</div>
         <div class="flip-cs-zh">${w.cszh || ''}</div>
-      </div>` : ''}`;
+      </div>` : ''}
+      <div class="quiz-continue-btn" id="quiz-continue-btn" style="margin-top:16px;">
+        <button onclick="event.stopPropagation();vocabMark(_lastQuizCorrect ? 'known' : 'forgot')" style="padding:8px 24px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent);color:#fff;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;">继续</button>
+      </div>`;
 
     return { front, back };
+  }
+
+  // Check quiz answer and show feedback
+  function checkVocabAnswer(btn, isCorrect, word) {
+    _lastQuizCorrect = isCorrect;
+
+    // Disable all option buttons
+    const buttons = document.querySelectorAll('.quiz-option-btn');
+    buttons.forEach(b => {
+      b.disabled = true;
+      b.style.cursor = 'default';
+      if (b.dataset.correct === 'true') {
+        b.style.background = 'var(--success-soft)';
+        b.style.borderColor = 'var(--success)';
+        b.style.color = 'var(--success)';
+      } else if (b === btn && !isCorrect) {
+        b.style.background = 'var(--error-soft)';
+        b.style.borderColor = 'oklch(0.55 0.18 25)';
+        b.style.color = 'oklch(0.55 0.18 25)';
+      }
+    });
+
+    // Show feedback
+    const feedbackEl = document.getElementById('quiz-feedback');
+    if (isCorrect) {
+      feedbackEl.innerHTML = '<div style="color:var(--success);font-weight:600;font-size:0.9rem;">正确!</div>';
+      speakWord(word);
+    } else {
+      feedbackEl.innerHTML = '<div style="color:oklch(0.55 0.18 25);font-weight:600;font-size:0.9rem;">正确答案: ' + VOCAB.find(v => v.word === word)?.def + '</div>';
+      speakWord(word);
+    }
+
+    // Show next button
+    document.getElementById('quiz-next-btn').style.display = 'block';
+  }
+
+  // Flip card to show back (details)
+  function flipToBack() {
+    const card = document.getElementById('flip-card');
+    if (card) card.classList.add('flipped');
   }
 
   function renderVocabCard() {
@@ -3610,9 +3692,15 @@
     reviewTotal = Math.min(70, shuffled.length);
     const allLearned = VOCAB.filter(w => vocabState[w.word]);
     reviewQuestions = shuffled.slice(0, reviewTotal).map(w => {
-      const others = allLearned.filter(o => o.word !== w.word).sort(() => Math.random() - 0.5).slice(0, 3);
-      const options = [w, ...others].sort(() => Math.random() - 0.5);
-      return { word: w, options };
+      // Generate Chinese options (1 correct + 3 wrong)
+      const correctDef = w.def;
+      const wrongDefs = allLearned
+        .filter(o => o.word !== w.word)
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 3)
+        .map(o => o.def);
+      const options = [correctDef, ...wrongDefs].sort(() => Math.random() - 0.5);
+      return { word: w, options, correctDef };
     });
     reviewIndex = 0;
     reviewCorrect = 0;
@@ -3625,54 +3713,54 @@
 
   function showReviewQuestion() {
     const q = reviewQuestions[reviewIndex];
+    const esc = s => (s || '').replace(/'/g, "\\'");
     document.getElementById('review-progress').textContent = (reviewIndex + 1) + ' / ' + reviewTotal;
     document.getElementById('review-score').textContent = '正确率 ' + (reviewIndex > 0 ? Math.round((reviewCorrect / reviewIndex) * 100) : 0) + '%';
-    document.getElementById('review-def').textContent = q.word.def;
-    document.getElementById('review-hint').textContent = q.word.phonetic || '';
+    // Show English word instead of Chinese definition
+    document.getElementById('review-word').textContent = q.word.word;
+    document.getElementById('review-phonetic').textContent = q.word.phonetic || '';
     document.getElementById('review-feedback').innerHTML = '';
     document.getElementById('review-next-btn').style.display = 'none';
 
     const optionsEl = document.getElementById('review-options');
-    optionsEl.innerHTML = q.options.map(o => `
-      <button class="review-option-btn" onclick="checkReviewAnswer('${o.word.replace(/'/g, "\\'")}', '${q.word.word.replace(/'/g, "\\'")}')" style="
+    optionsEl.innerHTML = q.options.map((def, i) => `
+      <button class="review-option-btn" onclick="checkReviewAnswer(this, '${esc(def)}', '${esc(q.correctDef)}', '${esc(q.word.word)}')" style="
         background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-sm);
-        padding:12px;font-size:0.9375rem;cursor:pointer;transition:all 0.2s;
-        font-family:DM Sans,sans-serif;color:var(--text-primary);
-      ">${o.word}</button>
+        padding:12px;font-size:0.9rem;cursor:pointer;transition:all 0.2s;
+        font-family:'DM Sans',sans-serif;color:var(--text-primary);text-align:left;width:100%;
+      ">${def}</button>
     `).join('');
   }
 
-  function checkReviewAnswer(selected, correct) {
+  function checkReviewAnswer(btn, selected, correct, word) {
     const isCorrect = selected === correct;
     if (isCorrect) reviewCorrect++;
-    updateReviewSchedule(correct, isCorrect);
+    updateReviewSchedule(word, isCorrect);
 
     const buttons = document.querySelectorAll('#review-options .review-option-btn');
-    buttons.forEach(btn => {
-      btn.disabled = true;
-      btn.style.cursor = 'default';
-      if (btn.textContent === correct) {
-        btn.style.background = 'var(--success-soft)';
-        btn.style.borderColor = 'var(--success)';
-        btn.style.color = 'var(--success)';
-      } else if (btn.textContent === selected && !isCorrect) {
-        btn.style.background = 'var(--error-soft)';
-        btn.style.borderColor = 'oklch(0.55 0.18 25)';
-        btn.style.color = 'oklch(0.55 0.18 25)';
+    buttons.forEach(b => {
+      b.disabled = true;
+      b.style.cursor = 'default';
+      if (b.textContent === correct) {
+        b.style.background = 'var(--success-soft)';
+        b.style.borderColor = 'var(--success)';
+        b.style.color = 'var(--success)';
+      } else if (b === btn && !isCorrect) {
+        b.style.background = 'var(--error-soft)';
+        b.style.borderColor = 'oklch(0.55 0.18 25)';
+        b.style.color = 'oklch(0.55 0.18 25)';
       }
     });
 
     const feedbackEl = document.getElementById('review-feedback');
     if (isCorrect) {
       feedbackEl.innerHTML = '<div style="color:var(--success);font-weight:600;">正确!</div>';
-      speakWord(correct);
+      speakWord(word);
     } else {
-      const w = VOCAB.find(v => v.word === correct);
       feedbackEl.innerHTML = `
         <div style="color:oklch(0.55 0.18 25);font-weight:600;margin-bottom:4px;">正确答案: ${correct}</div>
-        ${w && w.cet4 ? '<div style="font-size:0.8rem;color:var(--text-muted);">' + w.cet4 + '</div>' : ''}
       `;
-      speakWord(correct);
+      speakWord(word);
     }
 
     document.getElementById('review-score').textContent = '正确率 ' + Math.round((reviewCorrect / (reviewIndex + 1)) * 100) + '%';
