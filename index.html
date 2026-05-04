@@ -2935,7 +2935,7 @@
 
   // Pure card renderer — returns { front, back } HTML strings
   // Now with quiz mode: front shows word + options, back shows details
-  let _lastQuizCorrect = null; // Track if last quiz answer was correct
+  let _lastQuizCorrect = null;
 
   function renderVocabCardUI(w) {
     const status = vocabState[w.word];
@@ -2947,70 +2947,71 @@
     const inNB = isInNotebook(w.word.toLowerCase());
     const esc = s => (s || '').replace(/'/g, "\\'");
 
-    // Generate quiz options
     const options = generateOptions(w, VOCAB);
     const optionsHTML = options.map((opt, i) => `
-      <button class="quiz-option-btn" data-index="${i}" data-correct="${opt.isCorrect}" onclick="event.stopPropagation();checkVocabAnswer(this, ${opt.isCorrect}, '${esc(w.word)}')" style="
+      <button class="quiz-option-btn" data-index="${i}" data-correct="${opt.isCorrect}" onclick="checkVocabAnswer(this, ${opt.isCorrect}, '${esc(w.word)}')" style="
         background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-sm);
         padding:10px 14px;font-size:0.85rem;cursor:pointer;transition:all 0.2s;
         font-family:'DM Sans',sans-serif;color:var(--text-primary);text-align:left;width:100%;
       ">${opt.def}</button>
     `).join('');
 
-    const front = `
+    const bnc = w.bnc || 0;
+    const bncTag = bnc > 0 && bnc <= 3000 ? '<span style="display:inline-block;font-size:0.65rem;padding:2px 6px;border-radius:4px;background:var(--success-soft);color:var(--success);font-family:JetBrains Mono,monospace;">高频 BNC#' + bnc + '</span>'
+      : bnc > 3000 && bnc <= 8000 ? '<span style="display:inline-block;font-size:0.65rem;padding:2px 6px;border-radius:4px;background:var(--warning-soft);color:oklch(0.55 0.15 75);font-family:JetBrains Mono,monospace;">中频 BNC#' + bnc + '</span>'
+      : bnc > 8000 ? '<span style="display:inline-block;font-size:0.65rem;padding:2px 6px;border-radius:4px;background:var(--bg-muted);color:var(--text-muted);font-family:JetBrains Mono,monospace;">低频 BNC#' + bnc + '</span>'
+      : '';
+
+    const html = `
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">${statusBadge}
-        <button onclick="event.stopPropagation();toggleNotebookFromCard('${esc(w.word.toLowerCase())}')" style="margin-left:auto;padding:4px 10px;border-radius:var(--radius-sm);border:1px solid ${inNB ? 'var(--success)' : 'var(--border)'};background:${inNB ? 'var(--success-soft)' : 'var(--bg-muted)'};color:${inNB ? 'var(--success)' : 'var(--text-muted)'};font-family:'DM Sans',sans-serif;font-size:0.7rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:4px;">
+        <button onclick="toggleNotebookFromCard('${esc(w.word.toLowerCase())}')" style="margin-left:auto;padding:4px 10px;border-radius:var(--radius-sm);border:1px solid ${inNB ? 'var(--success)' : 'var(--border)'};background:${inNB ? 'var(--success-soft)' : 'var(--bg-muted)'};color:${inNB ? 'var(--success)' : 'var(--text-muted)'};font-family:'DM Sans',sans-serif;font-size:0.7rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:4px;">
           <svg width="11" height="11" fill="${inNB ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
           ${inNB ? '已收藏' : '收藏'}
         </button>
       </div>
-      <div class="flip-front-word" onclick="event.stopPropagation();speakWord('${esc(w.word)}')" style="cursor:pointer;margin-bottom:2px;" title="点击朗读">${w.word}</div>
-      <span class="flip-front-phonetic" onclick="event.stopPropagation();speakWord('${esc(w.word)}')" style="cursor:pointer;margin-bottom:14px;" title="点击朗读">${w.phonetic}</span>
-      <div class="quiz-options" style="display:flex;flex-direction:column;gap:6px;width:100%;margin-bottom:10px;">
-        ${optionsHTML}
+      <div class="flip-front-word" onclick="speakWord('${esc(w.word)}')" style="cursor:pointer;margin-bottom:2px;" title="点击朗读">${w.word}</div>
+      <span class="flip-front-phonetic" onclick="speakWord('${esc(w.word)}')" style="cursor:pointer;margin-bottom:14px;" title="点击朗读">${w.phonetic}</span>
+      <div id="quiz-phase">
+        <div class="quiz-options" style="display:flex;flex-direction:column;gap:6px;width:100%;margin-bottom:10px;">
+          ${optionsHTML}
+        </div>
+        <div class="quiz-feedback" id="quiz-feedback" style="min-height:20px;font-size:0.85rem;"></div>
+        <div id="quiz-next-btn" style="margin-top:6px;display:none;">
+          <button onclick="showDetailPhase()" style="padding:7px 20px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;">查看详解</button>
+        </div>
       </div>
-      <div class="quiz-feedback" id="quiz-feedback" style="min-height:20px;font-size:0.85rem;"></div>
-      <div class="quiz-next-btn" id="quiz-next-btn" style="margin-top:6px;display:none;">
-        <button onclick="event.stopPropagation();flipToBack()" style="padding:7px 20px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;">下一步</button>
-      </div>`;
-
-    const back = `
-      <div class="flip-back-word">${w.word}</div>
-      <div>
+      <div id="detail-phase" style="display:none;text-align:left;overflow-y:auto;flex:1;width:100%;">
         <div class="flip-section-title">释义</div>
-        <div class="flip-def">${w.def}</div>
-      </div>
-      ${(() => { const bnc = w.bnc || 0; if (bnc > 0 && bnc <= 3000) return '<span style="display:inline-block;font-size:0.65rem;padding:2px 6px;border-radius:4px;background:var(--success-soft);color:var(--success);font-family:JetBrains Mono,monospace;margin-bottom:8px;">高频 BNC#' + bnc + '</span>'; if (bnc > 3000 && bnc <= 8000) return '<span style="display:inline-block;font-size:0.65rem;padding:2px 6px;border-radius:4px;background:var(--warning-soft);color:oklch(0.55 0.15 75);font-family:JetBrains Mono,monospace;margin-bottom:8px;">中频 BNC#' + bnc + '</span>'; if (bnc > 8000) return '<span style="display:inline-block;font-size:0.65rem;padding:2px 6px;border-radius:4px;background:var(--bg-muted);color:var(--text-muted);font-family:JetBrains Mono,monospace;margin-bottom:8px;">低频 BNC#' + bnc + '</span>'; return ''; })()}
-      ${w.cet4 ? `<div>
-        <div class="flip-section-title" style="display:flex;align-items:center;gap:6px;">四级例句
-          <button onclick="event.stopPropagation();speakSentence('${esc(w.cet4)}')" title="朗读例句" style="background:none;border:none;cursor:pointer;color:var(--accent);padding:6px;display:flex;align-items:center;border-radius:var(--radius-sm);flex-shrink:0;">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"/></svg>
-          </button>
+        <div class="flip-def" style="margin-bottom:8px;">${w.def}</div>
+        ${bncTag ? bncTag + '<br>' : ''}
+        ${w.cet4 ? `<div style="margin-top:8px;">
+          <div class="flip-section-title" style="display:flex;align-items:center;gap:6px;">四级例句
+            <button onclick="speakSentence('${esc(w.cet4)}')" title="朗读例句" style="background:none;border:none;cursor:pointer;color:var(--accent);padding:6px;display:flex;align-items:center;border-radius:var(--radius-sm);flex-shrink:0;">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"/></svg>
+            </button>
+          </div>
+          <div class="flip-example">${w.cet4}</div>
+          <div class="flip-example-zh">${w.cet4zh || ''}</div>
+        </div>` : ''}
+        ${w.cs ? `<div style="margin-top:8px;">
+          <div class="flip-cs-label" style="display:flex;align-items:center;gap:6px;">CS CONTEXT
+            <button onclick="speakSentence('${esc(w.cs)}')" title="朗读例句" style="background:none;border:none;cursor:pointer;color:var(--accent);padding:6px;display:flex;align-items:center;border-radius:var(--radius-sm);flex-shrink:0;">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"/></svg>
+            </button>
+          </div>
+          <div class="flip-cs-example">${w.cs}</div>
+          <div class="flip-cs-zh">${w.cszh || ''}</div>
+        </div>` : ''}
+        <div style="margin-top:16px;text-align:center;">
+          <button onclick="continueToNextWord()" style="padding:8px 24px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent);color:#fff;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;">继续</button>
         </div>
-        <div class="flip-example">${w.cet4}</div>
-        <div class="flip-example-zh">${w.cet4zh || ''}</div>
-      </div>` : ''}
-      ${w.cs ? `<div>
-        <div class="flip-cs-label" style="display:flex;align-items:center;gap:6px;">CS CONTEXT
-          <button onclick="event.stopPropagation();speakSentence('${esc(w.cs)}')" title="朗读例句" style="background:none;border:none;cursor:pointer;color:var(--accent);padding:6px;display:flex;align-items:center;border-radius:var(--radius-sm);flex-shrink:0;">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"/></svg>
-          </button>
-        </div>
-        <div class="flip-cs-example">${w.cs}</div>
-        <div class="flip-cs-zh">${w.cszh || ''}</div>
-      </div>` : ''}
-      <div class="quiz-continue-btn" id="quiz-continue-btn" style="margin-top:auto;padding-top:12px;">
-        <button onclick="continueToNextWord()" style="padding:8px 24px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent);color:#fff;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;">继续</button>
       </div>`;
 
-    return { front, back };
+    return { html };
   }
 
-  // Check quiz answer and show feedback
   function checkVocabAnswer(btn, isCorrect, word) {
     _lastQuizCorrect = isCorrect;
-
-    // Disable all option buttons
     const buttons = document.querySelectorAll('.quiz-option-btn');
     buttons.forEach(b => {
       b.disabled = true;
@@ -3025,25 +3026,26 @@
         b.style.color = 'oklch(0.55 0.18 25)';
       }
     });
-
-    // Show feedback
     const feedbackEl = document.getElementById('quiz-feedback');
     if (isCorrect) {
       feedbackEl.innerHTML = '<div style="color:var(--success);font-weight:600;font-size:0.9rem;">正确!</div>';
-      speakWord(word);
     } else {
-      feedbackEl.innerHTML = '<div style="color:oklch(0.55 0.18 25);font-weight:600;font-size:0.9rem;">正确答案: ' + VOCAB.find(v => v.word === word)?.def + '</div>';
-      speakWord(word);
+      feedbackEl.innerHTML = '<div style="color:oklch(0.55 0.18 25);font-weight:600;font-size:0.9rem;">正确答案: ' + (VOCAB.find(v => v.word === word)?.def || '') + '</div>';
     }
-
-    // Show next button
+    speakWord(word);
     document.getElementById('quiz-next-btn').style.display = 'block';
   }
 
-  // Flip card to show back (details)
-  function flipToBack() {
-    const card = document.getElementById('flip-card');
-    if (card) card.classList.add('flipped');
+  function showDetailPhase() {
+    document.getElementById('quiz-phase').style.display = 'none';
+    document.getElementById('detail-phase').style.display = 'flex';
+    // Make example sentence words clickable
+    const detail = document.getElementById('detail-phase');
+    if (detail) {
+      detail.querySelectorAll('.flip-example, .flip-cs-example').forEach(el => {
+        makeWordsClickable(el, 'vocab');
+      });
+    }
   }
 
   function handleCardFlip(e) {
@@ -3100,9 +3102,9 @@
     cardAreaEl.style.display = 'block';
     card.classList.remove('flipped');
 
-    const { front: fHTML, back: bHTML } = renderVocabCardUI(w);
-    front.innerHTML = fHTML;
-    back.innerHTML = bHTML;
+    const { html } = renderVocabCardUI(w);
+    front.innerHTML = html;
+    back.innerHTML = '';
     applyCardBg();
 
     const prog = WordScheduler.progress();
@@ -4542,13 +4544,6 @@
   renderVocabCard = function() {
     _origRenderVocabCard();
     trackProgress('vocab', 'views');
-    // Only make example sentences on the back clickable
-    const back = document.getElementById('flip-back');
-    if (back) {
-      back.querySelectorAll('.flip-example, .flip-cs-example').forEach(el => {
-        makeWordsClickable(el, 'vocab');
-      });
-    }
   };
 
   // Hook into writing submission to track and make result words clickable
