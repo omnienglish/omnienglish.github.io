@@ -3096,7 +3096,7 @@
     applyCardBg();
 
     const prog = WordScheduler.progress();
-    navInfo.textContent = prog.current + ' / ' + (prog.total + prog.done);
+    navInfo.textContent = prog.current + ' / ' + prog.total;
 
     renderVocabProgress();
     if (document.getElementById('page-vocab').classList.contains('active')) {
