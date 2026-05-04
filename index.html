@@ -3000,7 +3000,7 @@
         <div class="flip-cs-zh">${w.cszh || ''}</div>
       </div>` : ''}
       <div class="quiz-continue-btn" id="quiz-continue-btn" style="margin-top:auto;padding-top:12px;">
-        <button id="quiz-continue-btn-el" style="padding:8px 24px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent);color:#fff;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;">继续</button>
+        <button onclick="continueToNextWord()" style="padding:8px 24px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent);color:#fff;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;">继续</button>
       </div>`;
 
     return { front, back };
@@ -3104,16 +3104,6 @@
     front.innerHTML = fHTML;
     back.innerHTML = bHTML;
     applyCardBg();
-
-    // Bind continue button via addEventListener (more reliable than inline onclick)
-    const continueBtn = document.getElementById('quiz-continue-btn-el');
-    if (continueBtn) {
-      continueBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        e.preventDefault();
-        vocabMark(_lastQuizCorrect ? 'known' : 'forgot');
-      });
-    }
 
     const prog = WordScheduler.progress();
     navInfo.textContent = prog.current + ' / ' + (prog.total + prog.done);
@@ -3631,6 +3621,10 @@
   function vocabNext() {
     vocabIndex++;
     renderVocabCard();
+  }
+
+  function continueToNextWord() {
+    vocabMark(_lastQuizCorrect ? 'known' : 'forgot');
   }
 
   function vocabMark(status) {
