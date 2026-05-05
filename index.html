@@ -2457,9 +2457,11 @@
   }
 
   async function initCloudSync() {
+    console.log('[Sync] 初始化云同步, Worker:', WORKER_URL);
     // Try saved credentials first
     const saved = localStorage.getItem('oe-cloud-auth');
     if (saved) {
+      console.log('[Sync] 发现已保存的凭据，尝试自动登录...');
       try {
         const { email, password } = JSON.parse(saved);
         const resp = await fetch(WORKER_URL + '/login', {
@@ -2467,28 +2469,35 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
         });
+        console.log('[Sync] 自动登录响应:', resp.status);
         if (resp.ok) {
           cloudUser = await resp.json();
           cloudReady = true;
+          console.log('[Sync] 自动登录成功:', cloudUser.email);
           updateCloudStatus(true, cloudUser.email);
           loadFromCloud();
           return;
         }
-        // Token expired or invalid, clear saved
+        console.warn('[Sync] 自动登录失败，清除凭据');
         localStorage.removeItem('oe-cloud-auth');
       } catch (e) {
+        console.error('[Sync] 自动登录网络错误:', e.message);
         localStorage.removeItem('oe-cloud-auth');
       }
     }
     // Fall back to anonymous
+    console.log('[Sync] 尝试匿名登录...');
     try {
       const resp = await fetch(WORKER_URL + '/auth', { method: 'POST' });
+      console.log('[Sync] 匿名登录响应:', resp.status);
       if (!resp.ok) throw new Error('auth failed: ' + resp.status);
       cloudUser = await resp.json();
       cloudReady = true;
+      console.log('[Sync] 匿名登录成功, uid:', cloudUser.uid);
       updateCloudStatus(true);
       loadFromCloud();
     } catch (err) {
+      console.error('[Sync] 匿名登录失败:', err.message);
       updateCloudStatus(false);
     }
   }
@@ -2500,21 +2509,24 @@
     if (!email || !password) { errEl.textContent = '请输入邮箱和密码'; return; }
     if (password.length < 6) { errEl.textContent = '密码至少 6 位'; return; }
     errEl.textContent = '';
+    console.log('[Sync] 注册:', email);
     try {
       const resp = await fetch(WORKER_URL + '/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
+      console.log('[Sync] 注册响应:', resp.status);
       const data = await resp.json();
-      if (data.error) { errEl.textContent = translateAuthError(data.error); return; }
+      if (data.error) { console.warn('[Sync] 注册失败:', data.error); errEl.textContent = translateAuthError(data.error); return; }
       cloudUser = data;
       cloudReady = true;
       localStorage.setItem('oe-cloud-auth', JSON.stringify({ email, password }));
-      // Upload current local data to cloud
+      console.log('[Sync] 注册成功:', cloudUser.email);
       await syncAllToCloud();
       updateCloudStatus(true, email);
     } catch (e) {
+      console.error('[Sync] 注册网络错误:', e.message);
       errEl.textContent = '网络错误，请重试';
     }
   }
@@ -2525,17 +2537,20 @@
     const errEl = document.getElementById('auth-error');
     if (!email || !password) { errEl.textContent = '请输入邮箱和密码'; return; }
     errEl.textContent = '';
+    console.log('[Sync] 登录:', email);
     try {
       const resp = await fetch(WORKER_URL + '/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
+      console.log('[Sync] 登录响应:', resp.status);
       const data = await resp.json();
-      if (data.error) { errEl.textContent = translateAuthError(data.error); return; }
+      if (data.error) { console.warn('[Sync] 登录失败:', data.error); errEl.textContent = translateAuthError(data.error); return; }
       cloudUser = data;
       cloudReady = true;
       localStorage.setItem('oe-cloud-auth', JSON.stringify({ email, password }));
+      console.log('[Sync] 登录成功:', cloudUser.email);
       updateCloudStatus(true, email);
       // Load cloud data (merges with local)
       await loadFromCloud();
@@ -2576,11 +2591,14 @@
   }
 
   async function loadFromCloud() {
-    if (!cloudReady || !cloudUser) return;
+    if (!cloudReady || !cloudUser) { console.log('[Sync] loadFromCloud 跳过: 未就绪'); return; }
+    console.log('[Sync] 从云端加载数据...');
     try {
       const resp = await fetch(`${WORKER_URL}/doc?uid=${cloudUser.uid}&token=${cloudUser.idToken}`);
+      console.log('[Sync] 云端数据响应:', resp.status);
       if (!resp.ok) throw new Error('load failed: ' + resp.status);
       const data = await resp.json();
+      console.log('[Sync] 云端数据:', data.exists ? '存在' : '空');
       if (data.exists) {
         if (data.notebook) Store.set('notebook', data.notebook);
         if (data.progress) Store.set('progress', data.progress);
@@ -2591,23 +2609,25 @@
         }
         updateEvoBar();
         updateNotebookBadge();
-        console.log('[CloudSync] Data loaded from cloud');
+        console.log('[Sync] 云端数据加载完成');
       }
     } catch (err) {
-      console.warn('[CloudSync] Load failed:', err.message);
+      console.error('[Sync] 加载云端数据失败:', err.message);
     }
   }
 
   async function saveToCloud(key, data) {
     if (!cloudReady || !cloudUser) return;
     try {
-      await fetch(WORKER_URL + '/doc', {
+      const resp = await fetch(WORKER_URL + '/doc', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ uid: cloudUser.uid, token: cloudUser.idToken, key, data })
       });
+      if (!resp.ok) console.warn('[Sync] 保存失败:', key, resp.status);
+      else console.log('[Sync] 已保存:', key);
     } catch (err) {
-      console.warn('[CloudSync] Save failed:', err.message);
+      console.error('[Sync] 保存网络错误:', key, err.message);
     }
   }
 
