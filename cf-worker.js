@@ -35,6 +35,48 @@ async function handleRequest(request) {
       }), { headers: corsHeaders });
     }
 
+    // POST /signup — 邮箱注册，返回 uid + idToken + email
+    if (url.pathname === '/signup' && request.method === 'POST') {
+      const { email, password } = await request.json();
+      if (!email || !password) {
+        return new Response(JSON.stringify({ error: 'missing email or password' }), { status: 400, headers: corsHeaders });
+      }
+      const resp = await fetch(
+        `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_API_KEY}`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password, returnSecureToken: true }) }
+      );
+      const data = await resp.json();
+      if (data.error) {
+        return new Response(JSON.stringify({ error: data.error.message }), { status: 400, headers: corsHeaders });
+      }
+      return new Response(JSON.stringify({
+        uid: data.localId,
+        idToken: data.idToken,
+        email: data.email
+      }), { headers: corsHeaders });
+    }
+
+    // POST /login — 邮箱登录，返回 uid + idToken + email
+    if (url.pathname === '/login' && request.method === 'POST') {
+      const { email, password } = await request.json();
+      if (!email || !password) {
+        return new Response(JSON.stringify({ error: 'missing email or password' }), { status: 400, headers: corsHeaders });
+      }
+      const resp = await fetch(
+        `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FIREBASE_API_KEY}`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password, returnSecureToken: true }) }
+      );
+      const data = await resp.json();
+      if (data.error) {
+        return new Response(JSON.stringify({ error: data.error.message }), { status: 400, headers: corsHeaders });
+      }
+      return new Response(JSON.stringify({
+        uid: data.localId,
+        idToken: data.idToken,
+        email: data.email
+      }), { headers: corsHeaders });
+    }
+
     // GET /doc?uid=xxx&token=xxx — 读取用户配置
     if (url.pathname === '/doc' && request.method === 'GET') {
       const uid = url.searchParams.get('uid');
