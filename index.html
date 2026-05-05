@@ -3955,31 +3955,15 @@
     const q = reviewQuestions[reviewIndex];
     const w = q.word;
     const backEl = document.getElementById('review-flip-back');
-    const esc = s => (s || '').replace(/'/g, "\\'").replace(/\n/g, '<br>');
+    const esc = s => (s || '').replace(/'/g, "\\'");
 
-    let examplesHTML = '';
-    if (w.cet4) {
-      examplesHTML += `
-        <div class="flip-section-title">四级例句</div>
-        <div class="flip-example">${esc(w.cet4)}</div>
-        ${w.cet4zh ? `<div class="flip-example-zh">${esc(w.cet4zh)}</div>` : ''}
-      `;
-    }
-    if (w.cs) {
-      examplesHTML += `
-        <div class="flip-section-title" style="margin-top:8px;">CS 例句</div>
-        <div class="flip-example">${esc(w.cs)}</div>
-        ${w.cszh ? `<div class="flip-example-zh">${esc(w.cszh)}</div>` : ''}
-      `;
-    }
+    const bnc = w.bnc || 0;
+    let freqHTML = '';
+    if (bnc > 0 && bnc <= 3000) freqHTML = '<span style="display:inline-block;font-size:0.65rem;padding:2px 6px;border-radius:4px;background:var(--success-soft);color:var(--success);font-family:JetBrains Mono,monospace;margin-bottom:8px;">高频 BNC#' + bnc + '</span>';
+    else if (bnc > 3000 && bnc <= 8000) freqHTML = '<span style="display:inline-block;font-size:0.65rem;padding:2px 6px;border-radius:4px;background:var(--warning-soft);color:oklch(0.55 0.15 75);font-family:JetBrains Mono,monospace;margin-bottom:8px;">中频 BNC#' + bnc + '</span>';
+    else if (bnc > 8000) freqHTML = '<span style="display:inline-block;font-size:0.65rem;padding:2px 6px;border-radius:4px;background:var(--bg-muted);color:var(--text-muted);font-family:JetBrains Mono,monospace;margin-bottom:8px;">低频 BNC#' + bnc + '</span>';
 
-    const bnc = w.bnc;
-    let freqLabel = '';
-    if (bnc) {
-      if (bnc <= 3000) freqLabel = '<span class="freq-tag freq-high">高频</span>';
-      else if (bnc <= 8000) freqLabel = '<span class="freq-tag freq-mid">中频</span>';
-      else freqLabel = '<span class="freq-tag freq-low">低频</span>';
-    }
+    const speakIcon = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"/></svg>';
 
     backEl.innerHTML = `
       <div class="flip-back-word">${w.word}</div>
@@ -3987,12 +3971,30 @@
         <div class="flip-section-title">释义</div>
         <div class="flip-def">${w.def}</div>
       </div>
-      ${examplesHTML}
-      ${freqLabel ? `<div style="margin-top:4px;">${freqLabel}</div>` : ''}
+      ${freqHTML}
+      ${w.cet4 ? `<div>
+        <div class="flip-section-title" style="display:flex;align-items:center;gap:6px;">四级例句
+          <button onclick="speakSentence('${esc(w.cet4)}')" title="朗读例句" style="background:none;border:none;cursor:pointer;color:var(--accent);padding:6px;display:flex;align-items:center;border-radius:var(--radius-sm);flex-shrink:0;">${speakIcon}</button>
+        </div>
+        <div class="flip-example">${w.cet4}</div>
+        <div class="flip-example-zh">${w.cet4zh || ''}</div>
+      </div>` : ''}
+      ${w.cs ? `<div>
+        <div class="flip-cs-label" style="display:flex;align-items:center;gap:6px;">CS CONTEXT
+          <button onclick="speakSentence('${esc(w.cs)}')" title="朗读例句" style="background:none;border:none;cursor:pointer;color:var(--accent);padding:6px;display:flex;align-items:center;border-radius:var(--radius-sm);flex-shrink:0;">${speakIcon}</button>
+        </div>
+        <div class="flip-cs-example">${w.cs}</div>
+        <div class="flip-cs-zh">${w.cszh || ''}</div>
+      </div>` : ''}
       <div style="margin-top:auto;padding-top:12px;text-align:center;">
-        <button onclick="nextReviewQuestion()" class="vocab-action-btn btn-know" style="padding:8px 24px;">下一题</button>
+        <button onclick="nextReviewQuestion()" style="padding:8px 24px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent);color:#fff;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;">下一题</button>
       </div>
     `;
+
+    // Make example words clickable
+    backEl.querySelectorAll('.flip-example, .flip-cs-example').forEach(el => {
+      makeWordsClickable(el, 'vocab');
+    });
 
     const card = document.getElementById('review-flip-card');
     if (card) card.classList.add('flipped');
