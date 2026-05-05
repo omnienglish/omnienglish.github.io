@@ -653,6 +653,9 @@
     flex-direction: column;
     gap: 0;
     min-width: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
   }
   .heatmap-months {
     display: flex;
@@ -945,10 +948,10 @@
     flex-direction: column;
     align-items: center;
     gap: 3px;
-    padding: 10px 0 8px;
+    padding: 12px 0 10px;
     text-decoration: none;
     color: var(--text-muted);
-    font-size: 0.625rem;
+    font-size: 0.6875rem;
     font-weight: 500;
     cursor: pointer;
     transition: color 0.15s ease;
@@ -956,7 +959,7 @@
   }
   .bottom-nav-item:hover,
   .bottom-nav-item.active { color: var(--accent); }
-  .bottom-nav-item svg { width: 20px; height: 20px; }
+  .bottom-nav-item svg { width: 22px; height: 22px; }
 
   /* ═══ VOCAB PAGE ═══ */
   .vocab-progress {
@@ -1037,7 +1040,7 @@
   .flip-card {
     position: relative;
     width: 100%;
-    min-height: 380px;
+    min-height: 340px;
     cursor: pointer;
     transform-style: preserve-3d;
     transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1047,7 +1050,8 @@
   .flip-card.flipped .flip-front { pointer-events: none; }
   .flip-card:not(.flipped) .flip-back { pointer-events: none; }
 
-  @media (min-width: 480px) { .flip-card { min-height: 420px; } }
+  @media (min-width: 480px) { .flip-card { min-height: 380px; } }
+  @media (min-width: 768px) { .flip-card { min-height: 420px; } }
 
   .flip-face {
     position: absolute;
@@ -2956,7 +2960,7 @@
     const optionsHTML = options.map((opt, i) => `
       <button class="quiz-option-btn" data-index="${i}" data-correct="${opt.isCorrect}" onclick="checkVocabAnswer(this, ${opt.isCorrect}, '${esc(w.word)}')" style="
         background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-sm);
-        padding:10px 14px;font-size:0.85rem;cursor:pointer;transition:all 0.2s;
+        padding:12px 14px;font-size:0.85rem;cursor:pointer;transition:all 0.2s;
         font-family:'DM Sans',sans-serif;color:var(--text-primary);text-align:left;width:100%;
       ">${opt.def}</button>
     `).join('');
@@ -3737,7 +3741,7 @@
     optionsEl.innerHTML = q.options.map((def, i) => `
       <button class="review-option-btn" onclick="checkReviewAnswer(this, '${esc(def)}', '${esc(q.correctDef)}', '${esc(q.word.word)}')" style="
         background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-sm);
-        padding:12px;font-size:0.9rem;cursor:pointer;transition:all 0.2s;
+        padding:14px;font-size:0.9rem;cursor:pointer;transition:all 0.2s;
         font-family:'DM Sans',sans-serif;color:var(--text-primary);text-align:left;width:100%;
       ">${def}</button>
     `).join('');
