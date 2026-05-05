@@ -2295,15 +2295,20 @@
           <span id="review-progress" style="font-size:0.75rem;color:var(--text-muted);font-family:JetBrains Mono,monospace;">1 / 10</span>
           <span id="review-score" style="font-size:0.75rem;color:var(--text-muted);font-family:JetBrains Mono,monospace;">正确率 0%</span>
         </div>
-        <div id="review-question" style="background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px 24px;text-align:center;margin-bottom:16px;">
-          <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:8px;font-family:JetBrains Mono,monospace;">选择正确的释义</div>
-          <div id="review-word" style="font-size:1.5rem;font-weight:700;color:var(--text-primary);margin-bottom:4px;cursor:pointer;" onclick="speakWord(this.textContent)" title="点击朗读"></div>
-          <div id="review-phonetic" style="font-size:0.85rem;color:var(--text-muted);min-height:20px;cursor:pointer;" onclick="speakWord(document.getElementById('review-word').textContent)" title="点击朗读"></div>
-        </div>
-        <div id="review-options" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;"></div>
-        <div id="review-feedback" style="text-align:center;min-height:40px;margin-bottom:12px;"></div>
-        <div style="text-align:center;">
-          <button id="review-next-btn" onclick="nextReviewQuestion()" class="vocab-action-btn btn-know" style="display:none;">下一题</button>
+        <div class="flip-scene">
+          <div class="flip-card" id="review-flip-card">
+            <div class="flip-face flip-front" id="review-flip-front" style="padding:20px;">
+              <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:8px;font-family:JetBrains Mono,monospace;">选择正确的释义</div>
+              <div id="review-word" style="font-size:1.5rem;font-weight:700;color:var(--text-primary);margin-bottom:4px;cursor:pointer;" onclick="speakWord(this.textContent)" title="点击朗读"></div>
+              <div id="review-phonetic" style="font-size:0.85rem;color:var(--text-muted);min-height:20px;cursor:pointer;margin-bottom:16px;" onclick="speakWord(document.getElementById('review-word').textContent)" title="点击朗读"></div>
+              <div id="review-options" style="display:flex;flex-direction:column;gap:6px;width:100%;margin-bottom:10px;"></div>
+              <div id="review-feedback" style="min-height:20px;font-size:0.85rem;margin-bottom:6px;"></div>
+              <div id="review-detail-btn" style="display:none;">
+                <button onclick="reviewFlipToBack()" style="padding:7px 20px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;">查看详解</button>
+              </div>
+            </div>
+            <div class="flip-face flip-back" id="review-flip-back"></div>
+          </div>
         </div>
       </div>
       <div id="review-result" style="display:none;text-align:center;padding:30px 0;">
@@ -3895,11 +3900,13 @@
     const esc = s => (s || '').replace(/'/g, "\\'");
     document.getElementById('review-progress').textContent = (reviewIndex + 1) + ' / ' + reviewTotal;
     document.getElementById('review-score').textContent = '正确率 ' + (reviewIndex > 0 ? Math.round((reviewCorrect / reviewIndex) * 100) : 0) + '%';
-    // Show English word instead of Chinese definition
     document.getElementById('review-word').textContent = q.word.word;
     document.getElementById('review-phonetic').textContent = q.word.phonetic || '';
     document.getElementById('review-feedback').innerHTML = '';
-    document.getElementById('review-next-btn').style.display = 'none';
+    document.getElementById('review-detail-btn').style.display = 'none';
+    // Reset flip state
+    const card = document.getElementById('review-flip-card');
+    if (card) card.classList.remove('flipped');
 
     const optionsEl = document.getElementById('review-options');
     optionsEl.innerHTML = q.options.map((def, i) => `
@@ -3936,17 +3943,64 @@
       feedbackEl.innerHTML = '<div style="color:var(--success);font-weight:600;">正确!</div>';
       speakWord(word);
     } else {
-      feedbackEl.innerHTML = `
-        <div style="color:oklch(0.55 0.18 25);font-weight:600;margin-bottom:4px;">正确答案: ${correct}</div>
-      `;
+      feedbackEl.innerHTML = `<div style="color:oklch(0.55 0.18 25);font-weight:600;">正确答案: ${correct}</div>`;
       speakWord(word);
     }
 
     document.getElementById('review-score').textContent = '正确率 ' + Math.round((reviewCorrect / (reviewIndex + 1)) * 100) + '%';
-    document.getElementById('review-next-btn').style.display = 'inline-block';
+    document.getElementById('review-detail-btn').style.display = 'block';
+  }
+
+  function reviewFlipToBack() {
+    const q = reviewQuestions[reviewIndex];
+    const w = q.word;
+    const backEl = document.getElementById('review-flip-back');
+    const esc = s => (s || '').replace(/'/g, "\\'").replace(/\n/g, '<br>');
+
+    let examplesHTML = '';
+    if (w.cet4) {
+      examplesHTML += `
+        <div class="flip-section-title">四级例句</div>
+        <div class="flip-example">${esc(w.cet4)}</div>
+        ${w.cet4zh ? `<div class="flip-example-zh">${esc(w.cet4zh)}</div>` : ''}
+      `;
+    }
+    if (w.cs) {
+      examplesHTML += `
+        <div class="flip-section-title" style="margin-top:8px;">CS 例句</div>
+        <div class="flip-example">${esc(w.cs)}</div>
+        ${w.cszh ? `<div class="flip-example-zh">${esc(w.cszh)}</div>` : ''}
+      `;
+    }
+
+    const bnc = w.bnc;
+    let freqLabel = '';
+    if (bnc) {
+      if (bnc <= 3000) freqLabel = '<span class="freq-tag freq-high">高频</span>';
+      else if (bnc <= 8000) freqLabel = '<span class="freq-tag freq-mid">中频</span>';
+      else freqLabel = '<span class="freq-tag freq-low">低频</span>';
+    }
+
+    backEl.innerHTML = `
+      <div class="flip-back-word">${w.word}</div>
+      <div>
+        <div class="flip-section-title">释义</div>
+        <div class="flip-def">${w.def}</div>
+      </div>
+      ${examplesHTML}
+      ${freqLabel ? `<div style="margin-top:4px;">${freqLabel}</div>` : ''}
+      <div style="margin-top:auto;padding-top:12px;text-align:center;">
+        <button onclick="nextReviewQuestion()" class="vocab-action-btn btn-know" style="padding:8px 24px;">下一题</button>
+      </div>
+    `;
+
+    const card = document.getElementById('review-flip-card');
+    if (card) card.classList.add('flipped');
   }
 
   function nextReviewQuestion() {
+    const card = document.getElementById('review-flip-card');
+    if (card) card.classList.remove('flipped');
     reviewIndex++;
     if (reviewIndex >= reviewTotal) {
       showReviewResult();
@@ -3961,6 +4015,7 @@
     const pct = Math.round((reviewCorrect / reviewTotal) * 100);
     document.getElementById('review-final-score').textContent = pct + '%';
     document.getElementById('review-final-detail').textContent = reviewTotal + ' 题答对 ' + reviewCorrect + ' 题';
+    updateReviewCounts();
   }
 
   function exitReview() {
