@@ -3245,13 +3245,13 @@
       b.disabled = true;
       b.style.cursor = 'default';
       if (b.dataset.correct === 'true') {
-        b.style.background = 'var(--success-soft)';
-        b.style.borderColor = 'var(--success)';
-        b.style.color = 'var(--success)';
+        b.style.setProperty('background', 'var(--success-soft)', 'important');
+        b.style.setProperty('border-color', 'var(--success)', 'important');
+        b.style.setProperty('color', 'var(--success)', 'important');
       } else if (b === btn && !isCorrect) {
-        b.style.background = 'var(--error-soft)';
-        b.style.borderColor = 'oklch(0.55 0.18 25)';
-        b.style.color = 'oklch(0.55 0.18 25)';
+        b.style.setProperty('background', 'var(--error-soft)', 'important');
+        b.style.setProperty('border-color', 'oklch(0.55 0.18 25)', 'important');
+        b.style.setProperty('color', 'oklch(0.55 0.18 25)', 'important');
       }
     });
     const feedbackEl = document.getElementById('quiz-feedback');
@@ -4014,13 +4014,13 @@
       b.disabled = true;
       b.style.cursor = 'default';
       if (b.textContent === correct) {
-        b.style.background = 'var(--success-soft)';
-        b.style.borderColor = 'var(--success)';
-        b.style.color = 'var(--success)';
+        b.style.setProperty('background', 'var(--success-soft)', 'important');
+        b.style.setProperty('border-color', 'var(--success)', 'important');
+        b.style.setProperty('color', 'var(--success)', 'important');
       } else if (b === btn && !isCorrect) {
-        b.style.background = 'var(--error-soft)';
-        b.style.borderColor = 'oklch(0.55 0.18 25)';
-        b.style.color = 'oklch(0.55 0.18 25)';
+        b.style.setProperty('background', 'var(--error-soft)', 'important');
+        b.style.setProperty('border-color', 'oklch(0.55 0.18 25)', 'important');
+        b.style.setProperty('color', 'oklch(0.55 0.18 25)', 'important');
       }
     });
 
