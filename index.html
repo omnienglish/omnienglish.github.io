@@ -3922,6 +3922,11 @@
     const isCorrect = selected === correct;
     if (isCorrect) reviewCorrect++;
     updateReviewSchedule(word, isCorrect);
+    // 答对 → 从复习队列移出; 答错 → 保留在复习队列
+    if (isCorrect) {
+      vocabState[word] = 'known';
+      saveToCloud('vocabState', vocabState);
+    }
 
     const buttons = document.querySelectorAll('#review-options .review-option-btn');
     buttons.forEach(b => {
@@ -4018,6 +4023,7 @@
     document.getElementById('review-final-score').textContent = pct + '%';
     document.getElementById('review-final-detail').textContent = reviewTotal + ' 题答对 ' + reviewCorrect + ' 题';
     updateReviewCounts();
+    updateEvoBar();
   }
 
   function exitReview() {
