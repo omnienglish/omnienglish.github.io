@@ -3857,12 +3857,15 @@
   }
 
   function updateReviewCounts() {
-    const dueCount = getDueWords().length;
+    const due = getDueWords();
+    const dueCount = due.length;
     const learnedCount = VOCAB.filter(w => vocabState[w.word]).length;
     const el1 = document.getElementById('review-due-count');
     const el2 = document.getElementById('review-all-count');
     if (el1) el1.textContent = dueCount;
     if (el2) el2.textContent = learnedCount + ' 词';
+    console.log('[Review] 待复习:', dueCount, '已学:', learnedCount);
+    if (dueCount > 0 && dueCount <= 5) console.log('[Review] 待复习词:', due.map(w => w.word).join(', '));
   }
 
   function startReview(mode) {
@@ -3925,10 +3928,12 @@
     const isCorrect = selected === correct;
     if (isCorrect) reviewCorrect++;
     updateReviewSchedule(word, isCorrect);
+    console.log('[Review] 答题:', word, isCorrect ? '正确' : '错误', '→ vocabState:', vocabState[word]);
     // 答对 → 从复习队列移出; 答错 → 保留在复习队列
     if (isCorrect) {
       vocabState[word] = 'known';
       saveToCloud('vocabState', vocabState);
+      console.log('[Review] 已标记为 known:', word);
     }
 
     const buttons = document.querySelectorAll('#review-options .review-option-btn');
