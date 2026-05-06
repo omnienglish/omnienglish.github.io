@@ -3146,20 +3146,24 @@
     `).join('');
 
     const front = `
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">${statusBadge}
+      <div style="display:flex;align-items:center;gap:8px;width:100%;">${statusBadge}
         <button onclick="toggleNotebookFromCard('${esc(w.word.toLowerCase())}')" style="margin-left:auto;padding:4px 10px;border-radius:var(--radius-sm);border:1px solid ${inNB ? 'var(--success)' : 'var(--border)'};background:${inNB ? 'var(--success-soft)' : 'var(--bg-muted)'};color:${inNB ? 'var(--success)' : 'var(--text-muted)'};font-family:'DM Sans',sans-serif;font-size:0.7rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:4px;">
           <svg width="11" height="11" fill="${inNB ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
           ${inNB ? '已收藏' : '收藏'}
         </button>
       </div>
-      <div class="flip-front-word" onclick="speakWord('${esc(w.word)}')" style="cursor:pointer;margin-bottom:2px;" title="点击朗读">${w.word}</div>
-      <span class="flip-front-phonetic" onclick="speakWord('${esc(w.word)}')" style="cursor:pointer;margin-bottom:120px;" title="点击朗读">${w.phonetic}</span>
-      <div class="quiz-options" style="display:grid;grid-template-columns:1fr 1fr;gap:4px;width:100%;margin:0 auto 10px;justify-items:center;">
-        ${optionsHTML}
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0;">
+        <div class="flip-front-word" onclick="speakWord('${esc(w.word)}')" style="cursor:pointer;margin-bottom:2px;" title="点击朗读">${w.word}</div>
+        <span class="flip-front-phonetic" onclick="speakWord('${esc(w.word)}')" style="cursor:pointer;" title="点击朗读">${w.phonetic}</span>
       </div>
-      <div class="quiz-feedback" id="quiz-feedback" style="min-height:20px;font-size:0.85rem;"></div>
-      <div id="quiz-next-btn" style="margin-top:6px;display:none;">
-        <button onclick="flipToBack()" style="padding:7px 20px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;">查看详解</button>
+      <div style="width:100%;">
+        <div class="quiz-options" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;margin:0 auto 8px;justify-items:center;">
+          ${optionsHTML}
+        </div>
+        <div class="quiz-feedback" id="quiz-feedback" style="min-height:18px;font-size:0.85rem;margin-bottom:4px;"></div>
+        <div id="quiz-next-btn" style="display:none;text-align:center;">
+          <button onclick="flipToBack()" style="padding:7px 20px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;">查看详解</button>
+        </div>
       </div>`;
 
     const back = `
