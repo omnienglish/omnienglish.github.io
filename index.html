@@ -2184,27 +2184,27 @@
         <div style="margin-bottom:12px;display:flex;align-items:center;gap:8px;">
           <button onclick="exitLearnSession()" style="background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px 12px;font-size:0.75rem;color:var(--text-muted);cursor:pointer;">← 返回设置</button>
           <div class="bg-picker-wrap">
-            <button class="bg-picker-btn" onclick="toggleBgPicker(event)">
+            <button class="bg-picker-btn" onclick="toggleBgPicker(event, 'learn')">
               <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.098 19.902a3.75 3.75 0 005.304 0l6.401-6.402M6.75 21A3.75 3.75 0 013 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 003.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008z"/></svg>
               卡片背景
             </button>
-            <div class="bg-picker-dropdown" id="bg-picker-dropdown">
+            <div class="bg-picker-dropdown" id="learn-bg-picker">
               <div class="bg-picker-title">预设主题</div>
-              <div class="bg-presets" id="bg-presets"></div>
+              <div class="bg-presets" id="learn-bg-presets"></div>
               <div class="bg-picker-title">背景透明度</div>
               <div class="bg-opacity-row">
-                <div class="bg-opacity-track" id="bg-opacity-track">
-                  <div class="bg-opacity-fill" id="bg-opacity-fill"></div>
-                  <div class="bg-opacity-thumb" id="bg-opacity-thumb"></div>
+                <div class="bg-opacity-track" id="learn-bg-opacity-track">
+                  <div class="bg-opacity-fill" id="learn-bg-opacity-fill"></div>
+                  <div class="bg-opacity-thumb" id="learn-bg-opacity-thumb"></div>
                 </div>
-                <span id="bg-opacity-val" class="bg-opacity-val">35%</span>
+                <span id="learn-bg-opacity-val" class="bg-opacity-val">35%</span>
               </div>
               <div class="bg-picker-title">自定义图片</div>
               <div class="bg-upload-row">
-                <button class="bg-upload-btn" onclick="document.getElementById('bg-file-input').click()">上传图片</button>
-                <button class="bg-reset-btn" onclick="resetCardBg()">重置</button>
+                <button class="bg-upload-btn" onclick="document.getElementById('learn-bg-file-input').click()">上传图片</button>
+                <button class="bg-reset-btn" onclick="resetCardBg('learn')">重置</button>
               </div>
-              <input type="file" id="bg-file-input" accept="image/*" style="display:none" onchange="handleBgUpload(event)">
+              <input type="file" id="learn-bg-file-input" accept="image/*" style="display:none" onchange="handleBgUpload(event, 'learn')">
             </div>
           </div>
         </div>
@@ -2314,10 +2314,28 @@
           <div style="display:flex;align-items:center;gap:8px;">
             <button onclick="exitReview()" style="background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px 10px;font-size:0.75rem;color:var(--text-muted);cursor:pointer;">退出</button>
             <div class="bg-picker-wrap">
-              <button class="bg-picker-btn" onclick="toggleBgPicker(event)">
+              <button class="bg-picker-btn" onclick="toggleBgPicker(event, 'review')">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.098 19.902a3.75 3.75 0 005.304 0l6.401-6.402M6.75 21A3.75 3.75 0 013 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 003.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008z"/></svg>
                 卡片背景
               </button>
+              <div class="bg-picker-dropdown" id="review-bg-picker">
+                <div class="bg-picker-title">预设主题</div>
+                <div class="bg-presets" id="review-bg-presets"></div>
+                <div class="bg-picker-title">背景透明度</div>
+                <div class="bg-opacity-row">
+                  <div class="bg-opacity-track" id="review-bg-opacity-track">
+                    <div class="bg-opacity-fill" id="review-bg-opacity-fill"></div>
+                    <div class="bg-opacity-thumb" id="review-bg-opacity-thumb"></div>
+                  </div>
+                  <span id="review-bg-opacity-val" class="bg-opacity-val">35%</span>
+                </div>
+                <div class="bg-picker-title">自定义图片</div>
+                <div class="bg-upload-row">
+                  <button class="bg-upload-btn" onclick="document.getElementById('review-bg-file-input').click()">上传图片</button>
+                  <button class="bg-reset-btn" onclick="resetCardBg('review')">重置</button>
+                </div>
+                <input type="file" id="review-bg-file-input" accept="image/*" style="display:none" onchange="handleBgUpload(event, 'review')">
+              </div>
             </div>
           </div>
           <span id="review-progress" style="font-size:0.75rem;color:var(--text-muted);font-family:JetBrains Mono,monospace;">1 / 10</span>
@@ -3336,8 +3354,11 @@
     { id: 'mint', name: '薄荷', bg: 'linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)', text: '#1b5e20' },
   ];
 
-  function getCardBg() {
-    try { return JSON.parse(localStorage.getItem('oe-card-bg') || '{}'); } catch { return {}; }
+  let _currentBgMode = 'learn';
+  function getCardBg(mode) {
+    const m = mode || _currentBgMode;
+    const key = m === 'review' ? 'oe-review-card-bg' : 'oe-card-bg';
+    try { return JSON.parse(localStorage.getItem(key) || '{}'); } catch { return {}; }
   }
 
   function ensureBgOverlay(face) {
@@ -3351,51 +3372,52 @@
   }
 
   function applyCardBg() {
-    const cfg = getCardBg();
-    const faces = [
-      [document.querySelector('.flip-front'), document.querySelector('.flip-back')],
-      [document.getElementById('review-flip-front'), document.getElementById('review-flip-back')]
-    ].filter(pair => pair[0] && pair[1]);
-
-    const opacity = cfg.opacity != null ? cfg.opacity : 0.35;
-
-    faces.forEach(([front, back]) => {
-      if (cfg.img || (cfg.bg && cfg.id !== 'default')) {
-        const bgVal = cfg.img ? `url(${cfg.img}) center/100% 100% no-repeat` : cfg.bg;
-        const ovF = ensureBgOverlay(front);
-        const ovB = ensureBgOverlay(back);
-        ovF.style.background = bgVal;
-        ovF.style.opacity = opacity;
-        ovB.style.background = bgVal;
-        ovB.style.opacity = opacity;
-        if (cfg.text) { front.style.color = cfg.text; back.style.color = cfg.text; }
-      } else {
-        const ovF = front.querySelector('.card-bg-overlay');
-        const ovB = back.querySelector('.card-bg-overlay');
-        if (ovF) ovF.remove();
-        if (ovB) ovB.remove();
-        front.style.color = '';
-        back.style.color = '';
-      }
-    });
-
-    syncOpacitySlider();
+    // Apply learning mode background
+    applyCardBgFor('learn', document.querySelector('.flip-front'), document.querySelector('.flip-back'));
+    // Apply review mode background
+    applyCardBgFor('review', document.getElementById('review-flip-front'), document.getElementById('review-flip-back'));
   }
 
-  function setCardBg(preset) {
-    const cfg = getCardBg();
+  function applyCardBgFor(mode, front, back) {
+    if (!front || !back) return;
+    const cfg = getCardBg(mode);
+    const opacity = cfg.opacity != null ? cfg.opacity : 0.35;
+
+    if (cfg.img || (cfg.bg && cfg.id !== 'default')) {
+      const bgVal = cfg.img ? `url(${cfg.img}) center/100% 100% no-repeat` : cfg.bg;
+      const ovF = ensureBgOverlay(front);
+      const ovB = ensureBgOverlay(back);
+      ovF.style.background = bgVal;
+      ovF.style.opacity = opacity;
+      ovB.style.background = bgVal;
+      ovB.style.opacity = opacity;
+      if (cfg.text) { front.style.color = cfg.text; back.style.color = cfg.text; }
+    } else {
+      const ovF = front.querySelector('.card-bg-overlay');
+      const ovB = back.querySelector('.card-bg-overlay');
+      if (ovF) ovF.remove();
+      if (ovB) ovB.remove();
+      front.style.color = '';
+      back.style.color = '';
+    }
+  }
+
+  function setCardBg(preset, mode) {
+    const cfg = getCardBg(mode);
     preset.opacity = cfg.opacity != null ? cfg.opacity : 0.35;
-    localStorage.setItem('oe-card-bg', JSON.stringify(preset));
+    const key = mode === 'review' ? 'oe-review-card-bg' : 'oe-card-bg';
+    localStorage.setItem(key, JSON.stringify(preset));
     applyCardBg();
-    renderBgPresets();
+    renderBgPresets(mode);
   }
 
   let _opacityTimer = null;
-  function initOpacitySlider() {
-    const track = document.getElementById('bg-opacity-track');
-    const thumb = document.getElementById('bg-opacity-thumb');
-    const fill = document.getElementById('bg-opacity-fill');
-    const valEl = document.getElementById('bg-opacity-val');
+  function initOpacitySlider(mode) {
+    const prefix = mode === 'review' ? 'review-' : 'learn-';
+    const track = document.getElementById(prefix + 'bg-opacity-track');
+    const thumb = document.getElementById(prefix + 'bg-opacity-thumb');
+    const fill = document.getElementById(prefix + 'bg-opacity-fill');
+    const valEl = document.getElementById(prefix + 'bg-opacity-val');
     if (!track || !thumb) return;
 
     let dragging = false;
@@ -3410,9 +3432,10 @@
     function persist(pct) {
       clearTimeout(_opacityTimer);
       _opacityTimer = setTimeout(() => {
-        const cfg = getCardBg();
+        const cfg = getCardBg(mode);
         cfg.opacity = pct / 100;
-        localStorage.setItem('oe-card-bg', JSON.stringify(cfg));
+        const key = mode === 'review' ? 'oe-review-card-bg' : 'oe-card-bg';
+        localStorage.setItem(key, JSON.stringify(cfg));
         applyCardBg();
       }, 80);
     }
@@ -3437,7 +3460,6 @@
     thumb.addEventListener('pointerup', function() { dragging = false; });
     thumb.addEventListener('pointercancel', function() { dragging = false; });
 
-    // Click on track to jump
     track.addEventListener('click', function(e) {
       if (e.target === thumb) return;
       const pct = calcPct(e);
@@ -3446,29 +3468,35 @@
     });
   }
 
-  function syncOpacitySlider() {
-    const cfg = getCardBg();
+  function syncOpacitySlider(mode) {
+    const m = mode || _currentBgMode;
+    const cfg = getCardBg(m);
     const opacity = cfg.opacity != null ? cfg.opacity : 0.35;
     const pct = Math.round(opacity * 100);
-    const thumb = document.getElementById('bg-opacity-thumb');
-    const fill = document.getElementById('bg-opacity-fill');
-    const valEl = document.getElementById('bg-opacity-val');
+    const prefix = m === 'review' ? 'review-' : 'learn-';
+    const thumb = document.getElementById(prefix + 'bg-opacity-thumb');
+    const fill = document.getElementById(prefix + 'bg-opacity-fill');
+    const valEl = document.getElementById(prefix + 'bg-opacity-val');
     if (thumb) thumb.style.left = pct + '%';
     if (fill) fill.style.width = pct + '%';
     if (valEl) valEl.textContent = pct + '%';
   }
 
-  function resetCardBg() {
-    localStorage.removeItem('oe-card-bg');
+  function resetCardBg(mode) {
+    const m = mode || _currentBgMode;
+    const key = m === 'review' ? 'oe-review-card-bg' : 'oe-card-bg';
+    localStorage.removeItem(key);
     applyCardBg();
-    renderBgPresets();
+    renderBgPresets(m);
+    syncOpacitySlider(m);
   }
 
-  function handleBgUpload(e) {
+  function handleBgUpload(e, mode) {
+    const m = mode || _currentBgMode;
+    _currentBgMode = m;
     const file = e.target.files[0];
     if (!file) return;
-    // Get actual card face dimensions before opening crop
-    const face = document.querySelector('.flip-front');
+    const face = m === 'review' ? document.getElementById('review-flip-front') : document.querySelector('.flip-front');
     const cardW = face ? face.offsetWidth : 700;
     const cardH = face ? face.offsetHeight : 320;
     const reader = new FileReader();
@@ -3701,32 +3729,38 @@
         );
         const cropped = canvas.toDataURL('image/jpeg', 0.85);
         overlay.remove();
-        setCardBg({ id: 'custom', name: '自定义', img: cropped });
+        setCardBg({ id: 'custom', name: '自定义', img: cropped }, _currentBgMode);
       };
     };
   }
 
-  function renderBgPresets() {
-    const container = document.getElementById('bg-presets');
+  function renderBgPresets(mode) {
+    const m = mode || _currentBgMode;
+    const prefix = m === 'review' ? 'review-' : 'learn-';
+    const container = document.getElementById(prefix + 'bg-presets');
     if (!container) return;
-    const cfg = getCardBg();
+    const cfg = getCardBg(m);
     container.innerHTML = '';
     CARD_BG_PRESETS.forEach(p => {
       const el = document.createElement('div');
       el.className = 'bg-preset' + (cfg.id === p.id ? ' active' : '');
       el.style.background = p.bg;
       el.title = p.name;
-      el.onclick = () => setCardBg({ id: p.id, bg: p.bg, text: p.text });
+      el.onclick = () => setCardBg({ id: p.id, bg: p.bg, text: p.text }, m);
       container.appendChild(el);
     });
   }
 
-  function toggleBgPicker(e) {
+  function toggleBgPicker(e, mode) {
     e.stopPropagation();
-    const dd = document.getElementById('bg-picker-dropdown');
+    const m = mode || 'learn';
+    _currentBgMode = m;
+    const prefix = m === 'review' ? 'review-' : 'learn-';
+    const dd = document.getElementById(prefix + 'bg-picker');
+    if (!dd) return;
     dd.classList.toggle('open');
     if (dd.classList.contains('open')) {
-      renderBgPresets();
+      renderBgPresets(m);
       const close = (ev) => {
         if (!dd.contains(ev.target)) {
           dd.classList.remove('open');
@@ -4865,8 +4899,9 @@
       updateEvoBar();
       updateNotebookBadge();
 
-      // 6. Custom opacity slider
-      initOpacitySlider();
+      // 6. Custom opacity sliders
+      initOpacitySlider('learn');
+      initOpacitySlider('review');
     } catch (err) {
       console.error('Init error:', err);
     }
