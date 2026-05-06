@@ -2291,7 +2291,15 @@
       </div>
       <div id="review-quiz" style="display:none;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-          <button onclick="exitReview()" style="background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px 10px;font-size:0.75rem;color:var(--text-muted);cursor:pointer;">退出</button>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button onclick="exitReview()" style="background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px 10px;font-size:0.75rem;color:var(--text-muted);cursor:pointer;">退出</button>
+            <div class="bg-picker-wrap">
+              <button class="bg-picker-btn" onclick="toggleBgPicker(event)">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.098 19.902a3.75 3.75 0 005.304 0l6.401-6.402M6.75 21A3.75 3.75 0 013 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 003.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008z"/></svg>
+                卡片背景
+              </button>
+            </div>
+          </div>
           <span id="review-progress" style="font-size:0.75rem;color:var(--text-muted);font-family:JetBrains Mono,monospace;">1 / 10</span>
           <span id="review-score" style="font-size:0.75rem;color:var(--text-muted);font-family:JetBrains Mono,monospace;">正确率 0%</span>
         </div>
@@ -3145,7 +3153,7 @@
         </button>
       </div>
       <div class="flip-front-word" onclick="speakWord('${esc(w.word)}')" style="cursor:pointer;margin-bottom:2px;" title="点击朗读">${w.word}</div>
-      <span class="flip-front-phonetic" onclick="speakWord('${esc(w.word)}')" style="cursor:pointer;margin-bottom:14px;" title="点击朗读">${w.phonetic}</span>
+      <span class="flip-front-phonetic" onclick="speakWord('${esc(w.word)}')" style="cursor:pointer;margin-bottom:28px;" title="点击朗读">${w.phonetic}</span>
       <div class="quiz-options" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;margin-bottom:10px;">
         ${optionsHTML}
       </div>
@@ -3318,29 +3326,32 @@
 
   function applyCardBg() {
     const cfg = getCardBg();
-    const front = document.querySelector('.flip-front');
-    const back = document.querySelector('.flip-back');
-    if (!front || !back) return;
+    const faces = [
+      [document.querySelector('.flip-front'), document.querySelector('.flip-back')],
+      [document.getElementById('review-flip-front'), document.getElementById('review-flip-back')]
+    ].filter(pair => pair[0] && pair[1]);
 
     const opacity = cfg.opacity != null ? cfg.opacity : 0.35;
 
-    if (cfg.img || (cfg.bg && cfg.id !== 'default')) {
-      const bgVal = cfg.img ? `url(${cfg.img}) center/100% 100% no-repeat` : cfg.bg;
-      const ovF = ensureBgOverlay(front);
-      const ovB = ensureBgOverlay(back);
-      ovF.style.background = bgVal;
-      ovF.style.opacity = opacity;
-      ovB.style.background = bgVal;
-      ovB.style.opacity = opacity;
-      if (cfg.text) { front.style.color = cfg.text; back.style.color = cfg.text; }
-    } else {
-      const ovF = front.querySelector('.card-bg-overlay');
-      const ovB = back.querySelector('.card-bg-overlay');
-      if (ovF) ovF.remove();
-      if (ovB) ovB.remove();
-      front.style.color = '';
-      back.style.color = '';
-    }
+    faces.forEach(([front, back]) => {
+      if (cfg.img || (cfg.bg && cfg.id !== 'default')) {
+        const bgVal = cfg.img ? `url(${cfg.img}) center/100% 100% no-repeat` : cfg.bg;
+        const ovF = ensureBgOverlay(front);
+        const ovB = ensureBgOverlay(back);
+        ovF.style.background = bgVal;
+        ovF.style.opacity = opacity;
+        ovB.style.background = bgVal;
+        ovB.style.opacity = opacity;
+        if (cfg.text) { front.style.color = cfg.text; back.style.color = cfg.text; }
+      } else {
+        const ovF = front.querySelector('.card-bg-overlay');
+        const ovB = back.querySelector('.card-bg-overlay');
+        if (ovF) ovF.remove();
+        if (ovB) ovB.remove();
+        front.style.color = '';
+        back.style.color = '';
+      }
+    });
 
     syncOpacitySlider();
   }
@@ -3902,6 +3913,7 @@
     document.getElementById('review-start').style.display = 'none';
     document.getElementById('review-quiz').style.display = 'block';
     document.getElementById('review-result').style.display = 'none';
+    applyCardBg();
     showReviewQuestion();
   }
 
