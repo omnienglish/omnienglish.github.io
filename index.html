@@ -1065,8 +1065,8 @@
   }
 
   .flip-front {
-    background: var(--bg-surface);
-    border: 1px solid var(--border);
+    background: transparent !important;
+    border: none !important;
     align-items: center;
     justify-content: flex-start;
     text-align: center;
@@ -1408,26 +1408,46 @@
     color: var(--success);
   }
 
-  /* Quiz option buttons */
+  /* Quiz option buttons - 毛玻璃效果 */
   .quiz-option-btn {
-    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.65) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    border-radius: 12px !important;
+    padding: 12px 16px !important;
+    color: #333 !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   }
   .quiz-option-btn:hover:not(:disabled) {
-    background: var(--bg-muted);
-    border-color: var(--accent);
+    background: rgba(255, 255, 255, 0.9) !important;
+    transform: translateY(-2px);
+    border-color: var(--accent) !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
   }
   .quiz-option-btn:disabled {
     cursor: default;
     opacity: 0.9;
   }
 
-  /* Review option buttons */
+  /* Review option buttons - 毛玻璃效果 */
   .review-option-btn {
-    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.65) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    border-radius: 12px !important;
+    padding: 12px 16px !important;
+    color: #333 !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   }
   .review-option-btn:hover:not(:disabled) {
-    background: var(--bg-muted);
-    border-color: var(--accent);
+    background: rgba(255, 255, 255, 0.9) !important;
+    transform: translateY(-2px);
+    border-color: var(--accent) !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
   }
   .review-option-btn:disabled {
     cursor: default;
@@ -3139,9 +3159,7 @@
     const options = generateOptions(w, VOCAB);
     const optionsHTML = options.map((opt, i) => `
       <button class="quiz-option-btn" data-index="${i}" data-correct="${opt.isCorrect}" onclick="checkVocabAnswer(this, ${opt.isCorrect}, '${esc(w.word)}')" style="
-        background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-sm);
-        padding:10px 14px;font-size:0.8rem;cursor:pointer;transition:all 0.2s;
-        font-family:'DM Sans',sans-serif;color:var(--text-primary);text-align:left;width:auto;margin:2px;
+        font-size:0.85rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left;width:100%;
       ">${opt.def}</button>
     `).join('');
 
@@ -3156,11 +3174,11 @@
         <div class="flip-front-word" onclick="speakWord('${esc(w.word)}')" style="cursor:pointer;margin-bottom:2px;" title="点击朗读">${w.word}</div>
         <span class="flip-front-phonetic" onclick="speakWord('${esc(w.word)}')" style="cursor:pointer;" title="点击朗读">${w.phonetic}</span>
       </div>
-      <div style="width:100%;">
-        <div class="quiz-options" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;margin:0 auto 8px;justify-items:center;">
+      <div style="width:100%;padding:0 10px 10px;">
+        <div class="quiz-options" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;margin-bottom:12px;">
           ${optionsHTML}
         </div>
-        <div class="quiz-feedback" id="quiz-feedback" style="min-height:18px;font-size:0.85rem;margin-bottom:4px;"></div>
+        <div class="quiz-feedback" id="quiz-feedback" style="min-height:20px;font-size:0.85rem;text-align:center;margin-bottom:6px;"></div>
         <div id="quiz-next-btn" style="display:none;text-align:center;">
           <button onclick="flipToBack()" style="padding:7px 20px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;">查看详解</button>
         </div>
@@ -3937,9 +3955,7 @@
     const optionsEl = document.getElementById('review-options');
     optionsEl.innerHTML = q.options.map((def, i) => `
       <button class="review-option-btn" onclick="checkReviewAnswer(this, '${esc(def)}', '${esc(q.correctDef)}', '${esc(q.word.word)}')" style="
-        background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-sm);
-        padding:10px 14px;font-size:0.8rem;cursor:pointer;transition:all 0.2s;
-        font-family:'DM Sans',sans-serif;color:var(--text-primary);text-align:left;width:auto;margin:2px;
+        font-size:0.85rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left;width:100%;
       ">${def}</button>
     `).join('');
   }
