@@ -3140,7 +3140,7 @@
     const optionsHTML = options.map((opt, i) => `
       <button class="quiz-option-btn" data-index="${i}" data-correct="${opt.isCorrect}" onclick="checkVocabAnswer(this, ${opt.isCorrect}, '${esc(w.word)}')" style="
         background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-sm);
-        padding:10px 12px;font-size:0.8rem;cursor:pointer;transition:all 0.2s;
+        padding:6px 7px;font-size:0.8rem;cursor:pointer;transition:all 0.2s;
         font-family:'DM Sans',sans-serif;color:var(--text-primary);text-align:left;width:100%;
       ">${opt.def}</button>
     `).join('');
@@ -3153,7 +3153,7 @@
         </button>
       </div>
       <div class="flip-front-word" onclick="speakWord('${esc(w.word)}')" style="cursor:pointer;margin-bottom:2px;" title="点击朗读">${w.word}</div>
-      <span class="flip-front-phonetic" onclick="speakWord('${esc(w.word)}')" style="cursor:pointer;margin-bottom:56px;" title="点击朗读">${w.phonetic}</span>
+      <span class="flip-front-phonetic" onclick="speakWord('${esc(w.word)}')" style="cursor:pointer;margin-bottom:120px;" title="点击朗读">${w.phonetic}</span>
       <div class="quiz-options" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;margin-bottom:10px;">
         ${optionsHTML}
       </div>
@@ -3934,7 +3934,7 @@
     optionsEl.innerHTML = q.options.map((def, i) => `
       <button class="review-option-btn" onclick="checkReviewAnswer(this, '${esc(def)}', '${esc(q.correctDef)}', '${esc(q.word.word)}')" style="
         background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-sm);
-        padding:10px 12px;font-size:0.8rem;cursor:pointer;transition:all 0.2s;
+        padding:6px 7px;font-size:0.8rem;cursor:pointer;transition:all 0.2s;
         font-family:'DM Sans',sans-serif;color:var(--text-primary);text-align:left;width:100%;
       ">${def}</button>
     `).join('');
