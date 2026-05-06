@@ -3845,13 +3845,14 @@
   function updateReviewSchedule(word, correct) {
     const schedule = getReviewSchedule();
     const now = Date.now();
+    const todayStart = new Date(); todayStart.setHours(0,0,0,0);
     const s = schedule[word] || { interval: 1, last: 0, next: 0 };
     if (correct) {
       s.interval = Math.min(s.interval * 2, 30); // max 30 days
       s.next = now + s.interval * 86400000;
     } else {
       s.interval = 1;
-      s.next = now; // 保持今天到期，下次还能复习到
+      s.next = todayStart.getTime(); // 今天仍然到期
     }
     s.last = now;
     schedule[word] = s;
