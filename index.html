@@ -4084,6 +4084,7 @@
 
     const card = document.getElementById('review-flip-card');
     if (card) card.classList.add('flipped');
+    applyCardBgFor('review', document.getElementById('review-flip-front'), document.getElementById('review-flip-back'));
   }
 
   function nextReviewQuestion() {
