@@ -2608,8 +2608,11 @@
         if (data.notebook) Store.set('notebook', data.notebook);
         if (data.progress) Store.set('progress', data.progress);
         if (data.vocabState) {
-          localStorage.setItem('omni-vocab-state', JSON.stringify(data.vocabState));
-          Object.assign(vocabState, data.vocabState);
+          // 合并: 本地优先, 云端补充本地没有的词
+          for (const [word, state] of Object.entries(data.vocabState)) {
+            if (!vocabState[word]) vocabState[word] = state;
+          }
+          localStorage.setItem('omni-vocab-state', JSON.stringify(vocabState));
           renderVocabCard();
         }
         updateEvoBar();
