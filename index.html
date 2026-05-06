@@ -3831,18 +3831,15 @@
 
   function getDueWords() {
     const schedule = getReviewSchedule();
-    const now = Date.now();
-    const today = new Date().toDateString();
-    const due = VOCAB.filter(w => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayMs = today.getTime();
+    return VOCAB.filter(w => {
       if (!vocabState[w.word]) return false;
       const s = schedule[w.word];
       if (!s) return true; // never reviewed = due now
-      const nextDate = new Date(s.next).toDateString();
-      const isDue = nextDate <= today;
-      if (isDue) console.log('[DueWord]', w.word, 'next:', nextDate, 'today:', today, 'nextTs:', s.next, 'now:', now);
-      return isDue;
+      return s.next <= todayMs;
     });
-    return due;
   }
 
   function updateReviewSchedule(word, correct) {
@@ -3861,22 +3858,12 @@
   }
 
   function updateReviewCounts() {
-    const due = getDueWords();
-    const dueCount = due.length;
+    const dueCount = getDueWords().length;
     const learnedCount = VOCAB.filter(w => vocabState[w.word]).length;
     const el1 = document.getElementById('review-due-count');
     const el2 = document.getElementById('review-all-count');
     if (el1) el1.textContent = dueCount;
     if (el2) el2.textContent = learnedCount + ' 词';
-    console.log('[Review] 待复习:', dueCount, '已学:', learnedCount);
-    if (dueCount > 0) {
-      const schedule = getReviewSchedule();
-      const today = new Date().toDateString();
-      due.slice(0, 5).forEach(w => {
-        const s = schedule[w.word];
-        console.log('  ', w.word, 'vocabState:', vocabState[w.word], 'schedule:', s ? 'next=' + new Date(s.next).toDateString() : '无');
-      });
-    }
   }
 
   function startReview(mode) {
@@ -3939,12 +3926,9 @@
     const isCorrect = selected === correct;
     if (isCorrect) reviewCorrect++;
     updateReviewSchedule(word, isCorrect);
-    console.log('[Review] 答题:', word, isCorrect ? '正确' : '错误', '→ vocabState:', vocabState[word]);
-    // 答对 → 从复习队列移出; 答错 → 保留在复习队列
     if (isCorrect) {
       vocabState[word] = 'known';
       saveToCloud('vocabState', vocabState);
-      console.log('[Review] 已标记为 known:', word);
     }
 
     const buttons = document.querySelectorAll('#review-options .review-option-btn');
