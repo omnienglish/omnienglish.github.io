@@ -3873,14 +3873,18 @@
     if (mode === 'due') pool = getDueWords();
     else pool = VOCAB.filter(w => vocabState[w.word]);
 
-    if (pool.length < 4) {
-      showToast('单词太少，至少需要 4 个已学单词');
+    if (pool.length === 0) {
+      showToast(mode === 'due' ? '没有待复习的单词' : '没有已学单词');
       return;
     }
 
+    const allLearned = VOCAB.filter(w => vocabState[w.word]);
+    if (allLearned.length < 4) {
+      showToast('已学单词太少，至少需要 4 个才能生成选项');
+      return;
+    }
     const shuffled = pool.sort(() => Math.random() - 0.5);
     reviewTotal = Math.min(70, shuffled.length);
-    const allLearned = VOCAB.filter(w => vocabState[w.word]);
     reviewQuestions = shuffled.slice(0, reviewTotal).map(w => {
       // Generate Chinese options (1 correct + 3 wrong)
       const correctDef = w.def;
