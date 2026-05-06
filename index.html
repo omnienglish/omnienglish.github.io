@@ -3833,12 +3833,16 @@
     const schedule = getReviewSchedule();
     const now = Date.now();
     const today = new Date().toDateString();
-    return VOCAB.filter(w => {
+    const due = VOCAB.filter(w => {
       if (!vocabState[w.word]) return false;
       const s = schedule[w.word];
       if (!s) return true; // never reviewed = due now
-      return new Date(s.next).toDateString() <= today;
+      const nextDate = new Date(s.next).toDateString();
+      const isDue = nextDate <= today;
+      if (isDue) console.log('[DueWord]', w.word, 'next:', nextDate, 'today:', today, 'nextTs:', s.next, 'now:', now);
+      return isDue;
     });
+    return due;
   }
 
   function updateReviewSchedule(word, correct) {
