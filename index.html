@@ -3865,7 +3865,14 @@
     if (el1) el1.textContent = dueCount;
     if (el2) el2.textContent = learnedCount + ' 词';
     console.log('[Review] 待复习:', dueCount, '已学:', learnedCount);
-    if (dueCount > 0 && dueCount <= 5) console.log('[Review] 待复习词:', due.map(w => w.word).join(', '));
+    if (dueCount > 0) {
+      const schedule = getReviewSchedule();
+      const today = new Date().toDateString();
+      due.slice(0, 5).forEach(w => {
+        const s = schedule[w.word];
+        console.log('  ', w.word, 'vocabState:', vocabState[w.word], 'schedule:', s ? 'next=' + new Date(s.next).toDateString() : '无');
+      });
+    }
   }
 
   function startReview(mode) {
