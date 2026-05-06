@@ -14,6 +14,10 @@
 
 </div>
 
+<div align="center">
+  <img src="docs/preview.png" alt="OmniEnglish 预览" width="100%" style="border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.1);">
+</div>
+
 ---
 
 ## 功能亮点
