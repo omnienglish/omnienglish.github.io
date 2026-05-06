@@ -2309,7 +2309,7 @@
               <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:8px;font-family:JetBrains Mono,monospace;">选择正确的释义</div>
               <div id="review-word" style="font-size:1.5rem;font-weight:700;color:var(--text-primary);margin-bottom:4px;cursor:pointer;" onclick="speakWord(this.textContent)" title="点击朗读"></div>
               <div id="review-phonetic" style="font-size:0.85rem;color:var(--text-muted);min-height:20px;cursor:pointer;margin-bottom:16px;" onclick="speakWord(document.getElementById('review-word').textContent)" title="点击朗读"></div>
-              <div id="review-options" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;margin-bottom:10px;justify-items:center;"></div>
+              <div id="review-options" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;margin:0 auto 10px;padding:0 4px;box-sizing:border-box;"></div>
               <div id="review-feedback" style="min-height:20px;font-size:0.85rem;margin-bottom:6px;"></div>
               <div id="review-detail-btn" style="display:none;">
                 <button onclick="reviewFlipToBack()" style="padding:7px 20px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;">查看详解</button>
@@ -3140,8 +3140,8 @@
     const optionsHTML = options.map((opt, i) => `
       <button class="quiz-option-btn" data-index="${i}" data-correct="${opt.isCorrect}" onclick="checkVocabAnswer(this, ${opt.isCorrect}, '${esc(w.word)}')" style="
         background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-sm);
-        padding:10px 14px;font-size:0.8rem;cursor:pointer;transition:all 0.2s;
-        font-family:'DM Sans',sans-serif;color:var(--text-primary);text-align:left;width:auto;min-width:0;
+        padding:10px 12px;font-size:0.8rem;cursor:pointer;transition:all 0.2s;
+        font-family:'DM Sans',sans-serif;color:var(--text-primary);text-align:left;width:100%;
       ">${opt.def}</button>
     `).join('');
 
@@ -3154,7 +3154,7 @@
       </div>
       <div class="flip-front-word" onclick="speakWord('${esc(w.word)}')" style="cursor:pointer;margin-bottom:2px;" title="点击朗读">${w.word}</div>
       <span class="flip-front-phonetic" onclick="speakWord('${esc(w.word)}')" style="cursor:pointer;margin-bottom:120px;" title="点击朗读">${w.phonetic}</span>
-      <div class="quiz-options" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;margin-bottom:10px;justify-items:center;">
+      <div class="quiz-options" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;margin:0 auto 10px;padding:0 4px;box-sizing:border-box;">
         ${optionsHTML}
       </div>
       <div class="quiz-feedback" id="quiz-feedback" style="min-height:20px;font-size:0.85rem;"></div>
@@ -3934,8 +3934,8 @@
     optionsEl.innerHTML = q.options.map((def, i) => `
       <button class="review-option-btn" onclick="checkReviewAnswer(this, '${esc(def)}', '${esc(q.correctDef)}', '${esc(q.word.word)}')" style="
         background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-sm);
-        padding:10px 14px;font-size:0.8rem;cursor:pointer;transition:all 0.2s;
-        font-family:'DM Sans',sans-serif;color:var(--text-primary);text-align:left;width:auto;min-width:0;
+        padding:10px 12px;font-size:0.8rem;cursor:pointer;transition:all 0.2s;
+        font-family:'DM Sans',sans-serif;color:var(--text-primary);text-align:left;width:100%;
       ">${def}</button>
     `).join('');
   }
