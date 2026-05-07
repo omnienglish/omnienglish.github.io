@@ -1408,6 +1408,41 @@
     color: var(--success);
   }
 
+  /* 冰川按钮 */
+  .glacier-btn {
+    position: relative;
+    padding: 8px 24px;
+    border-radius: 20px;
+    border: none;
+    background: linear-gradient(to right, #f0f9ff, #7dd3fc, #0ea5e9);
+    color: #0c4a6e;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(125, 211, 252, 0.4);
+    transition: all 0.3s ease;
+    overflow: hidden;
+  }
+  .glacier-btn:hover {
+    filter: brightness(1.05);
+    box-shadow: 0 12px 25px rgba(125, 211, 252, 0.6);
+  }
+  .glacier-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, transparent 0%, rgba(255,255,255,0) 30%, rgba(255,255,255,0.7) 50%, rgba(255,255,255,0) 70%, transparent 100%);
+    animation: shimmer 2.5s infinite;
+  }
+  @keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+
   /* Quiz option buttons - 毛玻璃效果 */
   .quiz-option-btn {
     background: rgba(255, 255, 255, 0.65) !important;
@@ -2353,7 +2388,7 @@
                 <div id="review-options" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;margin-bottom:12px;"></div>
                 <div id="review-feedback" style="min-height:20px;font-size:0.85rem;text-align:center;margin-bottom:6px;"></div>
                 <div id="review-detail-btn" style="display:none;align-items:center;justify-content:center;gap:16px;margin-top:20px;">
-                  <button onclick="reviewFlipToBack()" style="padding:8px 24px;border-radius:20px;border:none;background:var(--accent);color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">查看详解</button>
+                  <button onclick="reviewFlipToBack()" class="glacier-btn">查看详解</button>
                   <button id="review-guess-btn" style="padding:8px 24px;border-radius:20px;border:1px solid rgba(255,255,255,0.5);background:transparent;color:rgba(255,255,255,0.8);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;">我猜的</button>
                 </div>
               </div>
@@ -3203,7 +3238,7 @@
         </div>
         <div class="quiz-feedback" id="quiz-feedback" style="min-height:20px;font-size:0.85rem;text-align:center;margin-bottom:6px;"></div>
         <div id="quiz-next-btn" style="display:none;align-items:center;justify-content:center;gap:16px;margin-top:20px;">
-          <button onclick="flipToBack()" style="padding:8px 24px;border-radius:20px;border:none;background:var(--accent);color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">查看详解</button>
+          <button onclick="flipToBack()" class="glacier-btn">查看详解</button>
           <button id="quiz-guess-btn" style="padding:8px 24px;border-radius:20px;border:1px solid rgba(255,255,255,0.5);background:transparent;color:rgba(255,255,255,0.8);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;">我猜的</button>
         </div>
       </div>`;
