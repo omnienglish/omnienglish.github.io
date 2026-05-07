@@ -3276,6 +3276,9 @@
     if (t.closest('.quiz-option-btn')) return;
     if (t.closest('.flip-front-word')) return;
     if (t.closest('.flip-front-phonetic')) return;
+    // 只有选了答案才能翻转
+    const answered = document.querySelector('.quiz-option-btn:disabled');
+    if (!answered) return;
     const card = document.getElementById('flip-card');
     if (card) card.classList.toggle('flipped');
   }
