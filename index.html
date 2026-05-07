@@ -2352,9 +2352,9 @@
               <div style="width:100%;padding:0 10px 10px;">
                 <div id="review-options" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;margin-bottom:12px;"></div>
                 <div id="review-feedback" style="min-height:20px;font-size:0.85rem;text-align:center;margin-bottom:6px;"></div>
-                <div id="review-detail-btn" style="display:none;align-items:center;justify-content:space-between;">
-                  <button onclick="reviewFlipToBack()" style="padding:7px 20px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;">查看详解</button>
-                  <button id="review-guess-btn" style="padding:7px 16px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-muted);color:var(--text-muted);font-family:'DM Sans',sans-serif;font-size:0.75rem;cursor:pointer;">我猜的</button>
+                <div id="review-detail-btn" style="display:none;align-items:center;justify-content:space-between;margin-top:20px;">
+                  <button onclick="reviewFlipToBack()" style="flex:1;padding:10px 0;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent);color:#fff;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;margin-right:10px;">查看详解</button>
+                  <button id="review-guess-btn" style="flex:1;padding:10px 0;border-radius:var(--radius-sm);border:1px solid var(--border);background:transparent;color:var(--text-secondary);font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:500;cursor:pointer;">我猜的</button>
                 </div>
               </div>
             </div>
@@ -3202,9 +3202,9 @@
           ${optionsHTML}
         </div>
         <div class="quiz-feedback" id="quiz-feedback" style="min-height:20px;font-size:0.85rem;text-align:center;margin-bottom:6px;"></div>
-        <div id="quiz-next-btn" style="display:none;align-items:center;justify-content:space-between;">
-          <button onclick="flipToBack()" style="padding:7px 20px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;">查看详解</button>
-          <button id="quiz-guess-btn" style="padding:7px 16px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-muted);color:var(--text-muted);font-family:'DM Sans',sans-serif;font-size:0.75rem;cursor:pointer;">我猜的</button>
+        <div id="quiz-next-btn" style="display:none;align-items:center;justify-content:space-between;margin-top:20px;">
+          <button onclick="flipToBack()" style="flex:1;padding:10px 0;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent);color:#fff;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;margin-right:10px;">查看详解</button>
+          <button id="quiz-guess-btn" style="flex:1;padding:10px 0;border-radius:var(--radius-sm);border:1px solid var(--border);background:transparent;color:var(--text-secondary);font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:500;cursor:pointer;">我猜的</button>
         </div>
       </div>`;
 
@@ -3273,7 +3273,7 @@
       this.textContent = '已加入待加强';
       this.disabled = true;
       this.style.borderColor = 'var(--warning)';
-      this.style.color = 'oklch(0.55 0.15 75)';
+      this.style.color = 'var(--warning)';
       this.style.background = 'var(--warning-soft)';
     };
   }
@@ -4072,7 +4072,7 @@
       this.textContent = '已加入待加强';
       this.disabled = true;
       this.style.borderColor = 'var(--warning)';
-      this.style.color = 'oklch(0.55 0.15 75)';
+      this.style.color = 'var(--warning)';
       this.style.background = 'var(--warning-soft)';
     };
   }
