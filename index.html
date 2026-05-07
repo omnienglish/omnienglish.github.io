@@ -3267,6 +3267,8 @@
   function flipToBack() {
     const card = document.getElementById('flip-card');
     if (card) card.classList.add('flipped');
+    const w = WordScheduler.current();
+    if (w && w.cet4) speakSentence(w.cet4);
   }
 
   function handleCardFlip(e) {
@@ -4088,6 +4090,7 @@
     const card = document.getElementById('review-flip-card');
     if (card) card.classList.add('flipped');
     applyCardBgFor('review', document.getElementById('review-flip-front'), document.getElementById('review-flip-back'));
+    if (w.cet4) speakSentence(w.cet4);
   }
 
   function nextReviewQuestion() {
