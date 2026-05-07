@@ -2352,8 +2352,9 @@
               <div style="width:100%;padding:0 10px 10px;">
                 <div id="review-options" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;margin-bottom:12px;"></div>
                 <div id="review-feedback" style="min-height:20px;font-size:0.85rem;text-align:center;margin-bottom:6px;"></div>
-                <div id="review-detail-btn" style="display:none;text-align:center;">
+                <div id="review-detail-btn" style="display:none;align-items:center;justify-content:space-between;">
                   <button onclick="reviewFlipToBack()" style="padding:7px 20px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;">查看详解</button>
+                  <button id="review-guess-btn" style="padding:7px 16px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-muted);color:var(--text-muted);font-family:'DM Sans',sans-serif;font-size:0.75rem;cursor:pointer;">我猜的</button>
                 </div>
               </div>
             </div>
@@ -3201,8 +3202,9 @@
           ${optionsHTML}
         </div>
         <div class="quiz-feedback" id="quiz-feedback" style="min-height:20px;font-size:0.85rem;text-align:center;margin-bottom:6px;"></div>
-        <div id="quiz-next-btn" style="display:none;text-align:center;">
+        <div id="quiz-next-btn" style="display:none;align-items:center;justify-content:space-between;">
           <button onclick="flipToBack()" style="padding:7px 20px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;">查看详解</button>
+          <button id="quiz-guess-btn" style="padding:7px 16px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-muted);color:var(--text-muted);font-family:'DM Sans',sans-serif;font-size:0.75rem;cursor:pointer;">我猜的</button>
         </div>
       </div>`;
 
@@ -3261,7 +3263,19 @@
       feedbackEl.innerHTML = '<div style="color:oklch(0.55 0.18 25);font-weight:600;font-size:0.9rem;">正确答案: ' + (VOCAB.find(v => v.word === word)?.def || '') + '</div>';
     }
     speakWord(word);
-    document.getElementById('quiz-next-btn').style.display = 'block';
+    const nextBtn = document.getElementById('quiz-next-btn');
+    nextBtn.style.display = 'flex';
+    const guessBtn = document.getElementById('quiz-guess-btn');
+    guessBtn.onclick = function() {
+      vocabState[word] = 'review';
+      localStorage.setItem('omni-vocab-state', JSON.stringify(vocabState));
+      saveToCloud('vocabState', vocabState);
+      this.textContent = '已加入待加强';
+      this.disabled = true;
+      this.style.borderColor = 'var(--warning)';
+      this.style.color = 'oklch(0.55 0.15 75)';
+      this.style.background = 'var(--warning-soft)';
+    };
   }
 
   function flipToBack() {
@@ -3991,6 +4005,15 @@
     document.getElementById('review-phonetic').textContent = q.word.phonetic || '';
     document.getElementById('review-feedback').innerHTML = '';
     document.getElementById('review-detail-btn').style.display = 'none';
+    // Reset guess button
+    const reviewGuessBtn = document.getElementById('review-guess-btn');
+    if (reviewGuessBtn) {
+      reviewGuessBtn.textContent = '我猜的';
+      reviewGuessBtn.disabled = false;
+      reviewGuessBtn.style.borderColor = 'var(--border)';
+      reviewGuessBtn.style.color = 'var(--text-muted)';
+      reviewGuessBtn.style.background = 'var(--bg-muted)';
+    }
     // Reset flip state
     const card = document.getElementById('review-flip-card');
     if (card) card.classList.remove('flipped');
@@ -4039,7 +4062,19 @@
     }
 
     document.getElementById('review-score').textContent = '正确率 ' + Math.round((reviewCorrect / (reviewIndex + 1)) * 100) + '%';
-    document.getElementById('review-detail-btn').style.display = 'block';
+    const detailBtn = document.getElementById('review-detail-btn');
+    detailBtn.style.display = 'flex';
+    const guessBtn = document.getElementById('review-guess-btn');
+    guessBtn.onclick = function() {
+      vocabState[word] = 'review';
+      localStorage.setItem('omni-vocab-state', JSON.stringify(vocabState));
+      saveToCloud('vocabState', vocabState);
+      this.textContent = '已加入待加强';
+      this.disabled = true;
+      this.style.borderColor = 'var(--warning)';
+      this.style.color = 'oklch(0.55 0.15 75)';
+      this.style.background = 'var(--warning-soft)';
+    };
   }
 
   function reviewFlipToBack() {
