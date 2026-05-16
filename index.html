@@ -2575,11 +2575,16 @@
           loadFromCloud();
           return;
         }
-        console.warn('[Sync] 自动登录失败，清除凭据');
-        localStorage.removeItem('oe-cloud-auth');
+        // Only clear credentials on auth errors (400/401), keep for network issues
+        if (resp.status === 400 || resp.status === 401) {
+          console.warn('[Sync] 自动登录凭据无效，清除');
+          localStorage.removeItem('oe-cloud-auth');
+        } else {
+          console.warn('[Sync] 自动登录服务端错误:', resp.status);
+        }
       } catch (e) {
         console.error('[Sync] 自动登录网络错误:', e.message);
-        localStorage.removeItem('oe-cloud-auth');
+        // Don't remove credentials on network errors
       }
     }
     // Fall back to anonymous
