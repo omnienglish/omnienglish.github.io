@@ -3244,9 +3244,6 @@
       </div>`;
 
     const back = `
-      <div class="quiz-continue-btn" id="quiz-continue-btn" style="display:flex;justify-content:center;padding-top:8px;padding-bottom:4px;">
-        <button onclick="continueToNextWord()" class="glacier-btn">继续</button>
-      </div>
       <div class="flip-back-word">${w.word}</div>
       <div>
         <div class="flip-section-title">释义</div>
@@ -3270,7 +3267,10 @@
         </div>
         <div class="flip-cs-example">${w.cs}</div>
         <div class="flip-cs-zh">${w.cszh || ''}</div>
-      </div>` : ''}`;
+      </div>` : ''}
+      <div class="quiz-continue-btn" id="quiz-continue-btn" style="margin-top:auto;padding-top:12px;text-align:center;">
+        <button onclick="continueToNextWord()" class="glacier-btn">继续</button>
+      </div>`;
 
     return { front, back };
   }
