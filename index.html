@@ -2424,10 +2424,13 @@
       <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;">
         <div style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;font-weight:600;color:var(--text-muted);letter-spacing:0.05em;margin-bottom:12px;">DEEPSEEK API KEY</div>
         <div style="display:flex;gap:10px;align-items:center;">
-          <input type="password" class="write-api-input" id="api-key-settings" placeholder="sk-..." style="flex:1;" oninput="saveApiKeyFromSettings()">
+          <input type="password" class="write-api-input" id="api-key-settings" placeholder="sk-..." style="flex:1;" oninput="saveApiKeyFromSettings()" onblur="lockApiKey()">
+          <button id="api-lock-btn" onclick="toggleApiKeyLock()" style="padding:6px 8px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-muted);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;flex-shrink:0;" title="解锁编辑">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          </button>
           <div class="write-api-status" id="api-status-settings"></div>
         </div>
-        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:8px;">用于写作/翻译模考的 AI 批改功能。Key 仅保存在本地浏览器中。</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:8px;">用于写作/翻译模考的 AI 批改功能。Key 仅保存在本地浏览器中。点击锁图标解锁编辑。</div>
       </div>
 
       <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;">
@@ -4589,6 +4592,37 @@
     updateSettingsApiStatus();
   }
 
+  function lockApiKey() {
+    const input = document.getElementById('api-key-settings');
+    const btn = document.getElementById('api-lock-btn');
+    if (!input || !btn) return;
+    input.disabled = true;
+    input.style.opacity = '0.6';
+    btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>';
+    btn.title = '解锁编辑';
+    btn.style.color = 'var(--text-muted)';
+  }
+
+  function unlockApiKey() {
+    const input = document.getElementById('api-key-settings');
+    const btn = document.getElementById('api-lock-btn');
+    if (!input || !btn) return;
+    input.disabled = false;
+    input.style.opacity = '1';
+    input.focus();
+    input.select();
+    btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4M12 3v4"/></svg>';
+    btn.title = '锁定';
+    btn.style.color = 'var(--accent)';
+  }
+
+  function toggleApiKeyLock() {
+    const input = document.getElementById('api-key-settings');
+    if (!input) return;
+    if (input.disabled) unlockApiKey();
+    else lockApiKey();
+  }
+
   function updateSettingsApiStatus() {
     const key = document.getElementById('api-key-settings').value.trim();
     document.getElementById('api-status-settings').classList.toggle('connected', key.startsWith('sk-'));
@@ -5087,6 +5121,7 @@
       const apiInput = document.getElementById('api-key-settings');
       if (apiInput) apiInput.value = savedKey;
       updateSettingsApiStatus();
+      if (savedKey) lockApiKey();
 
       // 3. Load vocab data from external JSON, then init vocab UI
       await loadVocab();
