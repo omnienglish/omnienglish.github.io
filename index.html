@@ -2556,6 +2556,33 @@
     }
   }
 
+  function updateCloudStatusOffline(email) {
+    const dot = document.getElementById('firebase-status-dot');
+    const text = document.getElementById('firebase-status-text');
+    const form = document.getElementById('auth-form');
+    const loggedIn = document.getElementById('auth-logged-in');
+    const emailDisplay = document.getElementById('auth-email-display');
+    if (!dot || !text) return;
+    dot.style.background = 'oklch(0.7 0.15 80)';
+    text.textContent = email ? email + ' · 离线，自动重试中' : '离线，自动重试中';
+    text.style.color = 'oklch(0.7 0.15 80)';
+    if (form) form.style.display = 'none';
+    if (loggedIn) loggedIn.style.display = 'block';
+    if (emailDisplay) emailDisplay.textContent = email || '';
+  }
+
+  let _cloudRetryCount = 0;
+  const _cloudRetryDelays = [5000, 15000, 30000];
+
+  function scheduleCloudRetry() {
+    if (_cloudRetryCount >= _cloudRetryDelays.length) return;
+    const delay = _cloudRetryDelays[_cloudRetryCount++];
+    console.log('[Sync] 将在 ' + (delay / 1000) + ' 秒后重试自动登录...');
+    setTimeout(() => {
+      if (!cloudReady) initCloudSync();
+    }, delay);
+  }
+
   async function initCloudSync() {
     console.log('[Sync] 初始化云同步, Worker:', WORKER_URL);
     // Try saved credentials first
@@ -2573,6 +2600,7 @@
         if (resp.ok) {
           cloudUser = await resp.json();
           cloudReady = true;
+          _cloudRetryCount = 0;
           console.log('[Sync] 自动登录成功:', cloudUser.email);
           updateCloudStatus(true, cloudUser.email);
           loadFromCloud();
@@ -2587,12 +2615,15 @@
         }
       } catch (e) {
         console.error('[Sync] 自动登录网络错误:', e.message);
-        // Don't remove credentials on network errors
-        updateCloudStatus(false, '网络错误，稍后重试');
+        const { email } = JSON.parse(saved);
+        updateCloudStatusOffline(email);
+        scheduleCloudRetry();
         return;
       }
-      // Had credentials but server rejected (non-auth error) - still don't go anonymous
-      updateCloudStatus(false, '登录失败，请手动重试');
+      // Had credentials but server rejected (non-auth error)
+      const { email } = JSON.parse(saved);
+      updateCloudStatusOffline(email);
+      scheduleCloudRetry();
       return;
     }
     // No saved credentials - fall back to anonymous
