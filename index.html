@@ -2468,6 +2468,12 @@
         </div>
       </div>
 
+      <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;font-weight:600;color:var(--text-muted);letter-spacing:0.05em;margin-bottom:12px;">快捷键</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:12px;">在词汇学习页面使用键盘快捷键操作。点击按钮可自定义按键。</div>
+        <div id="hotkey-settings"></div>
+      </div>
+
       <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;">
         <div style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;font-weight:600;color:var(--text-muted);letter-spacing:0.05em;margin-bottom:12px;">数据管理</div>
         <div style="display:flex;gap:10px;">
@@ -3238,8 +3244,8 @@
         </div>
         <div class="quiz-feedback" id="quiz-feedback" style="min-height:20px;font-size:0.85rem;text-align:center;margin-bottom:6px;"></div>
         <div id="quiz-next-btn" style="display:none;align-items:center;justify-content:center;gap:16px;margin-top:20px;">
-          <button onclick="flipToBack()" class="glacier-btn">查看详解</button>
-          <button id="quiz-guess-btn" style="padding:8px 24px;border-radius:20px;border:1px solid rgba(255,255,255,0.5);background:transparent;color:rgba(255,255,255,0.8);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;">我猜的</button>
+          <button onclick="flipToBack()" class="glacier-btn" data-hotkey="detail">查看详解 <kbd style="font-size:0.65rem;opacity:0.6;margin-left:4px;">${formatKey(getHotkeys().detail)}</kbd></button>
+          <button id="quiz-guess-btn" data-hotkey="guess" style="padding:8px 24px;border-radius:20px;border:1px solid rgba(255,255,255,0.5);background:transparent;color:rgba(255,255,255,0.8);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;">我猜的 <kbd style="font-size:0.65rem;opacity:0.6;margin-left:4px;">${formatKey(getHotkeys().guess)}</kbd></button>
         </div>
       </div>`;
 
@@ -3269,7 +3275,7 @@
         <div class="flip-cs-zh">${w.cszh || ''}</div>
       </div>` : ''}
       <div class="quiz-continue-btn" id="quiz-continue-btn" style="margin-top:auto;padding-top:12px;text-align:center;">
-        <button onclick="continueToNextWord()" class="glacier-btn">继续</button>
+        <button onclick="continueToNextWord()" class="glacier-btn" data-hotkey="continue">继续 <kbd style="font-size:0.65rem;opacity:0.6;margin-left:4px;">${formatKey(getHotkeys().continue)}</kbd></button>
       </div>`;
 
     return { front, back };
@@ -4938,6 +4944,82 @@
     });
   }
 
+  // ═══ KEYBOARD SHORTCUTS ═══
+  const DEFAULT_HOTKEYS = {
+    detail: ' ',    // 查看详解: Space
+    guess: 'g',     // 我猜的: G
+    continue: 'Enter' // 继续: Enter
+  };
+
+  function getHotkeys() {
+    try {
+      const saved = localStorage.getItem('oe-hotkeys');
+      return saved ? { ...DEFAULT_HOTKEYS, ...JSON.parse(saved) } : { ...DEFAULT_HOTKEYS };
+    } catch { return { ...DEFAULT_HOTKEYS }; }
+  }
+
+  function saveHotkeys(h) {
+    localStorage.setItem('oe-hotkeys', JSON.stringify(h));
+  }
+
+  function formatKey(key) {
+    if (key === ' ') return 'Space';
+    if (key === 'Enter') return 'Enter';
+    if (key === 'Escape') return 'Esc';
+    return key.toUpperCase();
+  }
+
+  function renderHotkeySettings() {
+    const hotkeys = getHotkeys();
+    const labels = { detail: '查看详解', guess: '我猜的', continue: '继续' };
+    const el = document.getElementById('hotkey-settings');
+    if (!el) return;
+    el.innerHTML = Object.entries(labels).map(([action, label]) => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;">
+        <span style="font-size:0.85rem;color:var(--text-primary);">${label}</span>
+        <button onclick="recordHotkey('${action}', this)" style="min-width:60px;padding:4px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-muted);color:var(--text-primary);font-family:'JetBrains Mono',monospace;font-size:0.8rem;cursor:pointer;">${formatKey(hotkeys[action])}</button>
+      </div>
+    `).join('') + `
+      <button onclick="saveHotkeys({...DEFAULT_HOTKEYS});renderHotkeySettings();showToast('已恢复默认快捷键');" style="margin-top:8px;padding:6px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-muted);color:var(--text-muted);font-family:'DM Sans',sans-serif;font-size:0.75rem;cursor:pointer;">恢复默认</button>
+    `;
+  }
+
+  let _recordingAction = null;
+  function recordHotkey(action, btn) {
+    if (_recordingAction) return;
+    _recordingAction = action;
+    btn.textContent = '按下按键...';
+    btn.style.borderColor = 'var(--accent)';
+    btn.style.color = 'var(--accent)';
+    function onKey(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const key = e.key === 'Escape' ? getHotkeys()[action] : e.key;
+      const hotkeys = getHotkeys();
+      hotkeys[action] = key;
+      saveHotkeys(hotkeys);
+      _recordingAction = null;
+      renderHotkeySettings();
+      document.removeEventListener('keydown', onKey, true);
+    }
+    document.addEventListener('keydown', onKey, true);
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+    const hotkeys = getHotkeys();
+    for (const [action, key] of Object.entries(hotkeys)) {
+      if (e.key === key) {
+        const btn = document.querySelector(`[data-hotkey="${action}"]`);
+        if (btn && btn.offsetParent !== null) {
+          e.preventDefault();
+          btn.click();
+          return;
+        }
+      }
+    }
+  });
+
   // Hook into page switching to update notebook and progress
   const _origSwitchPage = switchPage;
   switchPage = function(page) {
@@ -4946,6 +5028,7 @@
     if (page === 'dashboard') updateEvoBar();
     if (page === 'sentence') trackProgress('sentence', 'views');
     if (page === 'cs') trackProgress('cs', 'views');
+    if (page === 'settings') renderHotkeySettings();
   };
 
   // Hook into vocab card render to make example sentence words clickable
