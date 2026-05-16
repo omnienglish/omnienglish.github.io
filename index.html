@@ -2588,9 +2588,14 @@
       } catch (e) {
         console.error('[Sync] 自动登录网络错误:', e.message);
         // Don't remove credentials on network errors
+        updateCloudStatus(false, '网络错误，稍后重试');
+        return;
       }
+      // Had credentials but server rejected (non-auth error) - still don't go anonymous
+      updateCloudStatus(false, '登录失败，请手动重试');
+      return;
     }
-    // Fall back to anonymous
+    // No saved credentials - fall back to anonymous
     console.log('[Sync] 尝试匿名登录...');
     try {
       const resp = await fetch(WORKER_URL + '/auth', { method: 'POST' });
@@ -3229,15 +3234,17 @@
     const esc = s => (s || '').replace(/'/g, "\\'");
 
     const options = generateOptions(w, VOCAB);
+    const hotkeys = getHotkeys();
+    const optKeys = [hotkeys.opt1, hotkeys.opt2, hotkeys.opt3, hotkeys.opt4];
     const optionsHTML = options.map((opt, i) => `
-      <button class="quiz-option-btn" data-index="${i}" data-correct="${opt.isCorrect}" onclick="checkVocabAnswer(this, ${opt.isCorrect}, '${esc(w.word)}')" style="
+      <button class="quiz-option-btn" data-index="${i}" data-correct="${opt.isCorrect}" data-hotkey="opt${i + 1}" onclick="checkVocabAnswer(this, ${opt.isCorrect}, '${esc(w.word)}')" style="
         font-size:0.85rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left;width:100%;
-      "><kbd style="font-size:0.65rem;opacity:0.5;margin-right:6px;font-family:'JetBrains Mono',monospace;">${i + 1}</kbd>${opt.def}</button>
+      "><kbd style="font-size:0.65rem;opacity:0.5;margin-right:6px;font-family:'JetBrains Mono',monospace;">${formatKey(optKeys[i])}</kbd>${opt.def}</button>
     `).join('');
 
     const front = `
       <div style="display:flex;align-items:center;gap:8px;width:100%;">${statusBadge}
-        <button id="nb-btn-${esc(w.word.toLowerCase())}" onclick="toggleNotebookFromCard('${esc(w.word.toLowerCase())}')" style="margin-left:auto;padding:4px 10px;border-radius:var(--radius-sm);border:1px solid ${inNB ? 'var(--success)' : 'var(--border)'};background:${inNB ? 'var(--success-soft)' : 'var(--bg-muted)'};color:${inNB ? 'var(--success)' : 'var(--text-muted)'};font-family:'DM Sans',sans-serif;font-size:0.7rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:4px;">
+        <button id="nb-btn-${esc(w.word.toLowerCase())}" data-hotkey="bookmark" onclick="toggleNotebookFromCard('${esc(w.word.toLowerCase())}')" style="margin-left:auto;padding:4px 10px;border-radius:var(--radius-sm);border:1px solid ${inNB ? 'var(--success)' : 'var(--border)'};background:${inNB ? 'var(--success-soft)' : 'var(--bg-muted)'};color:${inNB ? 'var(--success)' : 'var(--text-muted)'};font-family:'DM Sans',sans-serif;font-size:0.7rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:4px;">
           <svg width="11" height="11" fill="${inNB ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
           ${inNB ? '已收藏' : '收藏'}
         </button>
@@ -4991,9 +4998,8 @@
 
   // ═══ KEYBOARD SHORTCUTS ═══
   const DEFAULT_HOTKEYS = {
-    detail: ' ',    // 查看详解: Space
-    guess: 'g',     // 我猜的: G
-    continue: 'Enter' // 继续: Enter
+    opt1: '1', opt2: '2', opt3: '3', opt4: '4',
+    detail: ' ', guess: 'g', continue: 'Enter', bookmark: 'b'
   };
 
   function getHotkeys() {
@@ -5011,21 +5017,27 @@
     if (key === ' ') return 'Space';
     if (key === 'Enter') return 'Enter';
     if (key === 'Escape') return 'Esc';
-    return key.toUpperCase();
+    return key.length === 1 ? key.toUpperCase() : key;
   }
 
   function renderHotkeySettings() {
     const hotkeys = getHotkeys();
-    const labels = { detail: '查看详解', guess: '我猜的', continue: '继续' };
+    const groups = [
+      { title: '选择答案', items: { opt1: '选项 1', opt2: '选项 2', opt3: '选项 3', opt4: '选项 4' } },
+      { title: '卡片操作', items: { detail: '查看详解', guess: '我猜的', continue: '继续', bookmark: '收藏/取消收藏' } }
+    ];
     const el = document.getElementById('hotkey-settings');
     if (!el) return;
-    el.innerHTML = Object.entries(labels).map(([action, label]) => `
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;">
-        <span style="font-size:0.85rem;color:var(--text-primary);">${label}</span>
-        <button onclick="recordHotkey('${action}', this)" style="min-width:60px;padding:4px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-muted);color:var(--text-primary);font-family:'JetBrains Mono',monospace;font-size:0.8rem;cursor:pointer;">${formatKey(hotkeys[action])}</button>
-      </div>
+    el.innerHTML = groups.map(g => `
+      <div style="font-size:0.7rem;color:var(--text-muted);font-weight:600;margin-top:12px;margin-bottom:4px;">${g.title}</div>
+      ${Object.entries(g.items).map(([action, label]) => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;">
+          <span style="font-size:0.85rem;color:var(--text-primary);">${label}</span>
+          <button onclick="recordHotkey('${action}', this)" style="min-width:60px;padding:4px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-muted);color:var(--text-primary);font-family:'JetBrains Mono',monospace;font-size:0.8rem;cursor:pointer;">${formatKey(hotkeys[action])}</button>
+        </div>
+      `).join('')}
     `).join('') + `
-      <button onclick="saveHotkeys({...DEFAULT_HOTKEYS});renderHotkeySettings();showToast('已恢复默认快捷键');" style="margin-top:8px;padding:6px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-muted);color:var(--text-muted);font-family:'DM Sans',sans-serif;font-size:0.75rem;cursor:pointer;">恢复默认</button>
+      <button onclick="saveHotkeys({...DEFAULT_HOTKEYS});renderHotkeySettings();showToast('已恢复默认快捷键');" style="margin-top:12px;padding:6px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-muted);color:var(--text-muted);font-family:'DM Sans',sans-serif;font-size:0.75rem;cursor:pointer;">恢复默认</button>
     `;
   }
 
@@ -5052,16 +5064,6 @@
 
   document.addEventListener('keydown', function(e) {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
-    // Number keys 1-4 for quiz options
-    if (e.key >= '1' && e.key <= '4') {
-      const opts = document.querySelectorAll('.quiz-option-btn');
-      const idx = parseInt(e.key) - 1;
-      if (opts[idx] && !opts[idx].disabled) {
-        e.preventDefault();
-        opts[idx].click();
-        return;
-      }
-    }
     const hotkeys = getHotkeys();
     for (const [action, key] of Object.entries(hotkeys)) {
       if (e.key === key) {
