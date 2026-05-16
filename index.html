@@ -3223,7 +3223,7 @@
 
     const front = `
       <div style="display:flex;align-items:center;gap:8px;width:100%;">${statusBadge}
-        <button onclick="toggleNotebookFromCard('${esc(w.word.toLowerCase())}')" style="margin-left:auto;padding:4px 10px;border-radius:var(--radius-sm);border:1px solid ${inNB ? 'var(--success)' : 'var(--border)'};background:${inNB ? 'var(--success-soft)' : 'var(--bg-muted)'};color:${inNB ? 'var(--success)' : 'var(--text-muted)'};font-family:'DM Sans',sans-serif;font-size:0.7rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:4px;">
+        <button id="nb-btn-${esc(w.word.toLowerCase())}" onclick="toggleNotebookFromCard('${esc(w.word.toLowerCase())}')" style="margin-left:auto;padding:4px 10px;border-radius:var(--radius-sm);border:1px solid ${inNB ? 'var(--success)' : 'var(--border)'};background:${inNB ? 'var(--success-soft)' : 'var(--bg-muted)'};color:${inNB ? 'var(--success)' : 'var(--text-muted)'};font-family:'DM Sans',sans-serif;font-size:0.7rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:4px;">
           <svg width="11" height="11" fill="${inNB ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
           ${inNB ? '已收藏' : '收藏'}
         </button>
@@ -4751,12 +4751,20 @@
 
   function toggleNotebookFromPopup(word, btn) {
     const vocabItem = VOCAB.find(w => w.word.toLowerCase() === word);
+    const cardBtn = document.getElementById('nb-btn-' + word);
     if (isInNotebook(word)) {
       removeFromNotebook(word);
       btn.style.borderColor = 'var(--border)';
       btn.style.color = 'var(--accent)';
       btn.querySelector('svg').setAttribute('fill', 'none');
       btn.lastChild.textContent = ' 加入生词本';
+      if (cardBtn) {
+        cardBtn.style.borderColor = 'var(--border)';
+        cardBtn.style.background = 'var(--bg-muted)';
+        cardBtn.style.color = 'var(--text-muted)';
+        cardBtn.querySelector('svg').setAttribute('fill', 'none');
+        cardBtn.lastChild.textContent = ' 收藏';
+      }
     } else {
       const def = vocabItem ? vocabItem.def : '';
       const context = vocabItem ? vocabItem.cet4 : '';
@@ -4765,19 +4773,40 @@
       btn.style.color = 'var(--success)';
       btn.querySelector('svg').setAttribute('fill', 'currentColor');
       btn.lastChild.textContent = ' 已收藏';
+      if (cardBtn) {
+        cardBtn.style.borderColor = 'var(--success)';
+        cardBtn.style.background = 'var(--success-soft)';
+        cardBtn.style.color = 'var(--success)';
+        cardBtn.querySelector('svg').setAttribute('fill', 'currentColor');
+        cardBtn.lastChild.textContent = ' 已收藏';
+      }
     }
   }
 
   function toggleNotebookFromCard(word) {
     const vocabItem = VOCAB.find(w => w.word.toLowerCase() === word);
+    const btn = document.getElementById('nb-btn-' + word);
     if (isInNotebook(word)) {
       removeFromNotebook(word);
+      if (btn) {
+        btn.style.borderColor = 'var(--border)';
+        btn.style.background = 'var(--bg-muted)';
+        btn.style.color = 'var(--text-muted)';
+        btn.querySelector('svg').setAttribute('fill', 'none');
+        btn.lastChild.textContent = ' 收藏';
+      }
     } else {
       const def = vocabItem ? vocabItem.def : '';
       const context = vocabItem ? vocabItem.cet4 : '';
       addToNotebook(word, def, context, 'vocab');
+      if (btn) {
+        btn.style.borderColor = 'var(--success)';
+        btn.style.background = 'var(--success-soft)';
+        btn.style.color = 'var(--success)';
+        btn.querySelector('svg').setAttribute('fill', 'currentColor');
+        btn.lastChild.textContent = ' 已收藏';
+      }
     }
-    renderVocabCard();
   }
 
   function speakWord(word) {
