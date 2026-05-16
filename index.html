@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OmniEnglish — CET-4 冲刺</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%25' stop-color='%236366f1'/><stop offset='100%25' stop-color='%23a78bfa'/></linearGradient></defs><rect width='32' height='32' rx='8' fill='url(%23g)'/><path d='M7 9a1 1 0 011-1h6a1 1 0 011 1v14a1 1 0 01-1 1H8a1 1 0 01-1-1V9z' fill='white' opacity='.9'/><path d='M17 9a1 1 0 011-1h6a1 1 0 011 1v14a1 1 0 01-1 1h-6a1 1 0 01-1-1V9z' fill='white' opacity='.7'/><line x1='16' y1='8' x2='16' y2='24' stroke='white' stroke-width='1.5' opacity='.5'/><circle cx='24' cy='7' r='2.5' fill='%23fbbf24'/><path d='M23.2 6.8l.5 1.2 1.2.5-1.2.5-.5 1.2-.5-1.2-1.2-.5 1.2-.5z' fill='white' opacity='.9'/></svg>" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -19,9 +20,9 @@
     --text-secondary: oklch(0.40 0.008 260);
     --text-muted: oklch(0.58 0.007 260);
 
-    --accent: oklch(0.52 0.19 250);
-    --accent-soft: oklch(0.52 0.19 250 / 0.08);
-    --accent-hover: oklch(0.45 0.19 250);
+    --accent: oklch(0.55 0.20 275);
+    --accent-soft: oklch(0.55 0.20 275 / 0.08);
+    --accent-hover: oklch(0.48 0.20 275);
 
     --success: oklch(0.60 0.15 155);
     --success-soft: oklch(0.60 0.15 155 / 0.08);
@@ -113,13 +114,14 @@
     width: 32px;
     height: 32px;
     border-radius: 8px;
-    background: var(--accent);
+    background: linear-gradient(135deg, #6366f1, #a78bfa);
     display: grid;
     place-items: center;
     color: white;
     font-family: 'JetBrains Mono', monospace;
     font-weight: 700;
     font-size: 0.8125rem;
+    box-shadow: 0 2px 8px oklch(0.5 0.2 280 / 0.25);
   }
 
   .sidebar-logo-text {
@@ -1967,7 +1969,7 @@
   <!-- ═══ SIDEBAR ═══ -->
   <aside class="sidebar">
     <a href="#" class="sidebar-logo" onclick="switchPage('dashboard');return false;">
-      <span class="sidebar-logo-mark">O</span>
+      <span class="sidebar-logo-mark"><svg width="20" height="20" viewBox="0 0 32 32" fill="none"><path d="M7 9a1 1 0 011-1h6a1 1 0 011 1v14a1 1 0 01-1 1H8a1 1 0 01-1-1V9z" fill="white" opacity=".9"/><path d="M17 9a1 1 0 011-1h6a1 1 0 011 1v14a1 1 0 01-1 1h-6a1 1 0 01-1-1V9z" fill="white" opacity=".7"/><line x1="16" y1="8" x2="16" y2="24" stroke="white" stroke-width="1.5" opacity=".5"/><circle cx="24" cy="7" r="2.5" fill="#fbbf24"/><path d="M23.2 6.8l.5 1.2 1.2.5-1.2.5-.5 1.2-.5-1.2-1.2-.5 1.2-.5z" fill="white" opacity=".9"/></svg></span>
       <span class="sidebar-logo-text">OmniEnglish <span style="font-size:0.625rem;font-weight:400;color:var(--text-muted);margin-left:4px;">v1.1</span></span>
     </a>
     <ul class="sidebar-nav">
