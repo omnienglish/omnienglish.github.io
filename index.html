@@ -3224,7 +3224,7 @@
     const optionsHTML = options.map((opt, i) => `
       <button class="quiz-option-btn" data-index="${i}" data-correct="${opt.isCorrect}" onclick="checkVocabAnswer(this, ${opt.isCorrect}, '${esc(w.word)}')" style="
         font-size:0.85rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left;width:100%;
-      ">${opt.def}</button>
+      "><kbd style="font-size:0.65rem;opacity:0.5;margin-right:6px;font-family:'JetBrains Mono',monospace;">${i + 1}</kbd>${opt.def}</button>
     `).join('');
 
     const front = `
@@ -5013,6 +5013,16 @@
 
   document.addEventListener('keydown', function(e) {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+    // Number keys 1-4 for quiz options
+    if (e.key >= '1' && e.key <= '4') {
+      const opts = document.querySelectorAll('.quiz-option-btn');
+      const idx = parseInt(e.key) - 1;
+      if (opts[idx] && !opts[idx].disabled) {
+        e.preventDefault();
+        opts[idx].click();
+        return;
+      }
+    }
     const hotkeys = getHotkeys();
     for (const [action, key] of Object.entries(hotkeys)) {
       if (e.key === key) {
