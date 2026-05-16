@@ -3101,7 +3101,7 @@
       return { current: this._attempted + 1, total: this._originalCount, done: this._attempted, original: this._originalCount };
     },
 
-    isFinished() { return this.queue.length === 0; },
+    isFinished() { return this.queue.length === 0 || this._attempted >= this._originalCount; },
     isEmpty() { return this.queue.length === 0; },
 
     // Persist queue to localStorage (saves word strings only)
@@ -3940,6 +3940,12 @@
     } else if (status === 'vague') {
       WordScheduler.vague();
       vocabState[w.word] = 'review';
+    }
+
+    // Session finished: mark remaining forgot words as review
+    if (WordScheduler.isFinished() && WordScheduler.queue.length > 0) {
+      WordScheduler.queue.forEach(qw => { vocabState[qw.word] = 'review'; });
+      WordScheduler.queue = [];
     }
 
     saveVocabState();
