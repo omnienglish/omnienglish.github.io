@@ -4060,6 +4060,13 @@
   }
 
   function startReview(mode) {
+    // Update hotkey display for review buttons
+    const hotkeys = getHotkeys();
+    const detailBtn = document.querySelector('#review-detail-btn button[data-hotkey="detail"]');
+    const guessBtn = document.getElementById('review-guess-btn');
+    if (detailBtn) detailBtn.innerHTML = '查看详解 <kbd style="font-size:0.65rem;opacity:0.6;margin-left:4px;">' + formatKey(hotkeys.detail) + '</kbd>';
+    if (guessBtn) guessBtn.innerHTML = '我猜的 <kbd style="font-size:0.65rem;opacity:0.6;margin-left:4px;">' + formatKey(hotkeys.guess) + '</kbd>';
+
     let pool = [];
     if (mode === 'due') pool = getDueWords();
     else pool = VOCAB.filter(w => vocabState[w.word]);
@@ -4187,6 +4194,7 @@
     const w = q.word;
     const backEl = document.getElementById('review-flip-back');
     const esc = s => (s || '').replace(/'/g, "\\'");
+    const hotkeys = getHotkeys();
 
     const bnc = w.bnc || 0;
     let freqHTML = '';
@@ -4218,7 +4226,7 @@
         <div class="flip-cs-zh">${w.cszh || ''}</div>
       </div>` : ''}
       <div style="margin-top:auto;padding-top:12px;text-align:center;">
-        <button onclick="nextReviewQuestion()" class="glacier-btn" data-hotkey="continue">下一题 <kbd style="font-size:0.65rem;opacity:0.6;margin-left:4px;">${formatKey(getHotkeys().continue)}</kbd></button>
+        <button onclick="nextReviewQuestion()" class="glacier-btn" data-hotkey="continue">下一题 <kbd style="font-size:0.65rem;opacity:0.6;margin-left:4px;">${formatKey(hotkeys.continue)}</kbd></button>
       </div>
     `;
 
