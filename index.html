@@ -2383,7 +2383,10 @@
               </button>
               <div style="font-size:0.75rem;color:var(--text-muted);font-family:JetBrains Mono,monospace;">选择正确的释义</div>
               <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0;">
-                <div id="review-word" style="font-size:1.5rem;font-weight:700;color:var(--text-primary);margin-bottom:4px;cursor:pointer;" onclick="speakWord(this.textContent)" title="点击朗读"></div>
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+                  <div id="review-word" style="font-size:1.5rem;font-weight:700;color:var(--text-primary);cursor:pointer;" onclick="speakWord(this.textContent)" title="点击朗读"></div>
+                  <span id="review-status-badge" style="display:none;font-size:0.625rem;padding:2px 6px;border-radius:4px;font-family:JetBrains Mono,monospace;"></span>
+                </div>
                 <div id="review-phonetic" style="font-size:0.85rem;color:var(--text-muted);min-height:20px;cursor:pointer;" onclick="speakWord(document.getElementById('review-word').textContent)" title="点击朗读"></div>
               </div>
               <div style="width:100%;padding:0 10px 10px;">
@@ -4125,6 +4128,26 @@
     document.getElementById('review-word').textContent = q.word.word;
     document.getElementById('review-phonetic').textContent = q.word.phonetic || '';
     document.getElementById('review-feedback').innerHTML = '';
+
+    // Update status badge
+    const statusBadge = document.getElementById('review-status-badge');
+    const wordStatus = vocabState[q.word.word];
+    if (statusBadge) {
+      if (wordStatus === 'review') {
+        statusBadge.textContent = '待加强';
+        statusBadge.style.display = 'inline-block';
+        statusBadge.style.background = 'var(--warning-soft)';
+        statusBadge.style.color = 'oklch(0.55 0.15 75)';
+      } else if (wordStatus === 'known') {
+        statusBadge.textContent = '已掌握';
+        statusBadge.style.display = 'inline-block';
+        statusBadge.style.background = 'var(--success-soft)';
+        statusBadge.style.color = 'var(--success)';
+      } else {
+        statusBadge.style.display = 'none';
+      }
+    }
+
     // Auto-play word pronunciation
     setTimeout(() => speakWord(q.word.word), 30);
     document.getElementById('review-detail-btn').style.display = 'none';
@@ -4186,6 +4209,22 @@
     }
     saveToCloud('vocabState', vocabState);
 
+    // Update status badge
+    const statusBadge = document.getElementById('review-status-badge');
+    if (statusBadge) {
+      if (!isCorrect) {
+        statusBadge.textContent = '待加强';
+        statusBadge.style.display = 'inline-block';
+        statusBadge.style.background = 'var(--warning-soft)';
+        statusBadge.style.color = 'oklch(0.55 0.15 75)';
+      } else if (vocabState[word] === 'known') {
+        statusBadge.textContent = '已掌握';
+        statusBadge.style.display = 'inline-block';
+        statusBadge.style.background = 'var(--success-soft)';
+        statusBadge.style.color = 'var(--success)';
+      }
+    }
+
     const buttons = document.querySelectorAll('#review-options .review-option-btn');
     buttons.forEach(b => {
       b.disabled = true;
@@ -4223,6 +4262,19 @@
       this.style.borderColor = 'var(--warning)';
       this.style.color = 'var(--warning)';
       this.style.background = 'var(--warning-soft)';
+      // Update status badge
+      const badge = document.getElementById('review-status-badge');
+      if (badge) {
+        badge.textContent = '待加强';
+        badge.style.display = 'inline-block';
+        badge.style.background = 'var(--warning-soft)';
+        badge.style.color = 'oklch(0.55 0.15 75)';
+      }
+      // Add to retry queue
+      const currentQ = reviewQuestions[reviewIndex];
+      if (currentQ) {
+        reviewRetryQueue.push({ question: currentQ, insertAfter: reviewIndex + 3 });
+      }
     };
 
     // Update notebook button state
