@@ -2386,8 +2386,8 @@
                 <div id="review-options" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;margin-bottom:12px;"></div>
                 <div id="review-feedback" style="min-height:20px;font-size:0.85rem;text-align:center;margin-bottom:6px;"></div>
                 <div id="review-detail-btn" style="display:none;align-items:center;justify-content:center;gap:16px;margin-top:20px;">
-                  <button onclick="reviewFlipToBack()" class="glacier-btn">查看详解</button>
-                  <button id="review-guess-btn" style="padding:8px 24px;border-radius:20px;border:1px solid rgba(255,255,255,0.5);background:transparent;color:rgba(255,255,255,0.8);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;">我猜的</button>
+                  <button onclick="reviewFlipToBack()" class="glacier-btn" data-hotkey="detail">查看详解 <kbd style="font-size:0.65rem;opacity:0.6;margin-left:4px;">${formatKey(getHotkeys().detail)}</kbd></button>
+                  <button id="review-guess-btn" data-hotkey="guess" style="padding:8px 24px;border-radius:20px;border:1px solid rgba(255,255,255,0.5);background:transparent;color:rgba(255,255,255,0.8);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;">我猜的 <kbd style="font-size:0.65rem;opacity:0.6;margin-left:4px;">${formatKey(getHotkeys().guess)}</kbd></button>
                 </div>
               </div>
             </div>
@@ -2922,7 +2922,9 @@
   }
 
   // ═══ PAGE SWITCHING ═══
+  let currentPage = 'dashboard';
   function switchPage(page) {
+    currentPage = page;
     document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
     document.getElementById('page-' + page).classList.add('active');
 
@@ -4095,7 +4097,9 @@
     showReviewQuestion();
   }
 
+  let _reviewHasAnswered = false;
   function showReviewQuestion() {
+    _reviewHasAnswered = false;
     const q = reviewQuestions[reviewIndex];
     const esc = s => (s || '').replace(/'/g, "\\'");
     document.getElementById('review-progress').textContent = (reviewIndex + 1) + ' / ' + reviewTotal;
@@ -4118,14 +4122,16 @@
     if (card) card.classList.remove('flipped');
 
     const optionsEl = document.getElementById('review-options');
+    const hotkeys = getHotkeys();
     optionsEl.innerHTML = q.options.map((def, i) => `
-      <button class="review-option-btn" onclick="checkReviewAnswer(this, '${esc(def)}', '${esc(q.correctDef)}', '${esc(q.word.word)}')" style="
+      <button class="review-option-btn" data-hotkey="opt${i + 1}" onclick="checkReviewAnswer(this, '${esc(def)}', '${esc(q.correctDef)}', '${esc(q.word.word)}')" style="
         font-size:0.85rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left;width:100%;
-      ">${def}</button>
+      "><span style="display:inline-block;min-width:18px;color:var(--text-muted);font-size:0.75rem;margin-right:4px;">${formatKey(hotkeys['opt' + (i+1)])}</span>${def}</button>
     `).join('');
   }
 
   function checkReviewAnswer(btn, selected, correct, word) {
+    _reviewHasAnswered = true;
     const isCorrect = selected === correct;
     if (isCorrect) reviewCorrect++;
     updateReviewSchedule(word, isCorrect);
@@ -4212,7 +4218,7 @@
         <div class="flip-cs-zh">${w.cszh || ''}</div>
       </div>` : ''}
       <div style="margin-top:auto;padding-top:12px;text-align:center;">
-        <button onclick="nextReviewQuestion()" class="glacier-btn">下一题</button>
+        <button onclick="nextReviewQuestion()" class="glacier-btn" data-hotkey="continue">下一题 <kbd style="font-size:0.65rem;opacity:0.6;margin-left:4px;">${formatKey(getHotkeys().continue)}</kbd></button>
       </div>
     `;
 
@@ -4227,7 +4233,11 @@
     if (w.cet4) speakSentence(w.cet4);
   }
 
+  let _reviewContinueLock = false;
   function nextReviewQuestion() {
+    if (_reviewContinueLock || !_reviewHasAnswered) return;
+    _reviewContinueLock = true;
+    _reviewHasAnswered = false;
     const card = document.getElementById('review-flip-card');
     if (card) card.classList.remove('flipped');
     reviewIndex++;
@@ -4236,6 +4246,7 @@
     } else {
       showReviewQuestion();
     }
+    setTimeout(() => { _reviewContinueLock = false; }, 400);
   }
 
   function showReviewResult() {
@@ -5111,7 +5122,8 @@
         if (btn && btn.offsetParent !== null) {
           // "continue" requires answering first + cooldown
           if (action === 'continue') {
-            if (!_hasAnswered || now - _lastHotkeyTime < _hotkeyCooldown) return;
+            const answered = currentPage === 'review' ? _reviewHasAnswered : _hasAnswered;
+            if (!answered || now - _lastHotkeyTime < _hotkeyCooldown) return;
             _lastHotkeyTime = now;
           }
           e.preventDefault();
