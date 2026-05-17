@@ -4942,11 +4942,11 @@
       const def = w.def || (VOCAB.find(v => v.word.toLowerCase() === w.word.toLowerCase()) || {}).def || '';
       const esc = s => (s || '').replace(/'/g, "\\'");
       return `
-      <div class="notebook-item">
+      <div class="notebook-item" onclick="showWordPopup('${esc(w.word)}', this)" style="cursor:pointer;">
         <div>
           <div class="notebook-word" style="display:flex;align-items:center;gap:6px;">
-            <span class="clickable-word" onclick="event.stopPropagation();showWordPopup('${esc(w.word)}', this)" style="cursor:pointer;border-bottom:1px dashed var(--accent);">${w.word}</span>
-            <button onclick="speakWord('${esc(w.word)}')" title="发音" style="background:none;border:none;cursor:pointer;color:var(--accent);padding:0;display:flex;align-items:center;">
+            <span style="border-bottom:1px dashed var(--accent);">${w.word}</span>
+            <button onclick="event.stopPropagation();speakWord('${esc(w.word)}')" title="发音" style="background:none;border:none;cursor:pointer;color:var(--accent);padding:0;display:flex;align-items:center;">
               <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"/></svg>
             </button>
           </div>
@@ -4954,7 +4954,7 @@
           ${w.context ? `<div class="notebook-meta">"${w.context.slice(0, 60)}${w.context.length > 60 ? '...' : ''}"</div>` : ''}
           <div class="notebook-meta">${new Date(w.addedAt).toLocaleDateString('zh-CN')} · ${w.source === 'vocab' ? '词汇墙' : w.source === 'writing' ? '写作批改' : '手动添加'}</div>
         </div>
-        <button class="notebook-remove" onclick="removeFromNotebook('${esc(w.word)}')" title="移除">
+        <button class="notebook-remove" onclick="event.stopPropagation();removeFromNotebook('${esc(w.word)}')" title="移除">
           <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>`;
@@ -5152,12 +5152,13 @@
     popup.addEventListener('click', e => e.stopPropagation());
 
     // Build example HTML (non-clickable — no .clickable-word wrapping)
+    const speakIcon = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"/></svg>';
     let exampleHTML = '';
     if (w.cet4) {
-      exampleHTML += `<div class="wp-section">四级例句</div><div class="wp-example">${w.cet4}</div><div class="wp-example-zh">${w.cet4zh || ''}</div>`;
+      exampleHTML += `<div class="wp-section" style="display:flex;align-items:center;gap:6px;">四级例句 <button onclick="speakSentence('${esc(w.cet4)}')" title="朗读例句" style="background:none;border:none;cursor:pointer;color:var(--accent);padding:2px;display:flex;align-items:center;">${speakIcon}</button></div><div class="wp-example">${w.cet4}</div><div class="wp-example-zh">${w.cet4zh || ''}</div>`;
     }
     if (w.cs) {
-      exampleHTML += `<div class="wp-section">CS CONTEXT</div><div class="wp-example">${w.cs}</div><div class="wp-example-zh">${w.cszh || ''}</div>`;
+      exampleHTML += `<div class="wp-section" style="display:flex;align-items:center;gap:6px;">CS CONTEXT <button onclick="speakSentence('${esc(w.cs)}')" title="朗读例句" style="background:none;border:none;cursor:pointer;color:var(--accent);padding:2px;display:flex;align-items:center;">${speakIcon}</button></div><div class="wp-example">${w.cs}</div><div class="wp-example-zh">${w.cszh || ''}</div>`;
     }
 
     const inNB = isInNotebook(w.word.toLowerCase());
