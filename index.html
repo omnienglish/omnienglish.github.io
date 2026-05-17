@@ -4123,6 +4123,8 @@
     document.getElementById('review-word').textContent = q.word.word;
     document.getElementById('review-phonetic').textContent = q.word.phonetic || '';
     document.getElementById('review-feedback').innerHTML = '';
+    // Auto-play word pronunciation
+    setTimeout(() => speakWord(q.word.word), 30);
     document.getElementById('review-detail-btn').style.display = 'none';
     // Reset guess button
     const reviewGuessBtn = document.getElementById('review-guess-btn');
