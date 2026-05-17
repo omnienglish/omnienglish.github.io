@@ -3966,8 +3966,12 @@
     renderVocabCard();
   }
 
+  let _continueLock = false;
   function continueToNextWord() {
+    if (_continueLock) return;
+    _continueLock = true;
     vocabMark(_lastQuizCorrect ? 'known' : 'forgot');
+    setTimeout(() => { _continueLock = false; }, 400);
   }
 
   function vocabMark(status) {
@@ -5091,13 +5095,22 @@
     document.addEventListener('keydown', onKey, true);
   }
 
+  let _lastHotkeyTime = 0;
+  const _hotkeyCooldown = 500; // ms, prevent rapid-fire
   document.addEventListener('keydown', function(e) {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+    // Block hotkeys while answer hasn't been selected yet (continue/detail buttons shouldn't fire before answering)
+    const now = Date.now();
     const hotkeys = getHotkeys();
     for (const [action, key] of Object.entries(hotkeys)) {
       if (e.key === key) {
         const btn = document.querySelector(`[data-hotkey="${action}"]`);
         if (btn && btn.offsetParent !== null) {
+          // "continue" needs cooldown and only works after answering
+          if (action === 'continue') {
+            if (now - _lastHotkeyTime < _hotkeyCooldown) return;
+            _lastHotkeyTime = now;
+          }
           e.preventDefault();
           btn.click();
           return;
