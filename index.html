@@ -4016,6 +4016,7 @@
   let reviewIndex = 0;
   let reviewCorrect = 0;
   let reviewTotal = 10;
+  let reviewRetryQueue = []; // Queue for questions answered wrong
 
   function getReviewSchedule() {
     try { return JSON.parse(localStorage.getItem('omni-review-schedule') || '{}'); } catch { return {}; }
@@ -4105,6 +4106,7 @@
     });
     reviewIndex = 0;
     reviewCorrect = 0;
+    reviewRetryQueue = []; // Clear retry queue for new session
 
     document.getElementById('review-start').style.display = 'none';
     document.getElementById('review-quiz').style.display = 'block';
@@ -4176,6 +4178,11 @@
       vocabState[word] = 'known';
     } else {
       vocabState[word] = 'review';
+      // Add to retry queue - will appear again after 3 questions
+      const currentQ = reviewQuestions[reviewIndex];
+      if (currentQ) {
+        reviewRetryQueue.push({ question: currentQ, insertAfter: reviewIndex + 3 });
+      }
     }
     saveToCloud('vocabState', vocabState);
 
@@ -4329,6 +4336,20 @@
     _reviewHasAnswered = false;
     const card = document.getElementById('review-flip-card');
     if (card) card.classList.remove('flipped');
+
+    // Check if any retry questions should be inserted
+    const retryItems = reviewRetryQueue.filter(r => r.insertAfter <= reviewIndex + 1);
+    if (retryItems.length > 0) {
+      // Remove from retry queue
+      reviewRetryQueue = reviewRetryQueue.filter(r => r.insertAfter > reviewIndex + 1);
+      // Insert retry questions after current position
+      retryItems.forEach((item, i) => {
+        reviewQuestions.splice(reviewIndex + 1 + i, 0, item.question);
+      });
+      // Update total to include retry questions
+      reviewTotal = reviewQuestions.length;
+    }
+
     reviewIndex++;
     if (reviewIndex >= reviewTotal) {
       showReviewResult();
