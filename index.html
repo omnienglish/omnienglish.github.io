@@ -2385,9 +2385,13 @@
               <div style="width:100%;padding:0 10px 10px;">
                 <div id="review-options" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;margin-bottom:12px;"></div>
                 <div id="review-feedback" style="min-height:20px;font-size:0.85rem;text-align:center;margin-bottom:6px;"></div>
-                <div id="review-detail-btn" style="display:none;align-items:center;justify-content:center;gap:16px;margin-top:20px;">
+                <div id="review-detail-btn" style="display:none;align-items:center;justify-content:center;gap:12px;margin-top:20px;flex-wrap:wrap;">
                   <button onclick="reviewFlipToBack()" class="glacier-btn" data-hotkey="detail">查看详解 <kbd style="font-size:0.65rem;opacity:0.6;margin-left:4px;">${formatKey(getHotkeys().detail)}</kbd></button>
-                  <button id="review-guess-btn" data-hotkey="guess" style="padding:8px 24px;border-radius:20px;border:1px solid rgba(255,255,255,0.5);background:transparent;color:rgba(255,255,255,0.8);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;">我猜的 <kbd style="font-size:0.65rem;opacity:0.6;margin-left:4px;">${formatKey(getHotkeys().guess)}</kbd></button>
+                  <button id="review-guess-btn" data-hotkey="guess" style="padding:8px 20px;border-radius:20px;border:1px solid rgba(255,255,255,0.5);background:transparent;color:rgba(255,255,255,0.8);font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:500;cursor:pointer;">我猜的 <kbd style="font-size:0.65rem;opacity:0.6;margin-left:4px;">${formatKey(getHotkeys().guess)}</kbd></button>
+                  <button id="review-notebook-btn" onclick="toggleReviewNotebook()" style="padding:8px 20px;border-radius:20px;border:1px solid var(--border);background:var(--bg-muted);color:var(--text-muted);font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:4px;">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                    收藏
+                  </button>
                 </div>
               </div>
             </div>
@@ -4124,6 +4128,22 @@
       reviewGuessBtn.style.color = 'var(--text-muted)';
       reviewGuessBtn.style.background = 'var(--bg-muted)';
     }
+    // Reset notebook button
+    const notebookBtn = document.getElementById('review-notebook-btn');
+    if (notebookBtn) {
+      const inNB = isInNotebook(q.word.word.toLowerCase());
+      if (inNB) {
+        notebookBtn.innerHTML = '<svg width="14" height="14" fill="currentColor" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg> 已收藏';
+        notebookBtn.style.borderColor = 'var(--success)';
+        notebookBtn.style.color = 'var(--success)';
+        notebookBtn.style.background = 'var(--success-soft)';
+      } else {
+        notebookBtn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg> 收藏';
+        notebookBtn.style.borderColor = 'var(--border)';
+        notebookBtn.style.color = 'var(--text-muted)';
+        notebookBtn.style.background = 'var(--bg-muted)';
+      }
+    }
     // Reset flip state
     const card = document.getElementById('review-flip-card');
     if (card) card.classList.remove('flipped');
@@ -4187,6 +4207,51 @@
       this.style.color = 'var(--warning)';
       this.style.background = 'var(--warning-soft)';
     };
+
+    // Update notebook button state
+    const notebookBtn = document.getElementById('review-notebook-btn');
+    if (notebookBtn) {
+      const inNB = isInNotebook(word.toLowerCase());
+      if (inNB) {
+        notebookBtn.innerHTML = '<svg width="14" height="14" fill="currentColor" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg> 已收藏';
+        notebookBtn.style.borderColor = 'var(--success)';
+        notebookBtn.style.color = 'var(--success)';
+        notebookBtn.style.background = 'var(--success-soft)';
+      } else {
+        notebookBtn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg> 收藏';
+        notebookBtn.style.borderColor = 'var(--border)';
+        notebookBtn.style.color = 'var(--text-muted)';
+        notebookBtn.style.background = 'var(--bg-muted)';
+      }
+    }
+  }
+
+  function toggleReviewNotebook() {
+    const q = reviewQuestions[reviewIndex];
+    if (!q) return;
+    const w = q.word;
+    const word = w.word.toLowerCase();
+    const btn = document.getElementById('review-notebook-btn');
+
+    if (isInNotebook(word)) {
+      removeFromNotebook(word);
+      if (btn) {
+        btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg> 收藏';
+        btn.style.borderColor = 'var(--border)';
+        btn.style.color = 'var(--text-muted)';
+        btn.style.background = 'var(--bg-muted)';
+      }
+      showToast('已取消收藏');
+    } else {
+      addToNotebook(w.word, w.def, w.cet4 || '', 'review');
+      if (btn) {
+        btn.innerHTML = '<svg width="14" height="14" fill="currentColor" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg> 已收藏';
+        btn.style.borderColor = 'var(--success)';
+        btn.style.color = 'var(--success)';
+        btn.style.background = 'var(--success-soft)';
+      }
+      showToast('已加入生词本');
+    }
   }
 
   function reviewFlipToBack() {
