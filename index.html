@@ -4124,7 +4124,7 @@
     const optionsEl = document.getElementById('review-options');
     const hotkeys = getHotkeys();
     optionsEl.innerHTML = q.options.map((def, i) => `
-      <button class="review-option-btn" data-hotkey="opt${i + 1}" onclick="checkReviewAnswer(this, '${esc(def)}', '${esc(q.correctDef)}', '${esc(q.word.word)}')" style="
+      <button class="review-option-btn" data-hotkey="opt${i + 1}" data-def="${esc(def)}" onclick="checkReviewAnswer(this, '${esc(def)}', '${esc(q.correctDef)}', '${esc(q.word.word)}')" style="
         font-size:0.85rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left;width:100%;
       "><span style="display:inline-block;min-width:18px;color:var(--text-muted);font-size:0.75rem;margin-right:4px;">${formatKey(hotkeys['opt' + (i+1)])}</span>${def}</button>
     `).join('');
@@ -4146,7 +4146,7 @@
     buttons.forEach(b => {
       b.disabled = true;
       b.style.cursor = 'default';
-      if (b.textContent === correct) {
+      if (b.dataset.def === correct) {
         b.style.setProperty('background', 'var(--success-soft)', 'important');
         b.style.setProperty('border-color', 'var(--success)', 'important');
         b.style.setProperty('color', 'var(--success)', 'important');
@@ -5118,8 +5118,15 @@
     const hotkeys = getHotkeys();
     for (const [action, key] of Object.entries(hotkeys)) {
       if (e.key === key) {
-        const btn = document.querySelector(`[data-hotkey="${action}"]`);
-        if (btn && btn.offsetParent !== null) {
+        // Find button in current page context only
+        let btn = null;
+        if (currentPage === 'review') {
+          btn = document.querySelector(`#page-review [data-hotkey="${action}"]`);
+        } else if (currentPage === 'vocab') {
+          btn = document.querySelector(`#page-vocab [data-hotkey="${action}"]`);
+        }
+        if (!btn) btn = document.querySelector(`[data-hotkey="${action}"]`);
+        if (btn && btn.offsetParent !== null && !btn.disabled) {
           // "continue" requires answering first + cooldown
           if (action === 'continue') {
             const answered = currentPage === 'review' ? _reviewHasAnswered : _hasAnswered;
