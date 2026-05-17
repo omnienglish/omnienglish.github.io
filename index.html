@@ -3251,6 +3251,7 @@
   }
 
   let _lastQuizCorrect = null;
+  let _hasAnswered = false;
 
   function renderVocabCardUI(w) {
     const status = vocabState[w.word];
@@ -3327,6 +3328,7 @@
 
   function checkVocabAnswer(btn, isCorrect, word) {
     _lastQuizCorrect = isCorrect;
+    _hasAnswered = true;
     const buttons = document.querySelectorAll('.quiz-option-btn');
     buttons.forEach(b => {
       b.disabled = true;
@@ -3385,6 +3387,7 @@
   }
 
   function renderVocabCard() {
+    _hasAnswered = false;
     const setupEl = document.getElementById('vocab-setup');
     const cardAreaEl = document.getElementById('vocab-card-area');
     const front = document.getElementById('flip-front');
@@ -3968,8 +3971,9 @@
 
   let _continueLock = false;
   function continueToNextWord() {
-    if (_continueLock) return;
+    if (_continueLock || !_hasAnswered) return;
     _continueLock = true;
+    _hasAnswered = false;
     vocabMark(_lastQuizCorrect ? 'known' : 'forgot');
     setTimeout(() => { _continueLock = false; }, 400);
   }
@@ -5099,16 +5103,15 @@
   const _hotkeyCooldown = 500; // ms, prevent rapid-fire
   document.addEventListener('keydown', function(e) {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
-    // Block hotkeys while answer hasn't been selected yet (continue/detail buttons shouldn't fire before answering)
     const now = Date.now();
     const hotkeys = getHotkeys();
     for (const [action, key] of Object.entries(hotkeys)) {
       if (e.key === key) {
         const btn = document.querySelector(`[data-hotkey="${action}"]`);
         if (btn && btn.offsetParent !== null) {
-          // "continue" needs cooldown and only works after answering
+          // "continue" requires answering first + cooldown
           if (action === 'continue') {
-            if (now - _lastHotkeyTime < _hotkeyCooldown) return;
+            if (!_hasAnswered || now - _lastHotkeyTime < _hotkeyCooldown) return;
             _lastHotkeyTime = now;
           }
           e.preventDefault();
